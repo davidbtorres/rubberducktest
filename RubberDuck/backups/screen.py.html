@@ -1,0 +1,205 @@
+<html>
+<head>
+<title>screen.py</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type="text/css">
+.s0 { color: #629755; font-style: italic;}
+.s1 { color: #a9b7c6;}
+.s2 { color: #cc7832;}
+.s3 { color: #808080;}
+.s4 { color: #6a8759;}
+.s5 { color: #6897bb;}
+.ln { color: #606366; font-weight: normal; font-style: normal; }
+</style>
+</head>
+<body bgcolor="#2b2b2b">
+<table CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#606060" >
+<tr><td><center>
+<font face="Arial, Helvetica" color="#000000">
+screen.py</font>
+</center></td></tr></table>
+<pre><a name="l1"><span class="ln">1    </span></a><span class="s0">'''Screen 
+<a name="l2"><span class="ln">2    </span></a>====== 
+<a name="l3"><span class="ln">3    </span></a> 
+<a name="l4"><span class="ln">4    </span></a>This module changes some environment and configuration variables 
+<a name="l5"><span class="ln">5    </span></a>to match the density / dpi / screensize of a specific device. 
+<a name="l6"><span class="ln">6    </span></a> 
+<a name="l7"><span class="ln">7    </span></a>To see a list of the available screenid's, just run:: 
+<a name="l8"><span class="ln">8    </span></a> 
+<a name="l9"><span class="ln">9    </span></a>    python main.py -m screen 
+<a name="l10"><span class="ln">10   </span></a> 
+<a name="l11"><span class="ln">11   </span></a>To simulate a medium-density screen such as the Motorola Droid 2:: 
+<a name="l12"><span class="ln">12   </span></a> 
+<a name="l13"><span class="ln">13   </span></a>    python main.py -m screen:droid2 
+<a name="l14"><span class="ln">14   </span></a> 
+<a name="l15"><span class="ln">15   </span></a>To simulate a high-density screen such as HTC One X, in portrait:: 
+<a name="l16"><span class="ln">16   </span></a> 
+<a name="l17"><span class="ln">17   </span></a>    python main.py -m screen:onex,portrait 
+<a name="l18"><span class="ln">18   </span></a> 
+<a name="l19"><span class="ln">19   </span></a>To simulate the iPad 2 screen:: 
+<a name="l20"><span class="ln">20   </span></a> 
+<a name="l21"><span class="ln">21   </span></a>    python main.py -m screen:ipad 
+<a name="l22"><span class="ln">22   </span></a> 
+<a name="l23"><span class="ln">23   </span></a>If the generated window is too large, you can specify a scale:: 
+<a name="l24"><span class="ln">24   </span></a> 
+<a name="l25"><span class="ln">25   </span></a>    python main.py -m screen:note2,portrait,scale=.75 
+<a name="l26"><span class="ln">26   </span></a> 
+<a name="l27"><span class="ln">27   </span></a>Note that to display your contents correctly on a scaled window you 
+<a name="l28"><span class="ln">28   </span></a>must consistently use units 'dp' and 'sp' throughout your app. See 
+<a name="l29"><span class="ln">29   </span></a>:mod:`~kiv.metrics` for more details. 
+<a name="l30"><span class="ln">30   </span></a> 
+<a name="l31"><span class="ln">31   </span></a>'''</span>
+<a name="l32"><span class="ln">32   </span></a>
+<a name="l33"><span class="ln">33   </span></a><span class="s2">import </span><span class="s1">sys</span>
+<a name="l34"><span class="ln">34   </span></a><span class="s2">from </span><span class="s1">os </span><span class="s2">import </span><span class="s1">environ</span>
+<a name="l35"><span class="ln">35   </span></a><span class="s2">from </span><span class="s1">kivy.config </span><span class="s2">import </span><span class="s1">Config</span>
+<a name="l36"><span class="ln">36   </span></a><span class="s2">from </span><span class="s1">kivy.logger </span><span class="s2">import </span><span class="s1">Logger</span>
+<a name="l37"><span class="ln">37   </span></a>
+<a name="l38"><span class="ln">38   </span></a><span class="s3"># taken from http://en.wikipedia.org/wiki/List_of_displays_by_pixel_density</span>
+<a name="l39"><span class="ln">39   </span></a><span class="s1">devices = {</span>
+<a name="l40"><span class="ln">40   </span></a>    <span class="s3"># device: (name, width, height, dpi, density)</span>
+<a name="l41"><span class="ln">41   </span></a>    <span class="s4">'onex'</span><span class="s1">: (</span><span class="s4">'HTC One X'</span><span class="s2">, </span><span class="s5">1280</span><span class="s2">, </span><span class="s5">720</span><span class="s2">, </span><span class="s5">312</span><span class="s2">, </span><span class="s5">2</span><span class="s1">)</span><span class="s2">,</span>
+<a name="l42"><span class="ln">42   </span></a>    <span class="s4">'one'</span><span class="s1">: (</span><span class="s4">'HTC One'</span><span class="s2">, </span><span class="s5">1920</span><span class="s2">, </span><span class="s5">1080</span><span class="s2">, </span><span class="s5">468</span><span class="s2">, </span><span class="s5">3</span><span class="s1">)</span><span class="s2">,</span>
+<a name="l43"><span class="ln">43   </span></a>    <span class="s4">'onesv'</span><span class="s1">: (</span><span class="s4">'HTC One SV'</span><span class="s2">, </span><span class="s5">800</span><span class="s2">, </span><span class="s5">480</span><span class="s2">, </span><span class="s5">216</span><span class="s2">, </span><span class="s5">1.5</span><span class="s1">)</span><span class="s2">,</span>
+<a name="l44"><span class="ln">44   </span></a>    <span class="s4">'s3'</span><span class="s1">: (</span><span class="s4">'Galaxy SIII'</span><span class="s2">, </span><span class="s5">1280</span><span class="s2">, </span><span class="s5">720</span><span class="s2">, </span><span class="s5">306</span><span class="s2">, </span><span class="s5">2</span><span class="s1">)</span><span class="s2">,</span>
+<a name="l45"><span class="ln">45   </span></a>    <span class="s4">'note2'</span><span class="s1">: (</span><span class="s4">'Galaxy Note II'</span><span class="s2">, </span><span class="s5">1280</span><span class="s2">, </span><span class="s5">720</span><span class="s2">, </span><span class="s5">267</span><span class="s2">, </span><span class="s5">2</span><span class="s1">)</span><span class="s2">,</span>
+<a name="l46"><span class="ln">46   </span></a>    <span class="s4">'droid2'</span><span class="s1">: (</span><span class="s4">'Motorola Droid 2'</span><span class="s2">, </span><span class="s5">854</span><span class="s2">, </span><span class="s5">480</span><span class="s2">, </span><span class="s5">240</span><span class="s2">, </span><span class="s5">1.5</span><span class="s1">)</span><span class="s2">,</span>
+<a name="l47"><span class="ln">47   </span></a>    <span class="s4">'xoom'</span><span class="s1">: (</span><span class="s4">'Motorola Xoom'</span><span class="s2">, </span><span class="s5">1280</span><span class="s2">, </span><span class="s5">800</span><span class="s2">, </span><span class="s5">149</span><span class="s2">, </span><span class="s5">1</span><span class="s1">)</span><span class="s2">,</span>
+<a name="l48"><span class="ln">48   </span></a>    <span class="s4">'ipad'</span><span class="s1">: (</span><span class="s4">'iPad (1 and 2)'</span><span class="s2">, </span><span class="s5">1024</span><span class="s2">, </span><span class="s5">768</span><span class="s2">, </span><span class="s5">132</span><span class="s2">, </span><span class="s5">1</span><span class="s1">)</span><span class="s2">,</span>
+<a name="l49"><span class="ln">49   </span></a>    <span class="s4">'ipad3'</span><span class="s1">: (</span><span class="s4">'iPad 3'</span><span class="s2">, </span><span class="s5">2048</span><span class="s2">, </span><span class="s5">1536</span><span class="s2">, </span><span class="s5">264</span><span class="s2">, </span><span class="s5">2</span><span class="s1">)</span><span class="s2">,</span>
+<a name="l50"><span class="ln">50   </span></a>    <span class="s4">'iphone4'</span><span class="s1">: (</span><span class="s4">'iPhone 4'</span><span class="s2">, </span><span class="s5">960</span><span class="s2">, </span><span class="s5">640</span><span class="s2">, </span><span class="s5">326</span><span class="s2">, </span><span class="s5">2</span><span class="s1">)</span><span class="s2">,</span>
+<a name="l51"><span class="ln">51   </span></a>    <span class="s4">'iphone5'</span><span class="s1">: (</span><span class="s4">'iPhone 5'</span><span class="s2">, </span><span class="s5">1136</span><span class="s2">, </span><span class="s5">640</span><span class="s2">, </span><span class="s5">326</span><span class="s2">, </span><span class="s5">2</span><span class="s1">)</span><span class="s2">,</span>
+<a name="l52"><span class="ln">52   </span></a>    <span class="s4">'xperiae'</span><span class="s1">: (</span><span class="s4">'Xperia E'</span><span class="s2">, </span><span class="s5">480</span><span class="s2">, </span><span class="s5">320</span><span class="s2">, </span><span class="s5">166</span><span class="s2">, </span><span class="s5">1</span><span class="s1">)</span><span class="s2">,</span>
+<a name="l53"><span class="ln">53   </span></a>    <span class="s4">'nexus4'</span><span class="s1">: (</span><span class="s4">'Nexus 4'</span><span class="s2">, </span><span class="s5">1280</span><span class="s2">, </span><span class="s5">768</span><span class="s2">, </span><span class="s5">320</span><span class="s2">, </span><span class="s5">2</span><span class="s1">)</span><span class="s2">,</span>
+<a name="l54"><span class="ln">54   </span></a>    <span class="s4">'nexus7'</span><span class="s1">: (</span><span class="s4">'Nexus 7 (2012 version)'</span><span class="s2">, </span><span class="s5">1280</span><span class="s2">, </span><span class="s5">800</span><span class="s2">, </span><span class="s5">216</span><span class="s2">, </span><span class="s5">1.325</span><span class="s1">)</span><span class="s2">,</span>
+<a name="l55"><span class="ln">55   </span></a>    <span class="s4">'nexus7.2'</span><span class="s1">: (</span><span class="s4">'Nexus 7 (2013 version)'</span><span class="s2">, </span><span class="s5">1920</span><span class="s2">, </span><span class="s5">1200</span><span class="s2">, </span><span class="s5">323</span><span class="s2">, </span><span class="s5">2</span><span class="s1">)</span><span class="s2">,</span>
+<a name="l56"><span class="ln">56   </span></a>
+<a name="l57"><span class="ln">57   </span></a>    <span class="s3"># taken from design.google.com/devices</span>
+<a name="l58"><span class="ln">58   </span></a>    <span class="s3"># please consider using another data instead of</span>
+<a name="l59"><span class="ln">59   </span></a>    <span class="s3"># a dict for autocompletion to work</span>
+<a name="l60"><span class="ln">60   </span></a>    <span class="s3"># these are all in landscape</span>
+<a name="l61"><span class="ln">61   </span></a>    <span class="s4">'phone_android_one'</span><span class="s1">: (</span><span class="s4">'Android One'</span><span class="s2">, </span><span class="s5">854</span><span class="s2">, </span><span class="s5">480</span><span class="s2">, </span><span class="s5">218</span><span class="s2">, </span><span class="s5">1.5</span><span class="s1">)</span><span class="s2">,</span>
+<a name="l62"><span class="ln">62   </span></a>    <span class="s4">'phone_htc_one_m8'</span><span class="s1">: (</span><span class="s4">'HTC One M8'</span><span class="s2">, </span><span class="s5">1920</span><span class="s2">, </span><span class="s5">1080</span><span class="s2">, </span><span class="s5">432</span><span class="s2">, </span><span class="s5">3.0</span><span class="s1">)</span><span class="s2">,</span>
+<a name="l63"><span class="ln">63   </span></a>    <span class="s4">'phone_htc_one_m9'</span><span class="s1">: (</span><span class="s4">'HTC One M9'</span><span class="s2">, </span><span class="s5">1920</span><span class="s2">, </span><span class="s5">1080</span><span class="s2">, </span><span class="s5">432</span><span class="s2">, </span><span class="s5">3.0</span><span class="s1">)</span><span class="s2">,</span>
+<a name="l64"><span class="ln">64   </span></a>    <span class="s4">'phone_iphone'</span><span class="s1">: (</span><span class="s4">'iPhone'</span><span class="s2">, </span><span class="s5">480</span><span class="s2">, </span><span class="s5">320</span><span class="s2">, </span><span class="s5">168</span><span class="s2">, </span><span class="s5">1.0</span><span class="s1">)</span><span class="s2">,</span>
+<a name="l65"><span class="ln">65   </span></a>    <span class="s4">'phone_iphone_4'</span><span class="s1">: (</span><span class="s4">'iPhone 4'</span><span class="s2">, </span><span class="s5">960</span><span class="s2">, </span><span class="s5">640</span><span class="s2">, </span><span class="s5">320</span><span class="s2">, </span><span class="s5">2.0</span><span class="s1">)</span><span class="s2">,</span>
+<a name="l66"><span class="ln">66   </span></a>    <span class="s4">'phone_iphone_5'</span><span class="s1">: (</span><span class="s4">'iPhone 5'</span><span class="s2">, </span><span class="s5">1136</span><span class="s2">, </span><span class="s5">640</span><span class="s2">, </span><span class="s5">320</span><span class="s2">, </span><span class="s5">2.0</span><span class="s1">)</span><span class="s2">,</span>
+<a name="l67"><span class="ln">67   </span></a>    <span class="s4">'phone_iphone_6'</span><span class="s1">: (</span><span class="s4">'iPhone 6'</span><span class="s2">, </span><span class="s5">1334</span><span class="s2">, </span><span class="s5">750</span><span class="s2">, </span><span class="s5">326</span><span class="s2">, </span><span class="s5">2.0</span><span class="s1">)</span><span class="s2">,</span>
+<a name="l68"><span class="ln">68   </span></a>    <span class="s4">'phone_iphone_6_plus'</span><span class="s1">: (</span><span class="s4">'iPhone 6 Plus'</span><span class="s2">, </span><span class="s5">1920</span><span class="s2">, </span><span class="s5">1080</span><span class="s2">, </span><span class="s5">400</span><span class="s2">, </span><span class="s5">3.0</span><span class="s1">)</span><span class="s2">,</span>
+<a name="l69"><span class="ln">69   </span></a>    <span class="s4">'phone_lg_g2'</span><span class="s1">: (</span><span class="s4">'LG G2'</span><span class="s2">, </span><span class="s5">1920</span><span class="s2">, </span><span class="s5">1080</span><span class="s2">, </span><span class="s5">432</span><span class="s2">, </span><span class="s5">3.0</span><span class="s1">)</span><span class="s2">,</span>
+<a name="l70"><span class="ln">70   </span></a>    <span class="s4">'phone_lg_g3'</span><span class="s1">: (</span><span class="s4">'LG G3'</span><span class="s2">, </span><span class="s5">2560</span><span class="s2">, </span><span class="s5">1440</span><span class="s2">, </span><span class="s5">533</span><span class="s2">, </span><span class="s5">3.0</span><span class="s1">)</span><span class="s2">,</span>
+<a name="l71"><span class="ln">71   </span></a>    <span class="s4">'phone_moto_g'</span><span class="s1">: (</span><span class="s4">'Moto G'</span><span class="s2">, </span><span class="s5">1280</span><span class="s2">, </span><span class="s5">720</span><span class="s2">, </span><span class="s5">327</span><span class="s2">, </span><span class="s5">2.0</span><span class="s1">)</span><span class="s2">,</span>
+<a name="l72"><span class="ln">72   </span></a>    <span class="s4">'phone_moto_x'</span><span class="s1">: (</span><span class="s4">'Moto X'</span><span class="s2">, </span><span class="s5">1280</span><span class="s2">, </span><span class="s5">720</span><span class="s2">, </span><span class="s5">313</span><span class="s2">, </span><span class="s5">2.0</span><span class="s1">)</span><span class="s2">,</span>
+<a name="l73"><span class="ln">73   </span></a>    <span class="s4">'phone_moto_x_2nd_gen'</span><span class="s1">: (</span><span class="s4">'Moto X 2nd Gen'</span><span class="s2">, </span><span class="s5">1920</span><span class="s2">, </span><span class="s5">1080</span><span class="s2">, </span><span class="s5">432</span><span class="s2">, </span><span class="s5">3.0</span><span class="s1">)</span><span class="s2">,</span>
+<a name="l74"><span class="ln">74   </span></a>    <span class="s4">'phone_nexus_4'</span><span class="s1">: (</span><span class="s4">'Nexus 4'</span><span class="s2">, </span><span class="s5">1280</span><span class="s2">, </span><span class="s5">768</span><span class="s2">, </span><span class="s5">240</span><span class="s2">, </span><span class="s5">2.0</span><span class="s1">)</span><span class="s2">,</span>
+<a name="l75"><span class="ln">75   </span></a>    <span class="s4">'phone_nexus_5'</span><span class="s1">: (</span><span class="s4">'Nexus 5'</span><span class="s2">, </span><span class="s5">1920</span><span class="s2">, </span><span class="s5">1080</span><span class="s2">, </span><span class="s5">450</span><span class="s2">, </span><span class="s5">3.0</span><span class="s1">)</span><span class="s2">,</span>
+<a name="l76"><span class="ln">76   </span></a>    <span class="s4">'phone_nexus_5x'</span><span class="s1">: (</span><span class="s4">'Nexus 5X'</span><span class="s2">, </span><span class="s5">1920</span><span class="s2">, </span><span class="s5">1080</span><span class="s2">, </span><span class="s5">432</span><span class="s2">, </span><span class="s5">2.6</span><span class="s1">)</span><span class="s2">,</span>
+<a name="l77"><span class="ln">77   </span></a>    <span class="s4">'phone_nexus_6'</span><span class="s1">: (</span><span class="s4">'Nexus 6'</span><span class="s2">, </span><span class="s5">2560</span><span class="s2">, </span><span class="s5">1440</span><span class="s2">, </span><span class="s5">496</span><span class="s2">, </span><span class="s5">3.5</span><span class="s1">)</span><span class="s2">,</span>
+<a name="l78"><span class="ln">78   </span></a>    <span class="s4">'phone_nexus_6p'</span><span class="s1">: (</span><span class="s4">'Nexus 6P'</span><span class="s2">, </span><span class="s5">2560</span><span class="s2">, </span><span class="s5">1440</span><span class="s2">, </span><span class="s5">514</span><span class="s2">, </span><span class="s5">3.5</span><span class="s1">)</span><span class="s2">,</span>
+<a name="l79"><span class="ln">79   </span></a>    <span class="s4">'phone_oneplus_3t'</span><span class="s1">: (</span><span class="s4">'OnePlus 3t'</span><span class="s2">, </span><span class="s5">1863</span><span class="s2">, </span><span class="s5">1080</span><span class="s2">, </span><span class="s5">380</span><span class="s2">, </span><span class="s5">2.375</span><span class="s1">)</span><span class="s2">,</span>
+<a name="l80"><span class="ln">80   </span></a>    <span class="s4">'phone_samsung_galaxy_note_4'</span><span class="s1">: (</span><span class="s4">'Samsung Galaxy Note 4'</span><span class="s2">,</span>
+<a name="l81"><span class="ln">81   </span></a>                                    <span class="s5">2560</span><span class="s2">, </span><span class="s5">1440</span><span class="s2">, </span><span class="s5">514</span><span class="s2">, </span><span class="s5">3.0</span><span class="s1">)</span><span class="s2">,</span>
+<a name="l82"><span class="ln">82   </span></a>    <span class="s4">'phone_samsung_galaxy_s5'</span><span class="s1">: (</span><span class="s4">'Samsung Galaxy S5'</span><span class="s2">, </span><span class="s5">1920</span><span class="s2">, </span><span class="s5">1080</span><span class="s2">, </span><span class="s5">372</span><span class="s2">, </span><span class="s5">3.0</span><span class="s1">)</span><span class="s2">,</span>
+<a name="l83"><span class="ln">83   </span></a>    <span class="s4">'phone_samsung_galaxy_s6'</span><span class="s1">: (</span><span class="s4">'Samsung Galaxy S6'</span><span class="s2">, </span><span class="s5">2560</span><span class="s2">, </span><span class="s5">1440</span><span class="s2">, </span><span class="s5">576</span><span class="s2">, </span><span class="s5">4.0</span><span class="s1">)</span><span class="s2">,</span>
+<a name="l84"><span class="ln">84   </span></a>    <span class="s4">'phone_sony_xperia_c4'</span><span class="s1">: (</span><span class="s4">'Sony Xperia C4'</span><span class="s2">, </span><span class="s5">1920</span><span class="s2">, </span><span class="s5">1080</span><span class="s2">, </span><span class="s5">400</span><span class="s2">, </span><span class="s5">2.0</span><span class="s1">)</span><span class="s2">,</span>
+<a name="l85"><span class="ln">85   </span></a>    <span class="s4">'phone_sony_xperia_z_ultra'</span><span class="s1">: (</span><span class="s4">'Sony Xperia Z Ultra'</span><span class="s2">, </span><span class="s5">1920</span><span class="s2">, </span><span class="s5">1080</span><span class="s2">, </span><span class="s5">348</span><span class="s2">, </span><span class="s5">2.0</span><span class="s1">)</span><span class="s2">,</span>
+<a name="l86"><span class="ln">86   </span></a>    <span class="s4">'phone_sony_xperia_z1_compact'</span><span class="s1">: (</span><span class="s4">'Sony Xperia Z1 Compact'</span><span class="s2">,</span>
+<a name="l87"><span class="ln">87   </span></a>                                     <span class="s5">1280</span><span class="s2">, </span><span class="s5">720</span><span class="s2">, </span><span class="s5">342</span><span class="s2">, </span><span class="s5">2.0</span><span class="s1">)</span><span class="s2">,</span>
+<a name="l88"><span class="ln">88   </span></a>    <span class="s4">'phone_sony_xperia_z2z3'</span><span class="s1">: (</span><span class="s4">'Sony Xperia Z2/Z3'</span><span class="s2">, </span><span class="s5">1920</span><span class="s2">, </span><span class="s5">1080</span><span class="s2">, </span><span class="s5">432</span><span class="s2">, </span><span class="s5">3.0</span><span class="s1">)</span><span class="s2">,</span>
+<a name="l89"><span class="ln">89   </span></a>    <span class="s4">'phone_sony_xperia_z3_compact'</span><span class="s1">: (</span><span class="s4">'Sony Xperia Z3 Compact'</span><span class="s2">,</span>
+<a name="l90"><span class="ln">90   </span></a>                                     <span class="s5">1280</span><span class="s2">, </span><span class="s5">720</span><span class="s2">, </span><span class="s5">313</span><span class="s2">, </span><span class="s5">2.0</span><span class="s1">)</span><span class="s2">,</span>
+<a name="l91"><span class="ln">91   </span></a>    <span class="s4">'tablet_dell_venue_8'</span><span class="s1">: (</span><span class="s4">'Dell Venue 8'</span><span class="s2">, </span><span class="s5">2560</span><span class="s2">, </span><span class="s5">1600</span><span class="s2">, </span><span class="s5">355</span><span class="s2">, </span><span class="s5">2.0</span><span class="s1">)</span><span class="s2">,</span>
+<a name="l92"><span class="ln">92   </span></a>    <span class="s4">'tablet_ipad'</span><span class="s1">: (</span><span class="s4">'iPad'</span><span class="s2">, </span><span class="s5">1024</span><span class="s2">, </span><span class="s5">768</span><span class="s2">, </span><span class="s5">132</span><span class="s2">, </span><span class="s5">1.0</span><span class="s1">)</span><span class="s2">,</span>
+<a name="l93"><span class="ln">93   </span></a>    <span class="s4">'tablet_ipad_mini'</span><span class="s1">: (</span><span class="s4">'iPad Mini'</span><span class="s2">, </span><span class="s5">1024</span><span class="s2">, </span><span class="s5">768</span><span class="s2">, </span><span class="s5">163</span><span class="s2">, </span><span class="s5">1.0</span><span class="s1">)</span><span class="s2">,</span>
+<a name="l94"><span class="ln">94   </span></a>    <span class="s4">'tablet_ipad_mini_retina'</span><span class="s1">: (</span><span class="s4">'iPad Mini Retina'</span><span class="s2">, </span><span class="s5">2048</span><span class="s2">, </span><span class="s5">1536</span><span class="s2">, </span><span class="s5">326</span><span class="s2">, </span><span class="s5">2.0</span><span class="s1">)</span><span class="s2">,</span>
+<a name="l95"><span class="ln">95   </span></a>    <span class="s4">'tablet_ipad_pro'</span><span class="s1">: (</span><span class="s4">'iPad Pro'</span><span class="s2">, </span><span class="s5">2732</span><span class="s2">, </span><span class="s5">2048</span><span class="s2">, </span><span class="s5">265</span><span class="s2">, </span><span class="s5">2.0</span><span class="s1">)</span><span class="s2">,</span>
+<a name="l96"><span class="ln">96   </span></a>    <span class="s4">'tablet_ipad_retina'</span><span class="s1">: (</span><span class="s4">'iPad Retina'</span><span class="s2">, </span><span class="s5">2048</span><span class="s2">, </span><span class="s5">1536</span><span class="s2">, </span><span class="s5">264</span><span class="s2">, </span><span class="s5">2.0</span><span class="s1">)</span><span class="s2">,</span>
+<a name="l97"><span class="ln">97   </span></a>    <span class="s4">'tablet_nexus_10'</span><span class="s1">: (</span><span class="s4">'Nexus 10'</span><span class="s2">, </span><span class="s5">2560</span><span class="s2">, </span><span class="s5">1600</span><span class="s2">, </span><span class="s5">297</span><span class="s2">, </span><span class="s5">2.0</span><span class="s1">)</span><span class="s2">,</span>
+<a name="l98"><span class="ln">98   </span></a>    <span class="s4">'tablet_nexus_7_12'</span><span class="s1">: (</span><span class="s4">'Nexus 7 12'</span><span class="s2">, </span><span class="s5">1280</span><span class="s2">, </span><span class="s5">800</span><span class="s2">, </span><span class="s5">216</span><span class="s2">, </span><span class="s5">1.3</span><span class="s1">)</span><span class="s2">,</span>
+<a name="l99"><span class="ln">99   </span></a>    <span class="s4">'tablet_nexus_7_13'</span><span class="s1">: (</span><span class="s4">'Nexus 7 13'</span><span class="s2">, </span><span class="s5">1920</span><span class="s2">, </span><span class="s5">1200</span><span class="s2">, </span><span class="s5">324</span><span class="s2">, </span><span class="s5">2.0</span><span class="s1">)</span><span class="s2">,</span>
+<a name="l100"><span class="ln">100  </span></a>    <span class="s4">'tablet_nexus_9'</span><span class="s1">: (</span><span class="s4">'Nexus 9'</span><span class="s2">, </span><span class="s5">2048</span><span class="s2">, </span><span class="s5">1536</span><span class="s2">, </span><span class="s5">288</span><span class="s2">, </span><span class="s5">2.0</span><span class="s1">)</span><span class="s2">,</span>
+<a name="l101"><span class="ln">101  </span></a>    <span class="s4">'tablet_samsung_galaxy_tab_10'</span><span class="s1">: (</span><span class="s4">'Samsung Galaxy Tab 10'</span><span class="s2">,</span>
+<a name="l102"><span class="ln">102  </span></a>                                     <span class="s5">1280</span><span class="s2">, </span><span class="s5">800</span><span class="s2">, </span><span class="s5">148</span><span class="s2">, </span><span class="s5">1.0</span><span class="s1">)</span><span class="s2">,</span>
+<a name="l103"><span class="ln">103  </span></a>    <span class="s4">'tablet_sony_xperia_z3_tablet'</span><span class="s1">: (</span><span class="s4">'Sony Xperia Z3 Tablet'</span><span class="s2">,</span>
+<a name="l104"><span class="ln">104  </span></a>                                     <span class="s5">1920</span><span class="s2">, </span><span class="s5">1200</span><span class="s2">, </span><span class="s5">282</span><span class="s2">, </span><span class="s5">2.0</span><span class="s1">)</span><span class="s2">,</span>
+<a name="l105"><span class="ln">105  </span></a>    <span class="s4">'tablet_sony_xperia_z4_tablet'</span><span class="s1">: (</span><span class="s4">'Sony Xperia Z4 Tablet'</span><span class="s2">,</span>
+<a name="l106"><span class="ln">106  </span></a>                                     <span class="s5">2560</span><span class="s2">, </span><span class="s5">1600</span><span class="s2">, </span><span class="s5">297</span><span class="s2">, </span><span class="s5">2.0</span><span class="s1">)</span><span class="s2">,</span>
+<a name="l107"><span class="ln">107  </span></a>    <span class="s4">'tablet_huawei_mediapad_m3_lite_10'</span><span class="s1">: (</span><span class="s4">'HUAWEI MediaPad M3 Lite 10'</span><span class="s2">,</span>
+<a name="l108"><span class="ln">108  </span></a>                                          <span class="s5">1920</span><span class="s2">, </span><span class="s5">1200</span><span class="s2">, </span><span class="s5">320</span><span class="s2">, </span><span class="s5">2.25</span><span class="s1">)</span>
+<a name="l109"><span class="ln">109  </span></a>
+<a name="l110"><span class="ln">110  </span></a><span class="s1">}</span>
+<a name="l111"><span class="ln">111  </span></a>
+<a name="l112"><span class="ln">112  </span></a>
+<a name="l113"><span class="ln">113  </span></a><span class="s2">def </span><span class="s1">start(win</span><span class="s2">, </span><span class="s1">ctx):</span>
+<a name="l114"><span class="ln">114  </span></a>    <span class="s2">pass</span>
+<a name="l115"><span class="ln">115  </span></a>
+<a name="l116"><span class="ln">116  </span></a>
+<a name="l117"><span class="ln">117  </span></a><span class="s2">def </span><span class="s1">stop(win</span><span class="s2">, </span><span class="s1">ctx):</span>
+<a name="l118"><span class="ln">118  </span></a>    <span class="s2">pass</span>
+<a name="l119"><span class="ln">119  </span></a>
+<a name="l120"><span class="ln">120  </span></a>
+<a name="l121"><span class="ln">121  </span></a><span class="s2">def </span><span class="s1">apply_device(device</span><span class="s2">, </span><span class="s1">scale</span><span class="s2">, </span><span class="s1">orientation):</span>
+<a name="l122"><span class="ln">122  </span></a>    <span class="s1">name</span><span class="s2">, </span><span class="s1">width</span><span class="s2">, </span><span class="s1">height</span><span class="s2">, </span><span class="s1">dpi</span><span class="s2">, </span><span class="s1">density = devices[device]</span>
+<a name="l123"><span class="ln">123  </span></a>    <span class="s2">if </span><span class="s1">orientation == </span><span class="s4">'portrait'</span><span class="s1">:</span>
+<a name="l124"><span class="ln">124  </span></a>        <span class="s1">width</span><span class="s2">, </span><span class="s1">height = height</span><span class="s2">, </span><span class="s1">width</span>
+<a name="l125"><span class="ln">125  </span></a>    <span class="s1">Logger.info(</span><span class="s4">'Screen: Apply screen settings for {0}'</span><span class="s1">.format(name))</span>
+<a name="l126"><span class="ln">126  </span></a>    <span class="s1">Logger.info(</span><span class="s4">'Screen: size={0}x{1} dpi={2} density={3} '</span>
+<a name="l127"><span class="ln">127  </span></a>                <span class="s4">'orientation={4}'</span><span class="s1">.format(width</span><span class="s2">, </span><span class="s1">height</span><span class="s2">, </span><span class="s1">dpi</span><span class="s2">, </span><span class="s1">density</span><span class="s2">,</span>
+<a name="l128"><span class="ln">128  </span></a>                                         <span class="s1">orientation))</span>
+<a name="l129"><span class="ln">129  </span></a>    <span class="s2">try</span><span class="s1">:</span>
+<a name="l130"><span class="ln">130  </span></a>        <span class="s1">scale = float(scale)</span>
+<a name="l131"><span class="ln">131  </span></a>    <span class="s2">except</span><span class="s1">:</span>
+<a name="l132"><span class="ln">132  </span></a>        <span class="s1">scale = </span><span class="s5">1</span>
+<a name="l133"><span class="ln">133  </span></a>    <span class="s1">environ[</span><span class="s4">'KIVY_METRICS_DENSITY'</span><span class="s1">] = str(density * scale)</span>
+<a name="l134"><span class="ln">134  </span></a>    <span class="s1">environ[</span><span class="s4">'KIVY_DPI'</span><span class="s1">] = str(dpi * scale)</span>
+<a name="l135"><span class="ln">135  </span></a>    <span class="s1">Config.set(</span><span class="s4">'graphics'</span><span class="s2">, </span><span class="s4">'width'</span><span class="s2">, </span><span class="s1">str(int(width * scale)))</span>
+<a name="l136"><span class="ln">136  </span></a>    <span class="s3"># simulate with the android bar</span>
+<a name="l137"><span class="ln">137  </span></a>    <span class="s3"># FIXME should be configurable</span>
+<a name="l138"><span class="ln">138  </span></a>    <span class="s1">Config.set(</span><span class="s4">'graphics'</span><span class="s2">, </span><span class="s4">'height'</span><span class="s2">, </span><span class="s1">str(int(height * scale - </span><span class="s5">25 </span><span class="s1">* density)))</span>
+<a name="l139"><span class="ln">139  </span></a>    <span class="s1">Config.set(</span><span class="s4">'graphics'</span><span class="s2">, </span><span class="s4">'fullscreen'</span><span class="s2">, </span><span class="s4">'0'</span><span class="s1">)</span>
+<a name="l140"><span class="ln">140  </span></a>    <span class="s1">Config.set(</span><span class="s4">'graphics'</span><span class="s2">, </span><span class="s4">'show_mousecursor'</span><span class="s2">, </span><span class="s4">'1'</span><span class="s1">)</span>
+<a name="l141"><span class="ln">141  </span></a>
+<a name="l142"><span class="ln">142  </span></a>
+<a name="l143"><span class="ln">143  </span></a><span class="s2">def </span><span class="s1">usage(device=</span><span class="s2">None</span><span class="s1">):</span>
+<a name="l144"><span class="ln">144  </span></a>    <span class="s2">if </span><span class="s1">device:</span>
+<a name="l145"><span class="ln">145  </span></a>        <span class="s1">Logger.error(</span><span class="s4">'Screen: The specified device ({0}) is unknown.'</span><span class="s2">,</span>
+<a name="l146"><span class="ln">146  </span></a>                     <span class="s1">device)</span>
+<a name="l147"><span class="ln">147  </span></a>    <span class="s1">print(</span><span class="s4">'</span><span class="s2">\n</span><span class="s4">Module usage: python main.py -m screen:deviceid[,orientation]</span><span class="s2">\n</span><span class="s4">'</span><span class="s1">)</span>
+<a name="l148"><span class="ln">148  </span></a>    <span class="s1">print(</span><span class="s4">'Available devices:</span><span class="s2">\n</span><span class="s4">'</span><span class="s1">)</span>
+<a name="l149"><span class="ln">149  </span></a>    <span class="s1">print(</span><span class="s4">'{0:12} {1:&lt;22} {2:&lt;8} {3:&lt;8} {4:&lt;5} {5:&lt;8}'</span><span class="s1">.format(</span>
+<a name="l150"><span class="ln">150  </span></a>        <span class="s4">'Device ID'</span><span class="s2">, </span><span class="s4">'Name'</span><span class="s2">, </span><span class="s4">'Width'</span><span class="s2">, </span><span class="s4">'Height'</span><span class="s2">, </span><span class="s4">'DPI'</span><span class="s2">, </span><span class="s4">'Density'</span><span class="s1">))</span>
+<a name="l151"><span class="ln">151  </span></a>    <span class="s2">for </span><span class="s1">device</span><span class="s2">, </span><span class="s1">info </span><span class="s2">in </span><span class="s1">devices.items():</span>
+<a name="l152"><span class="ln">152  </span></a>        <span class="s1">print(</span><span class="s4">'{0:12} {1:&lt;22} {2:&lt;8} {3:&lt;8} {4:&lt;5} {5:&lt;8}'</span><span class="s1">.format(</span>
+<a name="l153"><span class="ln">153  </span></a>            <span class="s1">device</span><span class="s2">, </span><span class="s1">*info))</span>
+<a name="l154"><span class="ln">154  </span></a>    <span class="s1">print(</span><span class="s4">'</span><span class="s2">\n</span><span class="s4">'</span><span class="s1">)</span>
+<a name="l155"><span class="ln">155  </span></a>    <span class="s1">print(</span><span class="s4">'Simulate a medium-density screen such as Motorola Droid 2:</span><span class="s2">\n</span><span class="s4">'</span><span class="s1">)</span>
+<a name="l156"><span class="ln">156  </span></a>    <span class="s1">print(</span><span class="s4">'    python main.py -m screen:droid2</span><span class="s2">\n</span><span class="s4">'</span><span class="s1">)</span>
+<a name="l157"><span class="ln">157  </span></a>    <span class="s1">print(</span><span class="s4">'Simulate a high-density screen such as HTC One X, in portrait:</span><span class="s2">\n</span><span class="s4">'</span><span class="s1">)</span>
+<a name="l158"><span class="ln">158  </span></a>    <span class="s1">print(</span><span class="s4">'    python main.py -m screen:onex,portrait</span><span class="s2">\n</span><span class="s4">'</span><span class="s1">)</span>
+<a name="l159"><span class="ln">159  </span></a>    <span class="s1">print(</span><span class="s4">'Simulate the iPad 2 screen</span><span class="s2">\n</span><span class="s4">'</span><span class="s1">)</span>
+<a name="l160"><span class="ln">160  </span></a>    <span class="s1">print(</span><span class="s4">'    python main.py -m screen:ipad</span><span class="s2">\n</span><span class="s4">'</span><span class="s1">)</span>
+<a name="l161"><span class="ln">161  </span></a>    <span class="s1">print(</span><span class="s4">'If the generated window is too large, you can specify a scale:</span><span class="s2">\n</span><span class="s4">'</span><span class="s1">)</span>
+<a name="l162"><span class="ln">162  </span></a>    <span class="s1">print(</span><span class="s4">'    python main.py -m screen:note2,portrait,scale=.75</span><span class="s2">\n</span><span class="s4">'</span><span class="s1">)</span>
+<a name="l163"><span class="ln">163  </span></a>    <span class="s1">sys.exit(</span><span class="s5">1</span><span class="s1">)</span>
+<a name="l164"><span class="ln">164  </span></a>
+<a name="l165"><span class="ln">165  </span></a>
+<a name="l166"><span class="ln">166  </span></a><span class="s2">def </span><span class="s1">configure(ctx):</span>
+<a name="l167"><span class="ln">167  </span></a>    <span class="s1">scale = ctx.pop(</span><span class="s4">'scale'</span><span class="s2">, None</span><span class="s1">)</span>
+<a name="l168"><span class="ln">168  </span></a>    <span class="s1">orientation = </span><span class="s4">'landscape'</span>
+<a name="l169"><span class="ln">169  </span></a>    <span class="s1">ctx.pop(</span><span class="s4">'landscape'</span><span class="s2">, None</span><span class="s1">)</span>
+<a name="l170"><span class="ln">170  </span></a>    <span class="s2">if </span><span class="s1">ctx.pop(</span><span class="s4">'portrait'</span><span class="s2">, None</span><span class="s1">):</span>
+<a name="l171"><span class="ln">171  </span></a>        <span class="s1">orientation = </span><span class="s4">'portrait'</span>
+<a name="l172"><span class="ln">172  </span></a>    <span class="s2">if not </span><span class="s1">ctx:</span>
+<a name="l173"><span class="ln">173  </span></a>        <span class="s2">return </span><span class="s1">usage(</span><span class="s2">None</span><span class="s1">)</span>
+<a name="l174"><span class="ln">174  </span></a>    <span class="s1">device = list(ctx.keys())[</span><span class="s5">0</span><span class="s1">]</span>
+<a name="l175"><span class="ln">175  </span></a>    <span class="s2">if </span><span class="s1">device </span><span class="s2">not in </span><span class="s1">devices:</span>
+<a name="l176"><span class="ln">176  </span></a>        <span class="s2">return </span><span class="s1">usage(</span><span class="s4">''</span><span class="s1">)</span>
+<a name="l177"><span class="ln">177  </span></a>    <span class="s1">apply_device(device</span><span class="s2">, </span><span class="s1">scale</span><span class="s2">, </span><span class="s1">orientation)</span>
+<a name="l178"><span class="ln">178  </span></a>
+<a name="l179"><span class="ln">179  </span></a>
+<a name="l180"><span class="ln">180  </span></a><span class="s2">if </span><span class="s1">__name__ == </span><span class="s4">&quot;__main__&quot;</span><span class="s1">:</span>
+<a name="l181"><span class="ln">181  </span></a>    <span class="s2">for </span><span class="s1">n </span><span class="s2">in </span><span class="s1">devices.values():</span>
+<a name="l182"><span class="ln">182  </span></a>        <span class="s2">assert </span><span class="s1">n[</span><span class="s5">1</span><span class="s1">] &gt; n[</span><span class="s5">2</span><span class="s1">]</span>
+<a name="l183"><span class="ln">183  </span></a></pre>
+</body>
+</html>

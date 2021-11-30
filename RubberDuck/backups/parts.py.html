@@ -1,0 +1,201 @@
+<html>
+<head>
+<title>parts.py</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type="text/css">
+.s0 { color: #808080;}
+.s1 { color: #a9b7c6;}
+.s2 { color: #629755; font-style: italic;}
+.s3 { color: #6a8759;}
+.s4 { color: #cc7832;}
+.s5 { color: #6897bb;}
+.ln { color: #606366; font-weight: normal; font-style: normal; }
+</style>
+</head>
+<body bgcolor="#2b2b2b">
+<table CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#606060" >
+<tr><td><center>
+<font face="Arial, Helvetica" color="#000000">
+parts.py</font>
+</center></td></tr></table>
+<pre><a name="l1"><span class="ln">1    </span></a><span class="s0"># $Id: parts.py 8826 2021-09-11 11:18:39Z milde $</span>
+<a name="l2"><span class="ln">2    </span></a><span class="s0"># Authors: David Goodger &lt;goodger@python.org&gt;; Ueli Schlaepfer; Dmitry Jemerov</span>
+<a name="l3"><span class="ln">3    </span></a><span class="s0"># Copyright: This module has been placed in the public domain.</span>
+<a name="l4"><span class="ln">4    </span></a>
+<a name="l5"><span class="ln">5    </span></a><span class="s2">&quot;&quot;&quot; 
+<a name="l6"><span class="ln">6    </span></a>Transforms related to document parts. 
+<a name="l7"><span class="ln">7    </span></a>&quot;&quot;&quot;</span>
+<a name="l8"><span class="ln">8    </span></a>
+<a name="l9"><span class="ln">9    </span></a><span class="s1">__docformat__ = </span><span class="s3">'reStructuredText'</span>
+<a name="l10"><span class="ln">10   </span></a>
+<a name="l11"><span class="ln">11   </span></a>
+<a name="l12"><span class="ln">12   </span></a><span class="s4">import </span><span class="s1">re</span>
+<a name="l13"><span class="ln">13   </span></a><span class="s4">import </span><span class="s1">sys</span>
+<a name="l14"><span class="ln">14   </span></a><span class="s4">from </span><span class="s1">docutils </span><span class="s4">import </span><span class="s1">nodes</span><span class="s4">, </span><span class="s1">utils</span>
+<a name="l15"><span class="ln">15   </span></a><span class="s4">from </span><span class="s1">docutils.transforms </span><span class="s4">import </span><span class="s1">TransformError</span><span class="s4">, </span><span class="s1">Transform</span>
+<a name="l16"><span class="ln">16   </span></a>
+<a name="l17"><span class="ln">17   </span></a>
+<a name="l18"><span class="ln">18   </span></a><span class="s4">class </span><span class="s1">SectNum(Transform):</span>
+<a name="l19"><span class="ln">19   </span></a>
+<a name="l20"><span class="ln">20   </span></a>    <span class="s2">&quot;&quot;&quot; 
+<a name="l21"><span class="ln">21   </span></a>    Automatically assigns numbers to the titles of document sections. 
+<a name="l22"><span class="ln">22   </span></a> 
+<a name="l23"><span class="ln">23   </span></a>    It is possible to limit the maximum section level for which the numbers 
+<a name="l24"><span class="ln">24   </span></a>    are added.  For those sections that are auto-numbered, the &quot;autonum&quot; 
+<a name="l25"><span class="ln">25   </span></a>    attribute is set, informing the contents table generator that a different 
+<a name="l26"><span class="ln">26   </span></a>    form of the TOC should be used. 
+<a name="l27"><span class="ln">27   </span></a>    &quot;&quot;&quot;</span>
+<a name="l28"><span class="ln">28   </span></a>
+<a name="l29"><span class="ln">29   </span></a>    <span class="s1">default_priority = </span><span class="s5">710</span>
+<a name="l30"><span class="ln">30   </span></a>    <span class="s3">&quot;&quot;&quot;Should be applied before `Contents`.&quot;&quot;&quot;</span>
+<a name="l31"><span class="ln">31   </span></a>
+<a name="l32"><span class="ln">32   </span></a>    <span class="s4">def </span><span class="s1">apply(self):</span>
+<a name="l33"><span class="ln">33   </span></a>        <span class="s1">self.maxdepth = self.startnode.details.get(</span><span class="s3">'depth'</span><span class="s4">, None</span><span class="s1">)</span>
+<a name="l34"><span class="ln">34   </span></a>        <span class="s1">self.startvalue = self.startnode.details.get(</span><span class="s3">'start'</span><span class="s4">, </span><span class="s5">1</span><span class="s1">)</span>
+<a name="l35"><span class="ln">35   </span></a>        <span class="s1">self.prefix = self.startnode.details.get(</span><span class="s3">'prefix'</span><span class="s4">, </span><span class="s3">''</span><span class="s1">)</span>
+<a name="l36"><span class="ln">36   </span></a>        <span class="s1">self.suffix = self.startnode.details.get(</span><span class="s3">'suffix'</span><span class="s4">, </span><span class="s3">''</span><span class="s1">)</span>
+<a name="l37"><span class="ln">37   </span></a>        <span class="s1">self.startnode.parent.remove(self.startnode)</span>
+<a name="l38"><span class="ln">38   </span></a>        <span class="s4">if </span><span class="s1">self.document.settings.sectnum_xform:</span>
+<a name="l39"><span class="ln">39   </span></a>            <span class="s4">if </span><span class="s1">self.maxdepth </span><span class="s4">is None</span><span class="s1">:</span>
+<a name="l40"><span class="ln">40   </span></a>                <span class="s1">self.maxdepth = sys.maxsize</span>
+<a name="l41"><span class="ln">41   </span></a>            <span class="s1">self.update_section_numbers(self.document)</span>
+<a name="l42"><span class="ln">42   </span></a>        <span class="s4">else</span><span class="s1">: </span><span class="s0"># store details for eventual section numbering by the writer</span>
+<a name="l43"><span class="ln">43   </span></a>            <span class="s1">self.document.settings.sectnum_depth = self.maxdepth</span>
+<a name="l44"><span class="ln">44   </span></a>            <span class="s1">self.document.settings.sectnum_start = self.startvalue</span>
+<a name="l45"><span class="ln">45   </span></a>            <span class="s1">self.document.settings.sectnum_prefix = self.prefix</span>
+<a name="l46"><span class="ln">46   </span></a>            <span class="s1">self.document.settings.sectnum_suffix = self.suffix</span>
+<a name="l47"><span class="ln">47   </span></a>
+<a name="l48"><span class="ln">48   </span></a>    <span class="s4">def </span><span class="s1">update_section_numbers(self</span><span class="s4">, </span><span class="s1">node</span><span class="s4">, </span><span class="s1">prefix=()</span><span class="s4">, </span><span class="s1">depth=</span><span class="s5">0</span><span class="s1">):</span>
+<a name="l49"><span class="ln">49   </span></a>        <span class="s1">depth += </span><span class="s5">1</span>
+<a name="l50"><span class="ln">50   </span></a>        <span class="s4">if </span><span class="s1">prefix:</span>
+<a name="l51"><span class="ln">51   </span></a>            <span class="s1">sectnum = </span><span class="s5">1</span>
+<a name="l52"><span class="ln">52   </span></a>        <span class="s4">else</span><span class="s1">:</span>
+<a name="l53"><span class="ln">53   </span></a>            <span class="s1">sectnum = self.startvalue</span>
+<a name="l54"><span class="ln">54   </span></a>        <span class="s4">for </span><span class="s1">child </span><span class="s4">in </span><span class="s1">node:</span>
+<a name="l55"><span class="ln">55   </span></a>            <span class="s4">if </span><span class="s1">isinstance(child</span><span class="s4">, </span><span class="s1">nodes.section):</span>
+<a name="l56"><span class="ln">56   </span></a>                <span class="s1">numbers = prefix + (str(sectnum)</span><span class="s4">,</span><span class="s1">)</span>
+<a name="l57"><span class="ln">57   </span></a>                <span class="s1">title = child[</span><span class="s5">0</span><span class="s1">]</span>
+<a name="l58"><span class="ln">58   </span></a>                <span class="s0"># Use &amp;nbsp; for spacing:</span>
+<a name="l59"><span class="ln">59   </span></a>                <span class="s1">generated = nodes.generated(</span>
+<a name="l60"><span class="ln">60   </span></a>                    <span class="s3">''</span><span class="s4">, </span><span class="s1">(self.prefix + </span><span class="s3">'.'</span><span class="s1">.join(numbers) + self.suffix</span>
+<a name="l61"><span class="ln">61   </span></a>                         <span class="s1">+  </span><span class="s3">u'</span><span class="s4">\u00a0</span><span class="s3">' </span><span class="s1">* </span><span class="s5">3</span><span class="s1">)</span><span class="s4">,</span>
+<a name="l62"><span class="ln">62   </span></a>                    <span class="s1">classes=[</span><span class="s3">'sectnum'</span><span class="s1">])</span>
+<a name="l63"><span class="ln">63   </span></a>                <span class="s1">title.insert(</span><span class="s5">0</span><span class="s4">, </span><span class="s1">generated)</span>
+<a name="l64"><span class="ln">64   </span></a>                <span class="s1">title[</span><span class="s3">'auto'</span><span class="s1">] = </span><span class="s5">1</span>
+<a name="l65"><span class="ln">65   </span></a>                <span class="s4">if </span><span class="s1">depth &lt; self.maxdepth:</span>
+<a name="l66"><span class="ln">66   </span></a>                    <span class="s1">self.update_section_numbers(child</span><span class="s4">, </span><span class="s1">numbers</span><span class="s4">, </span><span class="s1">depth)</span>
+<a name="l67"><span class="ln">67   </span></a>                <span class="s1">sectnum += </span><span class="s5">1</span>
+<a name="l68"><span class="ln">68   </span></a>
+<a name="l69"><span class="ln">69   </span></a>
+<a name="l70"><span class="ln">70   </span></a><span class="s4">class </span><span class="s1">Contents(Transform):</span>
+<a name="l71"><span class="ln">71   </span></a>
+<a name="l72"><span class="ln">72   </span></a>    <span class="s2">&quot;&quot;&quot; 
+<a name="l73"><span class="ln">73   </span></a>    This transform generates a table of contents from the entire document tree 
+<a name="l74"><span class="ln">74   </span></a>    or from a single branch.  It locates &quot;section&quot; elements and builds them 
+<a name="l75"><span class="ln">75   </span></a>    into a nested bullet list, which is placed within a &quot;topic&quot; created by the 
+<a name="l76"><span class="ln">76   </span></a>    contents directive.  A title is either explicitly specified, taken from 
+<a name="l77"><span class="ln">77   </span></a>    the appropriate language module, or omitted (local table of contents). 
+<a name="l78"><span class="ln">78   </span></a>    The depth may be specified.  Two-way references between the table of 
+<a name="l79"><span class="ln">79   </span></a>    contents and section titles are generated (requires Writer support). 
+<a name="l80"><span class="ln">80   </span></a> 
+<a name="l81"><span class="ln">81   </span></a>    This transform requires a startnode, which contains generation 
+<a name="l82"><span class="ln">82   </span></a>    options and provides the location for the generated table of contents (the 
+<a name="l83"><span class="ln">83   </span></a>    startnode is replaced by the table of contents &quot;topic&quot;). 
+<a name="l84"><span class="ln">84   </span></a>    &quot;&quot;&quot;</span>
+<a name="l85"><span class="ln">85   </span></a>
+<a name="l86"><span class="ln">86   </span></a>    <span class="s1">default_priority = </span><span class="s5">720</span>
+<a name="l87"><span class="ln">87   </span></a>
+<a name="l88"><span class="ln">88   </span></a>    <span class="s4">def </span><span class="s1">apply(self):</span>
+<a name="l89"><span class="ln">89   </span></a>        <span class="s0"># let the writer (or output software) build the contents list?</span>
+<a name="l90"><span class="ln">90   </span></a>        <span class="s1">toc_by_writer = getattr(self.document.settings</span><span class="s4">, </span><span class="s3">'use_latex_toc'</span><span class="s4">, False</span><span class="s1">)</span>
+<a name="l91"><span class="ln">91   </span></a>        <span class="s1">details = self.startnode.details</span>
+<a name="l92"><span class="ln">92   </span></a>        <span class="s4">if </span><span class="s3">'local' </span><span class="s4">in </span><span class="s1">details:</span>
+<a name="l93"><span class="ln">93   </span></a>            <span class="s1">startnode = self.startnode.parent.parent</span>
+<a name="l94"><span class="ln">94   </span></a>            <span class="s4">while not </span><span class="s1">(isinstance(startnode</span><span class="s4">, </span><span class="s1">nodes.section)</span>
+<a name="l95"><span class="ln">95   </span></a>                       <span class="s4">or </span><span class="s1">isinstance(startnode</span><span class="s4">, </span><span class="s1">nodes.document)):</span>
+<a name="l96"><span class="ln">96   </span></a>                <span class="s0"># find the ToC root: a direct ancestor of startnode</span>
+<a name="l97"><span class="ln">97   </span></a>                <span class="s1">startnode = startnode.parent</span>
+<a name="l98"><span class="ln">98   </span></a>        <span class="s4">else</span><span class="s1">:</span>
+<a name="l99"><span class="ln">99   </span></a>            <span class="s1">startnode = self.document</span>
+<a name="l100"><span class="ln">100  </span></a>        <span class="s1">self.toc_id = self.startnode.parent[</span><span class="s3">'ids'</span><span class="s1">][</span><span class="s5">0</span><span class="s1">]</span>
+<a name="l101"><span class="ln">101  </span></a>        <span class="s4">if </span><span class="s3">'backlinks' </span><span class="s4">in </span><span class="s1">details:</span>
+<a name="l102"><span class="ln">102  </span></a>            <span class="s1">self.backlinks = details[</span><span class="s3">'backlinks'</span><span class="s1">]</span>
+<a name="l103"><span class="ln">103  </span></a>        <span class="s4">else</span><span class="s1">:</span>
+<a name="l104"><span class="ln">104  </span></a>            <span class="s1">self.backlinks = self.document.settings.toc_backlinks</span>
+<a name="l105"><span class="ln">105  </span></a>        <span class="s4">if </span><span class="s1">toc_by_writer:</span>
+<a name="l106"><span class="ln">106  </span></a>            <span class="s0"># move customization settings to the parent node</span>
+<a name="l107"><span class="ln">107  </span></a>            <span class="s1">self.startnode.parent.attributes.update(details)</span>
+<a name="l108"><span class="ln">108  </span></a>            <span class="s1">self.startnode.parent.remove(self.startnode)</span>
+<a name="l109"><span class="ln">109  </span></a>        <span class="s4">else</span><span class="s1">:</span>
+<a name="l110"><span class="ln">110  </span></a>            <span class="s1">contents = self.build_contents(startnode)</span>
+<a name="l111"><span class="ln">111  </span></a>            <span class="s4">if </span><span class="s1">len(contents):</span>
+<a name="l112"><span class="ln">112  </span></a>                <span class="s1">self.startnode.replace_self(contents)</span>
+<a name="l113"><span class="ln">113  </span></a>            <span class="s4">else</span><span class="s1">:</span>
+<a name="l114"><span class="ln">114  </span></a>                <span class="s1">self.startnode.parent.parent.remove(self.startnode.parent)</span>
+<a name="l115"><span class="ln">115  </span></a>
+<a name="l116"><span class="ln">116  </span></a>    <span class="s4">def </span><span class="s1">build_contents(self</span><span class="s4">, </span><span class="s1">node</span><span class="s4">, </span><span class="s1">level=</span><span class="s5">0</span><span class="s1">):</span>
+<a name="l117"><span class="ln">117  </span></a>        <span class="s1">level += </span><span class="s5">1</span>
+<a name="l118"><span class="ln">118  </span></a>        <span class="s1">sections = [sect </span><span class="s4">for </span><span class="s1">sect </span><span class="s4">in </span><span class="s1">node </span><span class="s4">if </span><span class="s1">isinstance(sect</span><span class="s4">, </span><span class="s1">nodes.section)]</span>
+<a name="l119"><span class="ln">119  </span></a>        <span class="s1">entries = []</span>
+<a name="l120"><span class="ln">120  </span></a>        <span class="s1">autonum = </span><span class="s5">0</span>
+<a name="l121"><span class="ln">121  </span></a>        <span class="s1">depth = self.startnode.details.get(</span><span class="s3">'depth'</span><span class="s4">, </span><span class="s1">sys.maxsize)</span>
+<a name="l122"><span class="ln">122  </span></a>        <span class="s4">for </span><span class="s1">section </span><span class="s4">in </span><span class="s1">sections:</span>
+<a name="l123"><span class="ln">123  </span></a>            <span class="s1">title = section[</span><span class="s5">0</span><span class="s1">]</span>
+<a name="l124"><span class="ln">124  </span></a>            <span class="s1">auto = title.get(</span><span class="s3">'auto'</span><span class="s1">)    </span><span class="s0"># May be set by SectNum.</span>
+<a name="l125"><span class="ln">125  </span></a>            <span class="s1">entrytext = self.copy_and_filter(title)</span>
+<a name="l126"><span class="ln">126  </span></a>            <span class="s1">reference = nodes.reference(</span><span class="s3">''</span><span class="s4">, </span><span class="s3">''</span><span class="s4">, </span><span class="s1">refid=section[</span><span class="s3">'ids'</span><span class="s1">][</span><span class="s5">0</span><span class="s1">]</span><span class="s4">,</span>
+<a name="l127"><span class="ln">127  </span></a>                                        <span class="s1">*entrytext)</span>
+<a name="l128"><span class="ln">128  </span></a>            <span class="s1">ref_id = self.document.set_id(reference</span><span class="s4">,</span>
+<a name="l129"><span class="ln">129  </span></a>                                          <span class="s1">suggested_prefix=</span><span class="s3">'toc-entry'</span><span class="s1">)</span>
+<a name="l130"><span class="ln">130  </span></a>            <span class="s1">entry = nodes.paragraph(</span><span class="s3">''</span><span class="s4">, </span><span class="s3">''</span><span class="s4">, </span><span class="s1">reference)</span>
+<a name="l131"><span class="ln">131  </span></a>            <span class="s1">item = nodes.list_item(</span><span class="s3">''</span><span class="s4">, </span><span class="s1">entry)</span>
+<a name="l132"><span class="ln">132  </span></a>            <span class="s4">if </span><span class="s1">( self.backlinks </span><span class="s4">in </span><span class="s1">(</span><span class="s3">'entry'</span><span class="s4">, </span><span class="s3">'top'</span><span class="s1">)</span>
+<a name="l133"><span class="ln">133  </span></a>                 <span class="s4">and </span><span class="s1">title.next_node(nodes.reference) </span><span class="s4">is None</span><span class="s1">):</span>
+<a name="l134"><span class="ln">134  </span></a>                <span class="s4">if </span><span class="s1">self.backlinks == </span><span class="s3">'entry'</span><span class="s1">:</span>
+<a name="l135"><span class="ln">135  </span></a>                    <span class="s1">title[</span><span class="s3">'refid'</span><span class="s1">] = ref_id</span>
+<a name="l136"><span class="ln">136  </span></a>                <span class="s4">elif </span><span class="s1">self.backlinks == </span><span class="s3">'top'</span><span class="s1">:</span>
+<a name="l137"><span class="ln">137  </span></a>                    <span class="s1">title[</span><span class="s3">'refid'</span><span class="s1">] = self.toc_id</span>
+<a name="l138"><span class="ln">138  </span></a>            <span class="s4">if </span><span class="s1">level &lt; depth:</span>
+<a name="l139"><span class="ln">139  </span></a>                <span class="s1">subsects = self.build_contents(section</span><span class="s4">, </span><span class="s1">level)</span>
+<a name="l140"><span class="ln">140  </span></a>                <span class="s1">item += subsects</span>
+<a name="l141"><span class="ln">141  </span></a>            <span class="s1">entries.append(item)</span>
+<a name="l142"><span class="ln">142  </span></a>        <span class="s4">if </span><span class="s1">entries:</span>
+<a name="l143"><span class="ln">143  </span></a>            <span class="s1">contents = nodes.bullet_list(</span><span class="s3">''</span><span class="s4">, </span><span class="s1">*entries)</span>
+<a name="l144"><span class="ln">144  </span></a>            <span class="s4">if </span><span class="s1">auto: </span><span class="s0"># auto-numbered sections</span>
+<a name="l145"><span class="ln">145  </span></a>                <span class="s1">contents[</span><span class="s3">'classes'</span><span class="s1">].append(</span><span class="s3">'auto-toc'</span><span class="s1">) </span><span class="s0"># auto-numbered sections</span>
+<a name="l146"><span class="ln">146  </span></a>            <span class="s4">return </span><span class="s1">contents</span>
+<a name="l147"><span class="ln">147  </span></a>        <span class="s4">else</span><span class="s1">:</span>
+<a name="l148"><span class="ln">148  </span></a>            <span class="s4">return </span><span class="s1">[]</span>
+<a name="l149"><span class="ln">149  </span></a>
+<a name="l150"><span class="ln">150  </span></a>    <span class="s4">def </span><span class="s1">copy_and_filter(self</span><span class="s4">, </span><span class="s1">node):</span>
+<a name="l151"><span class="ln">151  </span></a>        <span class="s2">&quot;&quot;&quot;Return a copy of a title, with references, images, etc. removed.&quot;&quot;&quot;</span>
+<a name="l152"><span class="ln">152  </span></a>        <span class="s1">visitor = ContentsFilter(self.document)</span>
+<a name="l153"><span class="ln">153  </span></a>        <span class="s1">node.walkabout(visitor)</span>
+<a name="l154"><span class="ln">154  </span></a>        <span class="s4">return </span><span class="s1">visitor.get_entry_text()</span>
+<a name="l155"><span class="ln">155  </span></a>
+<a name="l156"><span class="ln">156  </span></a>
+<a name="l157"><span class="ln">157  </span></a><span class="s4">class </span><span class="s1">ContentsFilter(nodes.TreeCopyVisitor):</span>
+<a name="l158"><span class="ln">158  </span></a>
+<a name="l159"><span class="ln">159  </span></a>    <span class="s4">def </span><span class="s1">get_entry_text(self):</span>
+<a name="l160"><span class="ln">160  </span></a>        <span class="s4">return </span><span class="s1">self.get_tree_copy().children</span>
+<a name="l161"><span class="ln">161  </span></a>
+<a name="l162"><span class="ln">162  </span></a>    <span class="s4">def </span><span class="s1">visit_citation_reference(self</span><span class="s4">, </span><span class="s1">node):</span>
+<a name="l163"><span class="ln">163  </span></a>        <span class="s4">raise </span><span class="s1">nodes.SkipNode</span>
+<a name="l164"><span class="ln">164  </span></a>
+<a name="l165"><span class="ln">165  </span></a>    <span class="s4">def </span><span class="s1">visit_footnote_reference(self</span><span class="s4">, </span><span class="s1">node):</span>
+<a name="l166"><span class="ln">166  </span></a>        <span class="s4">raise </span><span class="s1">nodes.SkipNode</span>
+<a name="l167"><span class="ln">167  </span></a>
+<a name="l168"><span class="ln">168  </span></a>    <span class="s4">def </span><span class="s1">visit_image(self</span><span class="s4">, </span><span class="s1">node):</span>
+<a name="l169"><span class="ln">169  </span></a>        <span class="s4">if </span><span class="s1">node.hasattr(</span><span class="s3">'alt'</span><span class="s1">):</span>
+<a name="l170"><span class="ln">170  </span></a>            <span class="s1">self.parent.append(nodes.Text(node[</span><span class="s3">'alt'</span><span class="s1">]))</span>
+<a name="l171"><span class="ln">171  </span></a>        <span class="s4">raise </span><span class="s1">nodes.SkipNode</span>
+<a name="l172"><span class="ln">172  </span></a>
+<a name="l173"><span class="ln">173  </span></a>    <span class="s4">def </span><span class="s1">ignore_node_but_process_children(self</span><span class="s4">, </span><span class="s1">node):</span>
+<a name="l174"><span class="ln">174  </span></a>        <span class="s4">raise </span><span class="s1">nodes.SkipDeparture</span>
+<a name="l175"><span class="ln">175  </span></a>
+<a name="l176"><span class="ln">176  </span></a>    <span class="s1">visit_problematic = ignore_node_but_process_children</span>
+<a name="l177"><span class="ln">177  </span></a>    <span class="s1">visit_reference = ignore_node_but_process_children</span>
+<a name="l178"><span class="ln">178  </span></a>    <span class="s1">visit_target = ignore_node_but_process_children</span>
+<a name="l179"><span class="ln">179  </span></a></pre>
+</body>
+</html>

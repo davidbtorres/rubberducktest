@@ -1,0 +1,92 @@
+<html>
+<head>
+<title>test_audio.py</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type="text/css">
+.s0 { color: #629755; font-style: italic;}
+.s1 { color: #a9b7c6;}
+.s2 { color: #cc7832;}
+.s3 { color: #6a8759;}
+.s4 { color: #6897bb;}
+.s5 { color: #808080;}
+.ln { color: #606366; font-weight: normal; font-style: normal; }
+</style>
+</head>
+<body bgcolor="#2b2b2b">
+<table CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#606060" >
+<tr><td><center>
+<font face="Arial, Helvetica" color="#000000">
+test_audio.py</font>
+</center></td></tr></table>
+<pre><a name="l1"><span class="ln">1    </span></a><span class="s0">''' 
+<a name="l2"><span class="ln">2    </span></a>Audio tests 
+<a name="l3"><span class="ln">3    </span></a>=========== 
+<a name="l4"><span class="ln">4    </span></a>'''</span>
+<a name="l5"><span class="ln">5    </span></a>
+<a name="l6"><span class="ln">6    </span></a><span class="s2">import </span><span class="s1">unittest</span>
+<a name="l7"><span class="ln">7    </span></a><span class="s2">import </span><span class="s1">os</span>
+<a name="l8"><span class="ln">8    </span></a><span class="s2">import </span><span class="s1">pytest</span>
+<a name="l9"><span class="ln">9    </span></a><span class="s2">if </span><span class="s1">os.environ.get(</span><span class="s3">'KIVY_TEST_AUDIO'</span><span class="s1">) == </span><span class="s3">'0'</span><span class="s1">:</span>
+<a name="l10"><span class="ln">10   </span></a>    <span class="s1">pytestmark = pytest.mark.skip(</span><span class="s3">&quot;Audio is not available&quot;</span><span class="s1">)</span>
+<a name="l11"><span class="ln">11   </span></a>
+<a name="l12"><span class="ln">12   </span></a><span class="s1">SAMPLE_FILE = os.path.join(os.path.dirname(__file__)</span><span class="s2">, </span><span class="s3">'sample1.ogg'</span><span class="s1">)</span>
+<a name="l13"><span class="ln">13   </span></a><span class="s1">SAMPLE_LENGTH = </span><span class="s4">1.402</span>
+<a name="l14"><span class="ln">14   </span></a><span class="s1">DELTA = SAMPLE_LENGTH * </span><span class="s4">0.01</span>
+<a name="l15"><span class="ln">15   </span></a><span class="s1">DELAY = </span><span class="s4">0.2</span>
+<a name="l16"><span class="ln">16   </span></a>
+<a name="l17"><span class="ln">17   </span></a>
+<a name="l18"><span class="ln">18   </span></a><span class="s2">class </span><span class="s1">AudioTestCase(unittest.TestCase):</span>
+<a name="l19"><span class="ln">19   </span></a>
+<a name="l20"><span class="ln">20   </span></a>    <span class="s2">def </span><span class="s1">get_sound(self):</span>
+<a name="l21"><span class="ln">21   </span></a>        <span class="s2">import </span><span class="s1">os</span>
+<a name="l22"><span class="ln">22   </span></a>        <span class="s2">assert </span><span class="s1">os.path.exists(SAMPLE_FILE)</span>
+<a name="l23"><span class="ln">23   </span></a>        <span class="s2">from </span><span class="s1">kivy.core </span><span class="s2">import </span><span class="s1">audio</span>
+<a name="l24"><span class="ln">24   </span></a>        <span class="s2">return </span><span class="s1">audio.SoundLoader.load(SAMPLE_FILE)</span>
+<a name="l25"><span class="ln">25   </span></a>
+<a name="l26"><span class="ln">26   </span></a>    <span class="s2">def </span><span class="s1">test_length_simple(self):</span>
+<a name="l27"><span class="ln">27   </span></a>        <span class="s1">sound = self.get_sound()</span>
+<a name="l28"><span class="ln">28   </span></a>        <span class="s1">volume = sound.volume = </span><span class="s4">0.75</span>
+<a name="l29"><span class="ln">29   </span></a>        <span class="s1">length = sound.length</span>
+<a name="l30"><span class="ln">30   </span></a>        <span class="s1">self.assertAlmostEqual(SAMPLE_LENGTH</span><span class="s2">, </span><span class="s1">length</span><span class="s2">, </span><span class="s1">delta=DELTA)</span>
+<a name="l31"><span class="ln">31   </span></a>        <span class="s5"># ensure that the gstreamer play/stop doesn't mess up the volume</span>
+<a name="l32"><span class="ln">32   </span></a>        <span class="s2">assert </span><span class="s1">volume == sound.volume</span>
+<a name="l33"><span class="ln">33   </span></a>
+<a name="l34"><span class="ln">34   </span></a>    <span class="s2">def </span><span class="s1">test_length_playing(self):</span>
+<a name="l35"><span class="ln">35   </span></a>        <span class="s2">import </span><span class="s1">time</span>
+<a name="l36"><span class="ln">36   </span></a>        <span class="s1">sound = self.get_sound()</span>
+<a name="l37"><span class="ln">37   </span></a>        <span class="s1">sound.play()</span>
+<a name="l38"><span class="ln">38   </span></a>        <span class="s2">try</span><span class="s1">:</span>
+<a name="l39"><span class="ln">39   </span></a>            <span class="s1">time.sleep(DELAY)</span>
+<a name="l40"><span class="ln">40   </span></a>            <span class="s1">length = sound.length</span>
+<a name="l41"><span class="ln">41   </span></a>            <span class="s1">self.assertAlmostEqual(SAMPLE_LENGTH</span><span class="s2">, </span><span class="s1">length</span><span class="s2">, </span><span class="s1">delta=DELTA)</span>
+<a name="l42"><span class="ln">42   </span></a>        <span class="s2">finally</span><span class="s1">:</span>
+<a name="l43"><span class="ln">43   </span></a>            <span class="s1">sound.stop()</span>
+<a name="l44"><span class="ln">44   </span></a>        <span class="s1">self.assertAlmostEqual(SAMPLE_LENGTH</span><span class="s2">, </span><span class="s1">length</span><span class="s2">, </span><span class="s1">delta=DELTA)</span>
+<a name="l45"><span class="ln">45   </span></a>
+<a name="l46"><span class="ln">46   </span></a>    <span class="s2">def </span><span class="s1">test_length_stopped(self):</span>
+<a name="l47"><span class="ln">47   </span></a>        <span class="s2">import </span><span class="s1">time</span>
+<a name="l48"><span class="ln">48   </span></a>        <span class="s1">sound = self.get_sound()</span>
+<a name="l49"><span class="ln">49   </span></a>        <span class="s1">sound.play()</span>
+<a name="l50"><span class="ln">50   </span></a>        <span class="s2">try</span><span class="s1">:</span>
+<a name="l51"><span class="ln">51   </span></a>            <span class="s1">time.sleep(DELAY)</span>
+<a name="l52"><span class="ln">52   </span></a>        <span class="s2">finally</span><span class="s1">:</span>
+<a name="l53"><span class="ln">53   </span></a>            <span class="s1">sound.stop()</span>
+<a name="l54"><span class="ln">54   </span></a>        <span class="s1">length = sound.length</span>
+<a name="l55"><span class="ln">55   </span></a>        <span class="s1">self.assertAlmostEqual(SAMPLE_LENGTH</span><span class="s2">, </span><span class="s1">length</span><span class="s2">, </span><span class="s1">delta=DELTA)</span>
+<a name="l56"><span class="ln">56   </span></a>
+<a name="l57"><span class="ln">57   </span></a>
+<a name="l58"><span class="ln">58   </span></a><span class="s2">class </span><span class="s1">AudioGstreamerTestCase(AudioTestCase):</span>
+<a name="l59"><span class="ln">59   </span></a>
+<a name="l60"><span class="ln">60   </span></a>    <span class="s2">def </span><span class="s1">make_sound(self</span><span class="s2">, </span><span class="s1">source):</span>
+<a name="l61"><span class="ln">61   </span></a>        <span class="s2">from </span><span class="s1">kivy.core.audio </span><span class="s2">import </span><span class="s1">audio_gstreamer</span>
+<a name="l62"><span class="ln">62   </span></a>        <span class="s2">return </span><span class="s1">audio_gstreamer.SoundGstreamer(source)</span>
+<a name="l63"><span class="ln">63   </span></a>
+<a name="l64"><span class="ln">64   </span></a>
+<a name="l65"><span class="ln">65   </span></a><span class="s2">class </span><span class="s1">AudioPygameTestCase(AudioTestCase):</span>
+<a name="l66"><span class="ln">66   </span></a>
+<a name="l67"><span class="ln">67   </span></a>    <span class="s2">def </span><span class="s1">make_sound(self</span><span class="s2">, </span><span class="s1">source):</span>
+<a name="l68"><span class="ln">68   </span></a>        <span class="s2">from </span><span class="s1">kivy.core.audio </span><span class="s2">import </span><span class="s1">audio_pygame</span>
+<a name="l69"><span class="ln">69   </span></a>        <span class="s2">return </span><span class="s1">audio_pygame.SoundPygame(source)</span>
+<a name="l70"><span class="ln">70   </span></a></pre>
+</body>
+</html>

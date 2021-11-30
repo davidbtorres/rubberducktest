@@ -1,0 +1,36 @@
+<html>
+<head>
+<title>window.py</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type="text/css">
+.s0 { color: #808080;}
+.s1 { color: #a9b7c6;}
+.s2 { color: #cc7832;}
+.s3 { color: #629755; font-style: italic;}
+.s4 { color: #6897bb;}
+.ln { color: #606366; font-weight: normal; font-style: normal; }
+</style>
+</head>
+<body bgcolor="#2b2b2b">
+<table CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#606060" >
+<tr><td><center>
+<font face="Arial, Helvetica" color="#000000">
+window.py</font>
+</center></td></tr></table>
+<pre><a name="l1"><span class="ln">1    </span></a><span class="s0"># Framework Window classes.</span>
+<a name="l2"><span class="ln">2    </span></a>
+<a name="l3"><span class="ln">3    </span></a><span class="s0"># Most Pythonwin windows should use these classes rather than</span>
+<a name="l4"><span class="ln">4    </span></a><span class="s0"># the raw MFC ones if they want Pythonwin specific functionality.</span>
+<a name="l5"><span class="ln">5    </span></a><span class="s2">import </span><span class="s1">pywin.mfc.window</span>
+<a name="l6"><span class="ln">6    </span></a><span class="s2">import </span><span class="s1">win32con</span>
+<a name="l7"><span class="ln">7    </span></a>
+<a name="l8"><span class="ln">8    </span></a>
+<a name="l9"><span class="ln">9    </span></a><span class="s2">class </span><span class="s1">MDIChildWnd(pywin.mfc.window.MDIChildWnd):</span>
+<a name="l10"><span class="ln">10   </span></a>    <span class="s2">def </span><span class="s1">AutoRestore(self):</span>
+<a name="l11"><span class="ln">11   </span></a>        <span class="s3">&quot;If the window is minimised or maximised, restore it.&quot;</span>
+<a name="l12"><span class="ln">12   </span></a>        <span class="s1">p = self.GetWindowPlacement()</span>
+<a name="l13"><span class="ln">13   </span></a>        <span class="s2">if </span><span class="s1">p[</span><span class="s4">1</span><span class="s1">] == win32con.SW_MINIMIZE </span><span class="s2">or </span><span class="s1">p[</span><span class="s4">1</span><span class="s1">] == win32con.SW_SHOWMINIMIZED:</span>
+<a name="l14"><span class="ln">14   </span></a>            <span class="s1">self.SetWindowPlacement(p[</span><span class="s4">0</span><span class="s1">]</span><span class="s2">, </span><span class="s1">win32con.SW_RESTORE</span><span class="s2">, </span><span class="s1">p[</span><span class="s4">2</span><span class="s1">]</span><span class="s2">, </span><span class="s1">p[</span><span class="s4">3</span><span class="s1">]</span><span class="s2">, </span><span class="s1">p[</span><span class="s4">4</span><span class="s1">])</span>
+<a name="l15"><span class="ln">15   </span></a></pre>
+</body>
+</html>

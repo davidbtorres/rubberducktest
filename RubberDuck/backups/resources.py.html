@@ -1,0 +1,103 @@
+<html>
+<head>
+<title>resources.py</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type="text/css">
+.s0 { color: #629755; font-style: italic;}
+.s1 { color: #a9b7c6;}
+.s2 { color: #6a8759;}
+.s3 { color: #cc7832;}
+.s4 { color: #6897bb;}
+.ln { color: #606366; font-weight: normal; font-style: normal; }
+</style>
+</head>
+<body bgcolor="#2b2b2b">
+<table CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#606060" >
+<tr><td><center>
+<font face="Arial, Helvetica" color="#000000">
+resources.py</font>
+</center></td></tr></table>
+<pre><a name="l1"><span class="ln">1    </span></a><span class="s0">''' 
+<a name="l2"><span class="ln">2    </span></a>Resources management 
+<a name="l3"><span class="ln">3    </span></a>==================== 
+<a name="l4"><span class="ln">4    </span></a> 
+<a name="l5"><span class="ln">5    </span></a>Resource management can be a pain if you have multiple paths and projects. 
+<a name="l6"><span class="ln">6    </span></a>Kivy offers 2 functions for searching for specific resources across a list 
+<a name="l7"><span class="ln">7    </span></a>of paths. 
+<a name="l8"><span class="ln">8    </span></a> 
+<a name="l9"><span class="ln">9    </span></a>Resource lookup 
+<a name="l10"><span class="ln">10   </span></a>--------------- 
+<a name="l11"><span class="ln">11   </span></a> 
+<a name="l12"><span class="ln">12   </span></a>When Kivy looks for a resource e.g. an image or a kv file, it searches through 
+<a name="l13"><span class="ln">13   </span></a>a predetermined set of folders. You can modify this folder list using the 
+<a name="l14"><span class="ln">14   </span></a>:meth:`resource_add_path` and :meth:`resource_remove_path` functions. 
+<a name="l15"><span class="ln">15   </span></a> 
+<a name="l16"><span class="ln">16   </span></a>Customizing Kivy 
+<a name="l17"><span class="ln">17   </span></a>---------------- 
+<a name="l18"><span class="ln">18   </span></a> 
+<a name="l19"><span class="ln">19   </span></a>These functions can also be helpful if you want to replace standard Kivy 
+<a name="l20"><span class="ln">20   </span></a>resources with your own. For example, if you wish to customize or re-style 
+<a name="l21"><span class="ln">21   </span></a>Kivy, you can force your *style.kv* or *data/defaulttheme-0.png* files to be 
+<a name="l22"><span class="ln">22   </span></a>used in preference to the defaults simply by adding the path to your preferred 
+<a name="l23"><span class="ln">23   </span></a>alternatives via the :meth:`resource_add_path` method. 
+<a name="l24"><span class="ln">24   </span></a> 
+<a name="l25"><span class="ln">25   </span></a>As almost all Kivy resources are looked up using the :meth:`resource_find`, so 
+<a name="l26"><span class="ln">26   </span></a>you can use this approach to add fonts and keyboard layouts and to replace 
+<a name="l27"><span class="ln">27   </span></a>images and icons. 
+<a name="l28"><span class="ln">28   </span></a> 
+<a name="l29"><span class="ln">29   </span></a>'''</span>
+<a name="l30"><span class="ln">30   </span></a>
+<a name="l31"><span class="ln">31   </span></a><span class="s1">__all__ = (</span><span class="s2">'resource_find'</span><span class="s3">, </span><span class="s2">'resource_add_path'</span><span class="s3">, </span><span class="s2">'resource_remove_path'</span><span class="s1">)</span>
+<a name="l32"><span class="ln">32   </span></a>
+<a name="l33"><span class="ln">33   </span></a><span class="s3">from </span><span class="s1">os.path </span><span class="s3">import </span><span class="s1">join</span><span class="s3">, </span><span class="s1">dirname</span><span class="s3">, </span><span class="s1">exists</span><span class="s3">, </span><span class="s1">abspath</span>
+<a name="l34"><span class="ln">34   </span></a><span class="s3">from </span><span class="s1">kivy </span><span class="s3">import </span><span class="s1">kivy_data_dir</span>
+<a name="l35"><span class="ln">35   </span></a><span class="s3">from </span><span class="s1">kivy.utils </span><span class="s3">import </span><span class="s1">platform</span>
+<a name="l36"><span class="ln">36   </span></a><span class="s3">from </span><span class="s1">kivy.logger </span><span class="s3">import </span><span class="s1">Logger</span>
+<a name="l37"><span class="ln">37   </span></a><span class="s3">import </span><span class="s1">sys</span>
+<a name="l38"><span class="ln">38   </span></a><span class="s3">import </span><span class="s1">kivy</span>
+<a name="l39"><span class="ln">39   </span></a>
+<a name="l40"><span class="ln">40   </span></a><span class="s1">resource_paths = [</span><span class="s2">'.'</span><span class="s3">, </span><span class="s1">dirname(sys.argv[</span><span class="s4">0</span><span class="s1">])]</span>
+<a name="l41"><span class="ln">41   </span></a><span class="s3">if </span><span class="s1">platform == </span><span class="s2">'ios'</span><span class="s1">:</span>
+<a name="l42"><span class="ln">42   </span></a>    <span class="s1">resource_paths += [join(dirname(sys.argv[</span><span class="s4">0</span><span class="s1">])</span><span class="s3">, </span><span class="s2">'YourApp'</span><span class="s1">)]</span>
+<a name="l43"><span class="ln">43   </span></a><span class="s1">resource_paths += [dirname(kivy.__file__)</span><span class="s3">, </span><span class="s1">join(kivy_data_dir</span><span class="s3">, </span><span class="s2">'..'</span><span class="s1">)]</span>
+<a name="l44"><span class="ln">44   </span></a>
+<a name="l45"><span class="ln">45   </span></a>
+<a name="l46"><span class="ln">46   </span></a><span class="s3">def </span><span class="s1">resource_find(filename):</span>
+<a name="l47"><span class="ln">47   </span></a>    <span class="s0">'''Search for a resource in the list of paths. 
+<a name="l48"><span class="ln">48   </span></a>    Use resource_add_path to add a custom path to the search. 
+<a name="l49"><span class="ln">49   </span></a>    '''</span>
+<a name="l50"><span class="ln">50   </span></a>    <span class="s3">if not </span><span class="s1">filename:</span>
+<a name="l51"><span class="ln">51   </span></a>        <span class="s3">return</span>
+<a name="l52"><span class="ln">52   </span></a>    <span class="s3">if </span><span class="s1">filename[:</span><span class="s4">8</span><span class="s1">] == </span><span class="s2">'atlas://'</span><span class="s1">:</span>
+<a name="l53"><span class="ln">53   </span></a>        <span class="s3">return </span><span class="s1">filename</span>
+<a name="l54"><span class="ln">54   </span></a>    <span class="s3">if </span><span class="s1">exists(abspath(filename)):</span>
+<a name="l55"><span class="ln">55   </span></a>        <span class="s3">return </span><span class="s1">abspath(filename)</span>
+<a name="l56"><span class="ln">56   </span></a>    <span class="s3">for </span><span class="s1">path </span><span class="s3">in </span><span class="s1">reversed(resource_paths):</span>
+<a name="l57"><span class="ln">57   </span></a>        <span class="s1">output = abspath(join(path</span><span class="s3">, </span><span class="s1">filename))</span>
+<a name="l58"><span class="ln">58   </span></a>        <span class="s3">if </span><span class="s1">exists(output):</span>
+<a name="l59"><span class="ln">59   </span></a>            <span class="s3">return </span><span class="s1">output</span>
+<a name="l60"><span class="ln">60   </span></a>    <span class="s3">if </span><span class="s1">filename[:</span><span class="s4">5</span><span class="s1">] == </span><span class="s2">'data:'</span><span class="s1">:</span>
+<a name="l61"><span class="ln">61   </span></a>        <span class="s3">return </span><span class="s1">filename</span>
+<a name="l62"><span class="ln">62   </span></a>
+<a name="l63"><span class="ln">63   </span></a>
+<a name="l64"><span class="ln">64   </span></a><span class="s3">def </span><span class="s1">resource_add_path(path):</span>
+<a name="l65"><span class="ln">65   </span></a>    <span class="s0">'''Add a custom path to search in. 
+<a name="l66"><span class="ln">66   </span></a>    '''</span>
+<a name="l67"><span class="ln">67   </span></a>    <span class="s3">if </span><span class="s1">path </span><span class="s3">in </span><span class="s1">resource_paths:</span>
+<a name="l68"><span class="ln">68   </span></a>        <span class="s3">return</span>
+<a name="l69"><span class="ln">69   </span></a>    <span class="s1">Logger.debug(</span><span class="s2">'Resource: add &lt;%s&gt; in path list' </span><span class="s1">% path)</span>
+<a name="l70"><span class="ln">70   </span></a>    <span class="s1">resource_paths.append(path)</span>
+<a name="l71"><span class="ln">71   </span></a>
+<a name="l72"><span class="ln">72   </span></a>
+<a name="l73"><span class="ln">73   </span></a><span class="s3">def </span><span class="s1">resource_remove_path(path):</span>
+<a name="l74"><span class="ln">74   </span></a>    <span class="s0">'''Remove a search path. 
+<a name="l75"><span class="ln">75   </span></a> 
+<a name="l76"><span class="ln">76   </span></a>    .. versionadded:: 1.0.8 
+<a name="l77"><span class="ln">77   </span></a>    '''</span>
+<a name="l78"><span class="ln">78   </span></a>    <span class="s3">if </span><span class="s1">path </span><span class="s3">not in </span><span class="s1">resource_paths:</span>
+<a name="l79"><span class="ln">79   </span></a>        <span class="s3">return</span>
+<a name="l80"><span class="ln">80   </span></a>    <span class="s1">Logger.debug(</span><span class="s2">'Resource: remove &lt;%s&gt; from path list' </span><span class="s1">% path)</span>
+<a name="l81"><span class="ln">81   </span></a>    <span class="s1">resource_paths.remove(path)</span>
+<a name="l82"><span class="ln">82   </span></a></pre>
+</body>
+</html>

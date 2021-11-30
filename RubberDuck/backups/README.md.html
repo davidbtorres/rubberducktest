@@ -1,0 +1,169 @@
+<html>
+<head>
+<title>README.md</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type="text/css">
+.s0 { color: #a9b7c6;}
+.s1 { color: #a9b7c6;}
+.s2 { color: #cc7832;}
+.s3 { color: #808080;}
+.ln { color: #606366; font-weight: normal; font-style: normal; }
+</style>
+</head>
+<body bgcolor="#2b2b2b">
+<table CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#606060" >
+<tr><td><center>
+<font face="Arial, Helvetica" color="#000000">
+README.md</font>
+</center></td></tr></table>
+<pre><a name="l1"><span class="ln">1    </span></a><span class="s0">Generating the image test suite</span>
+<a name="l2"><span class="ln">2    </span></a><span class="s2">-------------------------------</span>
+<a name="l3"><span class="ln">3    </span></a>
+<a name="l4"><span class="ln">4    </span></a><span class="s0">On Linux/unix systems, you can use the </span><span class="s3">`</span><span class="s0">imagemagick-testsuite.sh</span><span class="s3">` </span><span class="s0">script</span>
+<a name="l5"><span class="ln">5    </span></a><span class="s0">to create an image test suite using the </span><span class="s3">`</span><span class="s0">convert</span><span class="s3">` </span><span class="s0">command line utility. You</span>
+<a name="l6"><span class="ln">6    </span></a><span class="s0">must have ImageMagick installed </span><span class="s1">(&quot;</span><span class="s0">apt install imagemagick</span><span class="s1">&quot; </span><span class="s0">on debian</span>
+<a name="l7"><span class="ln">7    </span></a><span class="s0">derivatives</span><span class="s1">)</span><span class="s0">. There is also a rule in the Makefile, </span><span class="s3">`</span><span class="s0">make image-testsuite</span><span class="s3">`</span><span class="s0">.</span>
+<a name="l8"><span class="ln">8    </span></a>
+<a name="l9"><span class="ln">9    </span></a><span class="s0">A more comprehensive test suite can be generated using Gimp </span><span class="s1">(</span><span class="s0">tested on</span>
+<a name="l10"><span class="ln">10   </span></a><span class="s0">version 2.8.18</span><span class="s1">)</span><span class="s0">. To install the plugin, copy </span><span class="s3">`</span><span class="s0">gimp28-testsuite.py</span><span class="s3">` </span><span class="s0">to your</span>
+<a name="l11"><span class="ln">11   </span></a><span class="s0">gimp plugins directory, on linux/unix systems usually </span><span class="s3">`</span><span class="s1">~</span><span class="s0">/.gimp-2.8/plug-ins</span><span class="s3">`</span><span class="s0">.</span>
+<a name="l12"><span class="ln">12   </span></a><span class="s0">You can find the plugin location via the Gimp menu </span><span class="s3">`</span><span class="s0">Edit</span><span class="s3">` </span><span class="s0">- </span><span class="s3">`</span><span class="s0">Preferences</span><span class="s3">` </span><span class="s0">-</span>
+<a name="l13"><span class="ln">13   </span></a><span class="s3">`</span><span class="s0">Folders</span><span class="s3">` </span><span class="s0">- </span><span class="s3">`</span><span class="s0">Plug-Ins</span><span class="s3">`</span><span class="s0">. Once installed, the plugin should appear in </span><span class="s1">&quot;</span><span class="s0">Tools</span><span class="s1">&quot;</span>
+<a name="l14"><span class="ln">14   </span></a><span class="s0">menu, named </span><span class="s1">&quot;</span><span class="s0">Kivy image testsuite</span><span class="s1">&quot;</span><span class="s0">.</span>
+<a name="l15"><span class="ln">15   </span></a>
+<a name="l16"><span class="ln">16   </span></a><span class="s0">Test images must be saved in the </span><span class="s3">`</span><span class="s0">kivy/tests/image-testsuite</span><span class="s3">` </span><span class="s0">directory,</span>
+<a name="l17"><span class="ln">17   </span></a><span class="s0">after this you can run the test. It is </span><span class="s1">(</span><span class="s0">currently</span><span class="s1">) </span><span class="s0">preferable to run it</span>
+<a name="l18"><span class="ln">18   </span></a><span class="s0">directly as a script, instead of via </span><span class="s3">`</span><span class="s0">make test</span><span class="s3">`</span><span class="s0">, since the latter won't</span>
+<a name="l19"><span class="ln">19   </span></a><span class="s0">give you useful debug output.</span>
+<a name="l20"><span class="ln">20   </span></a>
+<a name="l21"><span class="ln">21   </span></a>    <span class="s3">cd kivy/tests</span>
+<a name="l22"><span class="ln">22   </span></a>    <span class="s3">python test_imageloader.py | less</span>
+<a name="l23"><span class="ln">23   </span></a>
+<a name="l24"><span class="ln">24   </span></a><span class="s0">or to get only the summary report</span><span class="s1">:</span>
+<a name="l25"><span class="ln">25   </span></a>
+<a name="l26"><span class="ln">26   </span></a>    <span class="s3">python test_imageloader.py | grep REPORT | less</span>
+<a name="l27"><span class="ln">27   </span></a>
+<a name="l28"><span class="ln">28   </span></a>
+<a name="l29"><span class="ln">29   </span></a><span class="s0">Kivy ImageLoader testsuite</span>
+<a name="l30"><span class="ln">30   </span></a><span class="s2">--------------------------</span>
+<a name="l31"><span class="ln">31   </span></a>
+<a name="l32"><span class="ln">32   </span></a><span class="s0">These tools generate a wide range of images for testing Kivy's ImageLoaders.</span>
+<a name="l33"><span class="ln">33   </span></a><span class="s0">The pixel data is encoded in the file name, and reproduced </span><span class="s1">&quot;</span><span class="s0">from the sideline</span><span class="s1">&quot;</span>
+<a name="l34"><span class="ln">34   </span></a><span class="s0">in order to verify the pixel data loaded from file. This is used to expose</span>
+<a name="l35"><span class="ln">35   </span></a><span class="s0">issues in the Kivy core and underlying provider libraries.</span>
+<a name="l36"><span class="ln">36   </span></a>
+<a name="l37"><span class="ln">37   </span></a><span class="s0">The filenames consist of sections separated by an underscore </span><span class="s3">`</span><span class="s1">_</span><span class="s3">`</span><span class="s1">:</span>
+<a name="l38"><span class="ln">38   </span></a>
+<a name="l39"><span class="ln">39   </span></a>    <span class="s3">v0_ &lt;W&gt; x &lt;H&gt; _ &lt;pat&gt; _ &lt;alpha&gt; _ &lt;fmt&gt; _ &lt;testname&gt; _ &lt;encoder&gt; . &lt;ext&gt;</span>
+<a name="l40"><span class="ln">40   </span></a>
+<a name="l41"><span class="ln">41   </span></a><span class="s0">Variables are enclosed in pointy brackets. The leading </span><span class="s3">`</span><span class="s0">v0</span><span class="s1">_</span><span class="s3">` </span><span class="s0">indicates that</span>
+<a name="l42"><span class="ln">42   </span></a><span class="s0">it conforms to version 0 of the test protocol </span><span class="s1">(</span><span class="s0">described in this document</span><span class="s1">)</span>
+<a name="l43"><span class="ln">43   </span></a><span class="s0">and must be present.</span>
+<a name="l44"><span class="ln">44   </span></a>
+<a name="l45"><span class="ln">45   </span></a>    <span class="s3">v0_5x1_rgb_FF_PNG24_OPAQUE_magick.png</span>
+<a name="l46"><span class="ln">46   </span></a>
+<a name="l47"><span class="ln">47   </span></a><span class="s0">This is a 5x1 image, pattern is </span><span class="s1">&quot;</span><span class="s0">rgb</span><span class="s1">&quot;</span><span class="s0">, alpha is </span><span class="s1">&quot;</span><span class="s0">FF</span><span class="s1">&quot;</span><span class="s0">. </span><span class="s3">`</span><span class="s0">PNG24</span><span class="s3">` </span><span class="s0">is the internal</span>
+<a name="l48"><span class="ln">48   </span></a><span class="s0">file format name </span><span class="s1">(</span><span class="s0">ImageMagick-specific</span><span class="s1">)</span><span class="s0">, and </span><span class="s3">`</span><span class="s0">OPAQUE</span><span class="s3">` </span><span class="s0">is the test we  are</span>
+<a name="l49"><span class="ln">49   </span></a><span class="s0">performing </span><span class="s1">(</span><span class="s0">drawing opaque pixels only</span><span class="s1">)</span><span class="s0">, see test names below.</span>
+<a name="l50"><span class="ln">50   </span></a>
+<a name="l51"><span class="ln">51   </span></a><span class="s2">* </span><span class="s1">&lt;pattern&gt; indicates the pixel colors (in order), as they are drawn in the</span>
+<a name="l52"><span class="ln">52   </span></a>  <span class="s1">image file.</span>
+<a name="l53"><span class="ln">53   </span></a>
+<a name="l54"><span class="ln">54   </span></a><span class="s2">* </span><span class="s1">&lt;alpha&gt; is the global alpha from 00-FF (2 bytes, ascii) which is applied to</span>
+<a name="l55"><span class="ln">55   </span></a>  <span class="s1">all pixels except 't' (transparent) which have fixed alpha at 00</span>
+<a name="l56"><span class="ln">56   </span></a>
+<a name="l57"><span class="ln">57   </span></a><span class="s2">* </span><span class="s1">&lt;fmt&gt; (aka fmtinfo) is an encoder-specific string with information about the</span>
+<a name="l58"><span class="ln">58   </span></a>  <span class="s1">format or process that generated the file. For example, if the same image</span>
+<a name="l59"><span class="ln">59   </span></a>  <span class="s1">is saved with and without interlacing, it will contain &quot;I1&quot; and &quot;I0&quot; to</span>
+<a name="l60"><span class="ln">60   </span></a>  <span class="s1">distinguish the files.</span>
+<a name="l61"><span class="ln">61   </span></a>  <span class="s1">* ImageMagick test suite generator uses magick format name, such as `PNG24`</span>
+<a name="l62"><span class="ln">62   </span></a>  <span class="s1">* The Gimp generator plugin adds information about the layer that was</span>
+<a name="l63"><span class="ln">63   </span></a>    <span class="s1">exported to form the image:</span>
+<a name="l64"><span class="ln">64   </span></a>      <span class="s1">* BPP1G = 1 byte per pixel, gray</span>
+<a name="l65"><span class="ln">65   </span></a>      <span class="s1">* BPP2GA = 2 bytes per pixel, gray + alpha</span>
+<a name="l66"><span class="ln">66   </span></a>      <span class="s1">* BPP3 = 3 bytes per pixel, rgb</span>
+<a name="l67"><span class="ln">67   </span></a>      <span class="s1">* BPP4 = 4 bytes per pixel, rgba</span>
+<a name="l68"><span class="ln">68   </span></a>      <span class="s1">* IX = indexed, IXA = indexed+alpha</span>
+<a name="l69"><span class="ln">69   </span></a>      <span class="s1">* Note: Indexed images are drawn in RGB or GRAY images (with alpha if</span>
+<a name="l70"><span class="ln">70   </span></a>        <span class="s1">needed), and converted to indexed before export. These values</span>
+<a name="l71"><span class="ln">71   </span></a>        <span class="s1">represent the layer type at time of export, it affects the parameters</span>
+<a name="l72"><span class="ln">72   </span></a>        <span class="s1">used for encoding the output data.</span>
+<a name="l73"><span class="ln">73   </span></a>
+<a name="l74"><span class="ln">74   </span></a><span class="s2">* </span><span class="s1">&lt;testname&gt; is a special string that indicates what type of data is expected</span>
+<a name="l75"><span class="ln">75   </span></a>  <span class="s1">in the file. Options are OPAQUE, BINARY, ALPHA and repeated for grayscale,</span>
+<a name="l76"><span class="ln">76   </span></a>  <span class="s1">GRAY-OPAQUE, GRAY-BINARY, GRAY-ALPHA. We expect BINARY and ALPHA tests to</span>
+<a name="l77"><span class="ln">77   </span></a>  <span class="s1">result in an alpha channel (details below)</span>
+<a name="l78"><span class="ln">78   </span></a>
+<a name="l79"><span class="ln">79   </span></a><span class="s2">* </span><span class="s1">&lt;encoder&gt; identifies the software that created the file, &quot;magick&quot;, &quot;gimp&quot; ..</span>
+<a name="l80"><span class="ln">80   </span></a>
+<a name="l81"><span class="ln">81   </span></a><span class="s2">* </span><span class="s1">&lt;ext&gt; is the extension, must be lowercase and match the extensions</span>
+<a name="l82"><span class="ln">82   </span></a>  <span class="s1">supported by Kivy image loaders (or they will be ignored)</span>
+<a name="l83"><span class="ln">83   </span></a>
+<a name="l84"><span class="ln">84   </span></a>
+<a name="l85"><span class="ln">85   </span></a><span class="s0">Test names</span>
+<a name="l86"><span class="ln">86   </span></a><span class="s2">----------</span>
+<a name="l87"><span class="ln">87   </span></a>
+<a name="l88"><span class="ln">88   </span></a><span class="s2">* </span><span class="s3">`</span><span class="s0">OPAQUE</span><span class="s3">` </span><span class="s0">tests opaque pixels </span><span class="s1">(</span><span class="s0">normal RGB</span><span class="s1">) (</span><span class="s0">lossess formats</span><span class="s1">)</span>
+<a name="l89"><span class="ln">89   </span></a><span class="s2">* </span><span class="s3">`</span><span class="s0">BINARY</span><span class="s3">` </span><span class="s0">tests opaque + fully transparent pixels </span><span class="s1">(</span><span class="s0">GIF etc</span><span class="s1">)</span>
+<a name="l90"><span class="ln">90   </span></a><span class="s2">* </span><span class="s3">`</span><span class="s0">ALPHA</span><span class="s3">` </span><span class="s0">tests semi-transparent pixels </span><span class="s1">(</span><span class="s0">normal RGBA</span><span class="s1">) (</span><span class="s0">PNG32 etc</span><span class="s1">)</span>
+<a name="l91"><span class="ln">91   </span></a><span class="s2">* </span><span class="s3">`</span><span class="s0">GRAY-OPAQUE</span><span class="s3">` </span><span class="s0">tests opaque grayscale only </span><span class="s1">(</span><span class="s0">various PNG, tga, </span><span class="s1">)</span>
+<a name="l92"><span class="ln">92   </span></a><span class="s2">* </span><span class="s3">`</span><span class="s0">GRAY-BINARY</span><span class="s3">` </span><span class="s0">tests opaque grayscale + fully transparent pixels </span><span class="s1">(</span><span class="s0">PNGs</span><span class="s1">)</span>
+<a name="l93"><span class="ln">93   </span></a><span class="s2">* </span><span class="s3">`</span><span class="s0">GRAY-ALPHA</span><span class="s3">` </span><span class="s0">tests semi-transparent grayscale pixels </span><span class="s1">(</span><span class="s0">TGA, XCF</span><span class="s1">)</span>
+<a name="l94"><span class="ln">94   </span></a>
+<a name="l95"><span class="ln">95   </span></a><span class="s0">Patterns must conform to the specific test. For example, the pattern </span><span class="s1">&quot;</span><span class="s0">rgb</span><span class="s1">&quot; </span><span class="s0">has</span>
+<a name="l96"><span class="ln">96   </span></a><span class="s0">undefined behavior for a grayscale test, since r/g/b can't be represented</span>
+<a name="l97"><span class="ln">97   </span></a><span class="s0">in grayscale. So all grayscale formats must use 0-9A-F only, and optionally </span>
+<a name="l98"><span class="ln">98   </span></a><span class="s1">'</span><span class="s0">t' for transparent pixels in GRAY-BINARY/GRAY-ALPHA.</span>
+<a name="l99"><span class="ln">99   </span></a>
+<a name="l100"><span class="ln">100  </span></a>
+<a name="l101"><span class="ln">101  </span></a><span class="s3">| </span><span class="s1">Test name    </span><span class="s3">| </span><span class="s1">Valid pattern characters                                    </span><span class="s3">|</span>
+<a name="l102"><span class="ln">102  </span></a><span class="s3">| -----------: | :---------------------------------------------------------- |</span>
+<a name="l103"><span class="ln">103  </span></a><span class="s3">| </span><span class="s1">OPAQUE       </span><span class="s3">| </span><span class="s1">`wxrgbcyp`, and full grayscale\*\*                          </span><span class="s3">|</span>
+<a name="l104"><span class="ln">104  </span></a><span class="s3">| </span><span class="s1">GRAY-OPAQUE  </span><span class="s3">| </span><span class="s1">`0123456789ABCDEF` (full grayscale)                         </span><span class="s3">|</span>
+<a name="l105"><span class="ln">105  </span></a><span class="s3">| </span><span class="s1">BINARY       </span><span class="s3">| </span><span class="s1">`t` REQUIRED + `wrgbcyp`, limited grayscale (no 0/x!!!)     </span><span class="s3">|</span>
+<a name="l106"><span class="ln">106  </span></a><span class="s3">| </span><span class="s1">GRAY-BINARY  </span><span class="s3">| </span><span class="s1">`t` REQUIRED + limited grayscale (no 0/x!!!)                </span><span class="s3">|</span>
+<a name="l107"><span class="ln">107  </span></a><span class="s3">| </span><span class="s1">ALPHA        </span><span class="s3">| </span><span class="s1">`t`, `wxrbgcyp` and full grayscale\*\*                      </span><span class="s3">|</span>
+<a name="l108"><span class="ln">108  </span></a><span class="s3">| </span><span class="s1">GRAY-ALPHA   </span><span class="s3">| </span><span class="s1">`t`, `0123456789ABCDEF` (full grayscale)                    </span><span class="s3">|</span>
+<a name="l109"><span class="ln">109  </span></a>
+<a name="l110"><span class="ln">110  </span></a><span class="s2">* </span><span class="s3">`</span><span class="s1">**</span><span class="s3">`</span><span class="s1">: </span><span class="s0">While grayscale is supported here, it is generally better to use</span>
+<a name="l111"><span class="ln">111  </span></a>  <span class="s0">colors, since all the bytes in a grayscale pixel represented as rgb are</span>
+<a name="l112"><span class="ln">112  </span></a>  <span class="s0">identical. For example, </span><span class="s1">'</span><span class="s0">A' or \xAA\xAA\xAA will pass despite a byte</span>
+<a name="l113"><span class="ln">113  </span></a>  <span class="s0">order problem.</span>
+<a name="l114"><span class="ln">114  </span></a>
+<a name="l115"><span class="ln">115  </span></a><span class="s2">* </span><span class="s3">`</span><span class="s1">!!!</span><span class="s3">`</span><span class="s1">: </span><span class="s0">In some cases, black color is used for binary transparency. So</span>
+<a name="l116"><span class="ln">116  </span></a>  <span class="s0">if you use </span><span class="s1">&quot;</span><span class="s0">0</span><span class="s1">&quot; (</span><span class="s0">or </span><span class="s1">&quot;</span><span class="s0">x</span><span class="s1">&quot;)</span><span class="s0">, test_imageloader will expect #000000FF in RGBA,</span>
+<a name="l117"><span class="ln">117  </span></a>  <span class="s0">but the pixel becomes transparent </span><span class="s1">(</span><span class="s0">a=00</span><span class="s1">) </span><span class="s0">and test fails. All BINARY tests</span>
+<a name="l118"><span class="ln">118  </span></a>  <span class="s1">**</span><span class="s0">MUST</span><span class="s1">** </span><span class="s0">include at least one </span><span class="s1">&quot;</span><span class="s0">t</span><span class="s1">&quot; </span><span class="s0">pixel to ensure that the image is</span>
+<a name="l119"><span class="ln">119  </span></a>  <span class="s0">saved with an alpha channel.</span>
+<a name="l120"><span class="ln">120  </span></a>
+<a name="l121"><span class="ln">121  </span></a>
+<a name="l122"><span class="ln">122  </span></a><span class="s0">Pixel values</span>
+<a name="l123"><span class="ln">123  </span></a><span class="s2">------------</span>
+<a name="l124"><span class="ln">124  </span></a>
+<a name="l125"><span class="ln">125  </span></a><span class="s0">Each character in the pattern represents the color of a single pixel. It is</span>
+<a name="l126"><span class="ln">126  </span></a><span class="s0">important that you include only the correct type of pixel values for the</span>
+<a name="l127"><span class="ln">127  </span></a><span class="s0">different test types </span><span class="s1">(</span><span class="s0">see table above</span><span class="s1">)</span><span class="s0">. Individual pixel values get their</span>
+<a name="l128"><span class="ln">128  </span></a><span class="s0">alpha from global setting </span><span class="s1">(</span><span class="s0">&lt;alpha&gt; in filename</span><span class="s1">)</span><span class="s0">, but </span><span class="s1">'</span><span class="s0">t' pixels always have</span>
+<a name="l129"><span class="ln">129  </span></a><span class="s0">alpha = 0x00 regardless of the test's alpha setting.</span>
+<a name="l130"><span class="ln">130  </span></a>
+<a name="l131"><span class="ln">131  </span></a>
+<a name="l132"><span class="ln">132  </span></a>    <span class="s3">OPAQUE, BINARY, ALPHA (lowercase)</span>
+<a name="l133"><span class="ln">133  </span></a>    <span class="s3">-----------------------------------------</span>
+<a name="l134"><span class="ln">134  </span></a>    <span class="s3">&quot;w&quot; White (#fff)     &quot;x&quot; Black  (#000)!!!</span>
+<a name="l135"><span class="ln">135  </span></a>    <span class="s3">&quot;r&quot; Red   (#f00)     &quot;g&quot; Green  (#0f0)</span>
+<a name="l136"><span class="ln">136  </span></a>    <span class="s3">&quot;b&quot; Blue  (#00f)     &quot;y&quot; Yellow (#ff0)</span>
+<a name="l137"><span class="ln">137  </span></a>    <span class="s3">&quot;c&quot; Cyan  (#0ff)     &quot;p&quot; Purple (#f0f)</span>
+<a name="l138"><span class="ln">138  </span></a>
+<a name="l139"><span class="ln">139  </span></a>
+<a name="l140"><span class="ln">140  </span></a>    <span class="s3">GRAY-OPAQUE, GRAY-BINARY, GRAY-ALPHA (uppercase)</span>
+<a name="l141"><span class="ln">141  </span></a>    <span class="s3">------------------------------------------------</span>
+<a name="l142"><span class="ln">142  </span></a>    <span class="s3">&quot;0&quot; #000!!!  &quot;1&quot; #111     &quot;2&quot; #222     &quot;3&quot; #333</span>
+<a name="l143"><span class="ln">143  </span></a>    <span class="s3">&quot;4&quot; #444     &quot;5&quot; #555     &quot;6&quot; #666     &quot;7&quot; #777</span>
+<a name="l144"><span class="ln">144  </span></a>    <span class="s3">&quot;8&quot; #888     &quot;9&quot; #999     &quot;A&quot; #AAA     &quot;B&quot; #BBB</span>
+<a name="l145"><span class="ln">145  </span></a>    <span class="s3">&quot;C&quot; #CCC     &quot;D&quot; #DDD     &quot;E&quot; #EEE     &quot;F&quot; #FFF</span>
+<a name="l146"><span class="ln">146  </span></a>
+<a name="l147"><span class="ln">147  </span></a>    <span class="s3">!!! See warnings above regarding BINARY tests</span>
+<a name="l148"><span class="ln">148  </span></a>
+<a name="l149"><span class="ln">149  </span></a></pre>
+</body>
+</html>

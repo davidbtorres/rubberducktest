@@ -1,0 +1,893 @@
+<html>
+<head>
+<title>frontend.py</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type="text/css">
+.s0 { color: #808080;}
+.s1 { color: #a9b7c6;}
+.s2 { color: #629755; font-style: italic;}
+.s3 { color: #6a8759;}
+.s4 { color: #cc7832;}
+.s5 { color: #6897bb;}
+.ln { color: #606366; font-weight: normal; font-style: normal; }
+</style>
+</head>
+<body bgcolor="#2b2b2b">
+<table CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#606060" >
+<tr><td><center>
+<font face="Arial, Helvetica" color="#000000">
+frontend.py</font>
+</center></td></tr></table>
+<pre><a name="l1"><span class="ln">1    </span></a><span class="s0"># $Id: frontend.py 8858 2021-10-19 17:03:02Z milde $</span>
+<a name="l2"><span class="ln">2    </span></a><span class="s0"># Author: David Goodger &lt;goodger@python.org&gt;</span>
+<a name="l3"><span class="ln">3    </span></a><span class="s0"># Copyright: This module has been placed in the public domain.</span>
+<a name="l4"><span class="ln">4    </span></a>
+<a name="l5"><span class="ln">5    </span></a><span class="s2">&quot;&quot;&quot; 
+<a name="l6"><span class="ln">6    </span></a>Command-line and common processing for Docutils front-end tools. 
+<a name="l7"><span class="ln">7    </span></a> 
+<a name="l8"><span class="ln">8    </span></a>Exports the following classes: 
+<a name="l9"><span class="ln">9    </span></a> 
+<a name="l10"><span class="ln">10   </span></a>* `OptionParser`: Standard Docutils command-line processing. 
+<a name="l11"><span class="ln">11   </span></a>* `Option`: Customized version of `optparse.Option`; validation support. 
+<a name="l12"><span class="ln">12   </span></a>* `Values`: Runtime settings; objects are simple structs 
+<a name="l13"><span class="ln">13   </span></a>  (``object.attribute``).  Supports cumulative list settings (attributes). 
+<a name="l14"><span class="ln">14   </span></a>* `ConfigParser`: Standard Docutils config file processing. 
+<a name="l15"><span class="ln">15   </span></a> 
+<a name="l16"><span class="ln">16   </span></a>Also exports the following functions: 
+<a name="l17"><span class="ln">17   </span></a> 
+<a name="l18"><span class="ln">18   </span></a>* Option callbacks: `store_multiple`, `read_config_file`. 
+<a name="l19"><span class="ln">19   </span></a>* Setting validators: `validate_encoding`, 
+<a name="l20"><span class="ln">20   </span></a>  `validate_encoding_error_handler`, 
+<a name="l21"><span class="ln">21   </span></a>  `validate_encoding_and_error_handler`, 
+<a name="l22"><span class="ln">22   </span></a>  `validate_boolean`, `validate_ternary`, `validate_threshold`, 
+<a name="l23"><span class="ln">23   </span></a>  `validate_colon_separated_list`, 
+<a name="l24"><span class="ln">24   </span></a>  `validate_comma_separated_list`, 
+<a name="l25"><span class="ln">25   </span></a>  `validate_dependency_file`. 
+<a name="l26"><span class="ln">26   </span></a>* `make_paths_absolute`. 
+<a name="l27"><span class="ln">27   </span></a>* SettingSpec manipulation: `filter_settings_spec`. 
+<a name="l28"><span class="ln">28   </span></a>&quot;&quot;&quot;</span>
+<a name="l29"><span class="ln">29   </span></a>
+<a name="l30"><span class="ln">30   </span></a><span class="s1">__docformat__ = </span><span class="s3">'reStructuredText'</span>
+<a name="l31"><span class="ln">31   </span></a>
+<a name="l32"><span class="ln">32   </span></a><span class="s4">import </span><span class="s1">os</span>
+<a name="l33"><span class="ln">33   </span></a><span class="s4">import </span><span class="s1">os.path</span>
+<a name="l34"><span class="ln">34   </span></a><span class="s4">import </span><span class="s1">sys</span>
+<a name="l35"><span class="ln">35   </span></a><span class="s4">import </span><span class="s1">warnings</span>
+<a name="l36"><span class="ln">36   </span></a><span class="s4">import </span><span class="s1">codecs</span>
+<a name="l37"><span class="ln">37   </span></a><span class="s4">import </span><span class="s1">optparse</span>
+<a name="l38"><span class="ln">38   </span></a><span class="s4">from </span><span class="s1">optparse </span><span class="s4">import </span><span class="s1">SUPPRESS_HELP</span>
+<a name="l39"><span class="ln">39   </span></a><span class="s4">if </span><span class="s1">sys.version_info &gt;= (</span><span class="s5">3</span><span class="s4">, </span><span class="s5">0</span><span class="s1">):</span>
+<a name="l40"><span class="ln">40   </span></a>    <span class="s4">from </span><span class="s1">configparser </span><span class="s4">import </span><span class="s1">RawConfigParser</span>
+<a name="l41"><span class="ln">41   </span></a>    <span class="s4">from </span><span class="s1">os </span><span class="s4">import </span><span class="s1">getcwd</span>
+<a name="l42"><span class="ln">42   </span></a><span class="s4">else</span><span class="s1">:</span>
+<a name="l43"><span class="ln">43   </span></a>    <span class="s4">from </span><span class="s1">ConfigParser </span><span class="s4">import </span><span class="s1">RawConfigParser</span>
+<a name="l44"><span class="ln">44   </span></a>    <span class="s4">from </span><span class="s1">os </span><span class="s4">import </span><span class="s1">getcwdu </span><span class="s4">as </span><span class="s1">getcwd</span>
+<a name="l45"><span class="ln">45   </span></a>
+<a name="l46"><span class="ln">46   </span></a><span class="s4">import </span><span class="s1">docutils</span>
+<a name="l47"><span class="ln">47   </span></a><span class="s4">import </span><span class="s1">docutils.utils</span>
+<a name="l48"><span class="ln">48   </span></a><span class="s4">import </span><span class="s1">docutils.nodes</span>
+<a name="l49"><span class="ln">49   </span></a><span class="s4">from </span><span class="s1">docutils.utils.error_reporting </span><span class="s4">import </span><span class="s1">(locale_encoding</span><span class="s4">, </span><span class="s1">SafeString</span><span class="s4">,</span>
+<a name="l50"><span class="ln">50   </span></a>                                            <span class="s1">ErrorOutput</span><span class="s4">, </span><span class="s1">ErrorString)</span>
+<a name="l51"><span class="ln">51   </span></a>
+<a name="l52"><span class="ln">52   </span></a><span class="s4">if </span><span class="s1">sys.version_info &gt;= (</span><span class="s5">3</span><span class="s4">, </span><span class="s5">0</span><span class="s1">):</span>
+<a name="l53"><span class="ln">53   </span></a>    <span class="s1">unicode = str  </span><span class="s0"># noqa</span>
+<a name="l54"><span class="ln">54   </span></a>
+<a name="l55"><span class="ln">55   </span></a>
+<a name="l56"><span class="ln">56   </span></a><span class="s4">def </span><span class="s1">store_multiple(option</span><span class="s4">, </span><span class="s1">opt</span><span class="s4">, </span><span class="s1">value</span><span class="s4">, </span><span class="s1">parser</span><span class="s4">, </span><span class="s1">*args</span><span class="s4">, </span><span class="s1">**kwargs):</span>
+<a name="l57"><span class="ln">57   </span></a>    <span class="s2">&quot;&quot;&quot; 
+<a name="l58"><span class="ln">58   </span></a>    Store multiple values in `parser.values`.  (Option callback.) 
+<a name="l59"><span class="ln">59   </span></a> 
+<a name="l60"><span class="ln">60   </span></a>    Store `None` for each attribute named in `args`, and store the value for 
+<a name="l61"><span class="ln">61   </span></a>    each key (attribute name) in `kwargs`. 
+<a name="l62"><span class="ln">62   </span></a>    &quot;&quot;&quot;</span>
+<a name="l63"><span class="ln">63   </span></a>    <span class="s4">for </span><span class="s1">attribute </span><span class="s4">in </span><span class="s1">args:</span>
+<a name="l64"><span class="ln">64   </span></a>        <span class="s1">setattr(parser.values</span><span class="s4">, </span><span class="s1">attribute</span><span class="s4">, None</span><span class="s1">)</span>
+<a name="l65"><span class="ln">65   </span></a>    <span class="s4">for </span><span class="s1">key</span><span class="s4">, </span><span class="s1">value </span><span class="s4">in </span><span class="s1">kwargs.items():</span>
+<a name="l66"><span class="ln">66   </span></a>        <span class="s1">setattr(parser.values</span><span class="s4">, </span><span class="s1">key</span><span class="s4">, </span><span class="s1">value)</span>
+<a name="l67"><span class="ln">67   </span></a>
+<a name="l68"><span class="ln">68   </span></a><span class="s4">def </span><span class="s1">read_config_file(option</span><span class="s4">, </span><span class="s1">opt</span><span class="s4">, </span><span class="s1">value</span><span class="s4">, </span><span class="s1">parser):</span>
+<a name="l69"><span class="ln">69   </span></a>    <span class="s2">&quot;&quot;&quot; 
+<a name="l70"><span class="ln">70   </span></a>    Read a configuration file during option processing.  (Option callback.) 
+<a name="l71"><span class="ln">71   </span></a>    &quot;&quot;&quot;</span>
+<a name="l72"><span class="ln">72   </span></a>    <span class="s4">try</span><span class="s1">:</span>
+<a name="l73"><span class="ln">73   </span></a>        <span class="s1">new_settings = parser.get_config_file_settings(value)</span>
+<a name="l74"><span class="ln">74   </span></a>    <span class="s4">except </span><span class="s1">ValueError </span><span class="s4">as </span><span class="s1">error:</span>
+<a name="l75"><span class="ln">75   </span></a>        <span class="s1">parser.error(error)</span>
+<a name="l76"><span class="ln">76   </span></a>    <span class="s1">parser.values.update(new_settings</span><span class="s4">, </span><span class="s1">parser)</span>
+<a name="l77"><span class="ln">77   </span></a>
+<a name="l78"><span class="ln">78   </span></a><span class="s4">def </span><span class="s1">validate_encoding(setting</span><span class="s4">, </span><span class="s1">value</span><span class="s4">, </span><span class="s1">option_parser</span><span class="s4">,</span>
+<a name="l79"><span class="ln">79   </span></a>                      <span class="s1">config_parser=</span><span class="s4">None, </span><span class="s1">config_section=</span><span class="s4">None</span><span class="s1">):</span>
+<a name="l80"><span class="ln">80   </span></a>    <span class="s4">try</span><span class="s1">:</span>
+<a name="l81"><span class="ln">81   </span></a>        <span class="s1">codecs.lookup(value)</span>
+<a name="l82"><span class="ln">82   </span></a>    <span class="s4">except </span><span class="s1">LookupError:</span>
+<a name="l83"><span class="ln">83   </span></a>        <span class="s4">raise </span><span class="s1">LookupError(</span><span class="s3">'setting &quot;%s&quot;: unknown encoding: &quot;%s&quot;'</span>
+<a name="l84"><span class="ln">84   </span></a>                          <span class="s1">% (setting</span><span class="s4">, </span><span class="s1">value))</span>
+<a name="l85"><span class="ln">85   </span></a>    <span class="s4">return </span><span class="s1">value</span>
+<a name="l86"><span class="ln">86   </span></a>
+<a name="l87"><span class="ln">87   </span></a><span class="s4">def </span><span class="s1">validate_encoding_error_handler(setting</span><span class="s4">, </span><span class="s1">value</span><span class="s4">, </span><span class="s1">option_parser</span><span class="s4">,</span>
+<a name="l88"><span class="ln">88   </span></a>                                    <span class="s1">config_parser=</span><span class="s4">None, </span><span class="s1">config_section=</span><span class="s4">None</span><span class="s1">):</span>
+<a name="l89"><span class="ln">89   </span></a>    <span class="s4">try</span><span class="s1">:</span>
+<a name="l90"><span class="ln">90   </span></a>        <span class="s1">codecs.lookup_error(value)</span>
+<a name="l91"><span class="ln">91   </span></a>    <span class="s4">except </span><span class="s1">LookupError:</span>
+<a name="l92"><span class="ln">92   </span></a>        <span class="s4">raise </span><span class="s1">LookupError(</span>
+<a name="l93"><span class="ln">93   </span></a>            <span class="s3">'unknown encoding error handler: &quot;%s&quot; (choices: '</span>
+<a name="l94"><span class="ln">94   </span></a>            <span class="s3">'&quot;strict&quot;, &quot;ignore&quot;, &quot;replace&quot;, &quot;backslashreplace&quot;, '</span>
+<a name="l95"><span class="ln">95   </span></a>            <span class="s3">'&quot;xmlcharrefreplace&quot;, and possibly others; see documentation for '</span>
+<a name="l96"><span class="ln">96   </span></a>            <span class="s3">'the Python ``codecs`` module)' </span><span class="s1">% value)</span>
+<a name="l97"><span class="ln">97   </span></a>    <span class="s4">return </span><span class="s1">value</span>
+<a name="l98"><span class="ln">98   </span></a>
+<a name="l99"><span class="ln">99   </span></a><span class="s4">def </span><span class="s1">validate_encoding_and_error_handler(</span>
+<a name="l100"><span class="ln">100  </span></a>    <span class="s1">setting</span><span class="s4">, </span><span class="s1">value</span><span class="s4">, </span><span class="s1">option_parser</span><span class="s4">, </span><span class="s1">config_parser=</span><span class="s4">None, </span><span class="s1">config_section=</span><span class="s4">None</span><span class="s1">):</span>
+<a name="l101"><span class="ln">101  </span></a>    <span class="s2">&quot;&quot;&quot; 
+<a name="l102"><span class="ln">102  </span></a>    Side-effect: if an error handler is included in the value, it is inserted 
+<a name="l103"><span class="ln">103  </span></a>    into the appropriate place as if it was a separate setting/option. 
+<a name="l104"><span class="ln">104  </span></a>    &quot;&quot;&quot;</span>
+<a name="l105"><span class="ln">105  </span></a>    <span class="s4">if </span><span class="s3">':' </span><span class="s4">in </span><span class="s1">value:</span>
+<a name="l106"><span class="ln">106  </span></a>        <span class="s1">encoding</span><span class="s4">, </span><span class="s1">handler = value.split(</span><span class="s3">':'</span><span class="s1">)</span>
+<a name="l107"><span class="ln">107  </span></a>        <span class="s1">validate_encoding_error_handler(</span>
+<a name="l108"><span class="ln">108  </span></a>            <span class="s1">setting + </span><span class="s3">'_error_handler'</span><span class="s4">, </span><span class="s1">handler</span><span class="s4">, </span><span class="s1">option_parser</span><span class="s4">,</span>
+<a name="l109"><span class="ln">109  </span></a>            <span class="s1">config_parser</span><span class="s4">, </span><span class="s1">config_section)</span>
+<a name="l110"><span class="ln">110  </span></a>        <span class="s4">if </span><span class="s1">config_parser:</span>
+<a name="l111"><span class="ln">111  </span></a>            <span class="s1">config_parser.set(config_section</span><span class="s4">, </span><span class="s1">setting + </span><span class="s3">'_error_handler'</span><span class="s4">,</span>
+<a name="l112"><span class="ln">112  </span></a>                              <span class="s1">handler)</span>
+<a name="l113"><span class="ln">113  </span></a>        <span class="s4">else</span><span class="s1">:</span>
+<a name="l114"><span class="ln">114  </span></a>            <span class="s1">setattr(option_parser.values</span><span class="s4">, </span><span class="s1">setting + </span><span class="s3">'_error_handler'</span><span class="s4">, </span><span class="s1">handler)</span>
+<a name="l115"><span class="ln">115  </span></a>    <span class="s4">else</span><span class="s1">:</span>
+<a name="l116"><span class="ln">116  </span></a>        <span class="s1">encoding = value</span>
+<a name="l117"><span class="ln">117  </span></a>    <span class="s1">validate_encoding(setting</span><span class="s4">, </span><span class="s1">encoding</span><span class="s4">, </span><span class="s1">option_parser</span><span class="s4">,</span>
+<a name="l118"><span class="ln">118  </span></a>                      <span class="s1">config_parser</span><span class="s4">, </span><span class="s1">config_section)</span>
+<a name="l119"><span class="ln">119  </span></a>    <span class="s4">return </span><span class="s1">encoding</span>
+<a name="l120"><span class="ln">120  </span></a>
+<a name="l121"><span class="ln">121  </span></a><span class="s4">def </span><span class="s1">validate_boolean(setting</span><span class="s4">, </span><span class="s1">value</span><span class="s4">, </span><span class="s1">option_parser</span><span class="s4">,</span>
+<a name="l122"><span class="ln">122  </span></a>                     <span class="s1">config_parser=</span><span class="s4">None, </span><span class="s1">config_section=</span><span class="s4">None</span><span class="s1">):</span>
+<a name="l123"><span class="ln">123  </span></a>    <span class="s2">&quot;&quot;&quot;Check/normalize boolean settings: 
+<a name="l124"><span class="ln">124  </span></a>         True:  '1', 'on', 'yes', 'true' 
+<a name="l125"><span class="ln">125  </span></a>         False: '0', 'off', 'no','false', '' 
+<a name="l126"><span class="ln">126  </span></a>    &quot;&quot;&quot;</span>
+<a name="l127"><span class="ln">127  </span></a>    <span class="s4">if </span><span class="s1">isinstance(value</span><span class="s4">, </span><span class="s1">bool):</span>
+<a name="l128"><span class="ln">128  </span></a>        <span class="s4">return </span><span class="s1">value</span>
+<a name="l129"><span class="ln">129  </span></a>    <span class="s4">try</span><span class="s1">:</span>
+<a name="l130"><span class="ln">130  </span></a>        <span class="s4">return </span><span class="s1">option_parser.booleans[value.strip().lower()]</span>
+<a name="l131"><span class="ln">131  </span></a>    <span class="s4">except </span><span class="s1">KeyError:</span>
+<a name="l132"><span class="ln">132  </span></a>        <span class="s4">raise </span><span class="s1">LookupError(</span><span class="s3">'unknown boolean value: &quot;%s&quot;' </span><span class="s1">% value)</span>
+<a name="l133"><span class="ln">133  </span></a>
+<a name="l134"><span class="ln">134  </span></a><span class="s4">def </span><span class="s1">validate_ternary(setting</span><span class="s4">, </span><span class="s1">value</span><span class="s4">, </span><span class="s1">option_parser</span><span class="s4">,</span>
+<a name="l135"><span class="ln">135  </span></a>                     <span class="s1">config_parser=</span><span class="s4">None, </span><span class="s1">config_section=</span><span class="s4">None</span><span class="s1">):</span>
+<a name="l136"><span class="ln">136  </span></a>    <span class="s2">&quot;&quot;&quot;Check/normalize three-value settings: 
+<a name="l137"><span class="ln">137  </span></a>         True:  '1', 'on', 'yes', 'true' 
+<a name="l138"><span class="ln">138  </span></a>         False: '0', 'off', 'no','false', '' 
+<a name="l139"><span class="ln">139  </span></a>         any other value: returned as-is. 
+<a name="l140"><span class="ln">140  </span></a>    &quot;&quot;&quot;</span>
+<a name="l141"><span class="ln">141  </span></a>    <span class="s4">if </span><span class="s1">isinstance(value</span><span class="s4">, </span><span class="s1">bool) </span><span class="s4">or </span><span class="s1">value </span><span class="s4">is None</span><span class="s1">:</span>
+<a name="l142"><span class="ln">142  </span></a>        <span class="s4">return </span><span class="s1">value</span>
+<a name="l143"><span class="ln">143  </span></a>    <span class="s4">try</span><span class="s1">:</span>
+<a name="l144"><span class="ln">144  </span></a>        <span class="s4">return </span><span class="s1">option_parser.booleans[value.strip().lower()]</span>
+<a name="l145"><span class="ln">145  </span></a>    <span class="s4">except </span><span class="s1">KeyError:</span>
+<a name="l146"><span class="ln">146  </span></a>        <span class="s4">return </span><span class="s1">value</span>
+<a name="l147"><span class="ln">147  </span></a>
+<a name="l148"><span class="ln">148  </span></a><span class="s4">def </span><span class="s1">validate_nonnegative_int(setting</span><span class="s4">, </span><span class="s1">value</span><span class="s4">, </span><span class="s1">option_parser</span><span class="s4">,</span>
+<a name="l149"><span class="ln">149  </span></a>                             <span class="s1">config_parser=</span><span class="s4">None, </span><span class="s1">config_section=</span><span class="s4">None</span><span class="s1">):</span>
+<a name="l150"><span class="ln">150  </span></a>    <span class="s1">value = int(value)</span>
+<a name="l151"><span class="ln">151  </span></a>    <span class="s4">if </span><span class="s1">value &lt; </span><span class="s5">0</span><span class="s1">:</span>
+<a name="l152"><span class="ln">152  </span></a>        <span class="s4">raise </span><span class="s1">ValueError(</span><span class="s3">'negative value; must be positive or zero'</span><span class="s1">)</span>
+<a name="l153"><span class="ln">153  </span></a>    <span class="s4">return </span><span class="s1">value</span>
+<a name="l154"><span class="ln">154  </span></a>
+<a name="l155"><span class="ln">155  </span></a><span class="s4">def </span><span class="s1">validate_threshold(setting</span><span class="s4">, </span><span class="s1">value</span><span class="s4">, </span><span class="s1">option_parser</span><span class="s4">,</span>
+<a name="l156"><span class="ln">156  </span></a>                       <span class="s1">config_parser=</span><span class="s4">None, </span><span class="s1">config_section=</span><span class="s4">None</span><span class="s1">):</span>
+<a name="l157"><span class="ln">157  </span></a>    <span class="s4">try</span><span class="s1">:</span>
+<a name="l158"><span class="ln">158  </span></a>        <span class="s4">return </span><span class="s1">int(value)</span>
+<a name="l159"><span class="ln">159  </span></a>    <span class="s4">except </span><span class="s1">ValueError:</span>
+<a name="l160"><span class="ln">160  </span></a>        <span class="s4">try</span><span class="s1">:</span>
+<a name="l161"><span class="ln">161  </span></a>            <span class="s4">return </span><span class="s1">option_parser.thresholds[value.lower()]</span>
+<a name="l162"><span class="ln">162  </span></a>        <span class="s4">except </span><span class="s1">(KeyError</span><span class="s4">, </span><span class="s1">AttributeError):</span>
+<a name="l163"><span class="ln">163  </span></a>            <span class="s4">raise </span><span class="s1">LookupError(</span><span class="s3">'unknown threshold: %r.' </span><span class="s1">% value)</span>
+<a name="l164"><span class="ln">164  </span></a>
+<a name="l165"><span class="ln">165  </span></a><span class="s4">def </span><span class="s1">validate_colon_separated_string_list(</span>
+<a name="l166"><span class="ln">166  </span></a>    <span class="s1">setting</span><span class="s4">, </span><span class="s1">value</span><span class="s4">, </span><span class="s1">option_parser</span><span class="s4">, </span><span class="s1">config_parser=</span><span class="s4">None, </span><span class="s1">config_section=</span><span class="s4">None</span><span class="s1">):</span>
+<a name="l167"><span class="ln">167  </span></a>    <span class="s4">if not </span><span class="s1">isinstance(value</span><span class="s4">, </span><span class="s1">list):</span>
+<a name="l168"><span class="ln">168  </span></a>        <span class="s1">value = value.split(</span><span class="s3">':'</span><span class="s1">)</span>
+<a name="l169"><span class="ln">169  </span></a>    <span class="s4">else</span><span class="s1">:</span>
+<a name="l170"><span class="ln">170  </span></a>        <span class="s1">last = value.pop()</span>
+<a name="l171"><span class="ln">171  </span></a>        <span class="s1">value.extend(last.split(</span><span class="s3">':'</span><span class="s1">))</span>
+<a name="l172"><span class="ln">172  </span></a>    <span class="s4">return </span><span class="s1">value</span>
+<a name="l173"><span class="ln">173  </span></a>
+<a name="l174"><span class="ln">174  </span></a><span class="s4">def </span><span class="s1">validate_comma_separated_list(setting</span><span class="s4">, </span><span class="s1">value</span><span class="s4">, </span><span class="s1">option_parser</span><span class="s4">,</span>
+<a name="l175"><span class="ln">175  </span></a>                                    <span class="s1">config_parser=</span><span class="s4">None, </span><span class="s1">config_section=</span><span class="s4">None</span><span class="s1">):</span>
+<a name="l176"><span class="ln">176  </span></a>    <span class="s2">&quot;&quot;&quot;Check/normalize list arguments (split at &quot;,&quot; and strip whitespace). 
+<a name="l177"><span class="ln">177  </span></a>    &quot;&quot;&quot;</span>
+<a name="l178"><span class="ln">178  </span></a>    <span class="s0"># `value` may be ``unicode``, ``str``, or a ``list`` (when  given as</span>
+<a name="l179"><span class="ln">179  </span></a>    <span class="s0"># command line option and &quot;action&quot; is &quot;append&quot;).</span>
+<a name="l180"><span class="ln">180  </span></a>    <span class="s4">if not </span><span class="s1">isinstance(value</span><span class="s4">, </span><span class="s1">list):</span>
+<a name="l181"><span class="ln">181  </span></a>        <span class="s1">value = [value]</span>
+<a name="l182"><span class="ln">182  </span></a>    <span class="s0"># this function is called for every option added to `value`</span>
+<a name="l183"><span class="ln">183  </span></a>    <span class="s0"># -&gt; split the last item and append the result:</span>
+<a name="l184"><span class="ln">184  </span></a>    <span class="s1">last = value.pop()</span>
+<a name="l185"><span class="ln">185  </span></a>    <span class="s1">items = [i.strip(</span><span class="s3">u' </span><span class="s4">\t\n</span><span class="s3">'</span><span class="s1">) </span><span class="s4">for </span><span class="s1">i </span><span class="s4">in </span><span class="s1">last.split(</span><span class="s3">u','</span><span class="s1">) </span><span class="s4">if </span><span class="s1">i.strip(</span><span class="s3">u' </span><span class="s4">\t\n</span><span class="s3">'</span><span class="s1">)]</span>
+<a name="l186"><span class="ln">186  </span></a>    <span class="s1">value.extend(items)</span>
+<a name="l187"><span class="ln">187  </span></a>    <span class="s4">return </span><span class="s1">value</span>
+<a name="l188"><span class="ln">188  </span></a>
+<a name="l189"><span class="ln">189  </span></a><span class="s4">def </span><span class="s1">validate_url_trailing_slash(</span>
+<a name="l190"><span class="ln">190  </span></a>    <span class="s1">setting</span><span class="s4">, </span><span class="s1">value</span><span class="s4">, </span><span class="s1">option_parser</span><span class="s4">, </span><span class="s1">config_parser=</span><span class="s4">None, </span><span class="s1">config_section=</span><span class="s4">None</span><span class="s1">):</span>
+<a name="l191"><span class="ln">191  </span></a>    <span class="s4">if not </span><span class="s1">value:</span>
+<a name="l192"><span class="ln">192  </span></a>        <span class="s4">return </span><span class="s3">'./'</span>
+<a name="l193"><span class="ln">193  </span></a>    <span class="s4">elif </span><span class="s1">value.endswith(</span><span class="s3">'/'</span><span class="s1">):</span>
+<a name="l194"><span class="ln">194  </span></a>        <span class="s4">return </span><span class="s1">value</span>
+<a name="l195"><span class="ln">195  </span></a>    <span class="s4">else</span><span class="s1">:</span>
+<a name="l196"><span class="ln">196  </span></a>        <span class="s4">return </span><span class="s1">value + </span><span class="s3">'/'</span>
+<a name="l197"><span class="ln">197  </span></a>
+<a name="l198"><span class="ln">198  </span></a><span class="s4">def </span><span class="s1">validate_dependency_file(setting</span><span class="s4">, </span><span class="s1">value</span><span class="s4">, </span><span class="s1">option_parser</span><span class="s4">,</span>
+<a name="l199"><span class="ln">199  </span></a>                             <span class="s1">config_parser=</span><span class="s4">None, </span><span class="s1">config_section=</span><span class="s4">None</span><span class="s1">):</span>
+<a name="l200"><span class="ln">200  </span></a>    <span class="s4">try</span><span class="s1">:</span>
+<a name="l201"><span class="ln">201  </span></a>        <span class="s4">return </span><span class="s1">docutils.utils.DependencyList(value)</span>
+<a name="l202"><span class="ln">202  </span></a>    <span class="s4">except </span><span class="s1">IOError:</span>
+<a name="l203"><span class="ln">203  </span></a>        <span class="s4">return </span><span class="s1">docutils.utils.DependencyList(</span><span class="s4">None</span><span class="s1">)</span>
+<a name="l204"><span class="ln">204  </span></a>
+<a name="l205"><span class="ln">205  </span></a><span class="s4">def </span><span class="s1">validate_strip_class(setting</span><span class="s4">, </span><span class="s1">value</span><span class="s4">, </span><span class="s1">option_parser</span><span class="s4">,</span>
+<a name="l206"><span class="ln">206  </span></a>                         <span class="s1">config_parser=</span><span class="s4">None, </span><span class="s1">config_section=</span><span class="s4">None</span><span class="s1">):</span>
+<a name="l207"><span class="ln">207  </span></a>    <span class="s0"># value is a comma separated string list:</span>
+<a name="l208"><span class="ln">208  </span></a>    <span class="s1">value = validate_comma_separated_list(setting</span><span class="s4">, </span><span class="s1">value</span><span class="s4">, </span><span class="s1">option_parser</span><span class="s4">,</span>
+<a name="l209"><span class="ln">209  </span></a>                                          <span class="s1">config_parser</span><span class="s4">, </span><span class="s1">config_section)</span>
+<a name="l210"><span class="ln">210  </span></a>    <span class="s0"># validate list elements:</span>
+<a name="l211"><span class="ln">211  </span></a>    <span class="s4">for </span><span class="s1">cls </span><span class="s4">in </span><span class="s1">value:</span>
+<a name="l212"><span class="ln">212  </span></a>        <span class="s1">normalized = docutils.nodes.make_id(cls)</span>
+<a name="l213"><span class="ln">213  </span></a>        <span class="s4">if </span><span class="s1">cls != normalized:</span>
+<a name="l214"><span class="ln">214  </span></a>            <span class="s4">raise </span><span class="s1">ValueError(</span><span class="s3">'Invalid class value %r (perhaps %r?)'</span>
+<a name="l215"><span class="ln">215  </span></a>                             <span class="s1">% (cls</span><span class="s4">, </span><span class="s1">normalized))</span>
+<a name="l216"><span class="ln">216  </span></a>    <span class="s4">return </span><span class="s1">value</span>
+<a name="l217"><span class="ln">217  </span></a>
+<a name="l218"><span class="ln">218  </span></a><span class="s4">def </span><span class="s1">validate_smartquotes_locales(setting</span><span class="s4">, </span><span class="s1">value</span><span class="s4">, </span><span class="s1">option_parser</span><span class="s4">,</span>
+<a name="l219"><span class="ln">219  </span></a>                         <span class="s1">config_parser=</span><span class="s4">None, </span><span class="s1">config_section=</span><span class="s4">None</span><span class="s1">):</span>
+<a name="l220"><span class="ln">220  </span></a>    <span class="s2">&quot;&quot;&quot;Check/normalize a comma separated list of smart quote definitions. 
+<a name="l221"><span class="ln">221  </span></a> 
+<a name="l222"><span class="ln">222  </span></a>    Return a list of (language-tag, quotes) string tuples.&quot;&quot;&quot;</span>
+<a name="l223"><span class="ln">223  </span></a>
+<a name="l224"><span class="ln">224  </span></a>    <span class="s0"># value is a comma separated string list:</span>
+<a name="l225"><span class="ln">225  </span></a>    <span class="s1">value = validate_comma_separated_list(setting</span><span class="s4">, </span><span class="s1">value</span><span class="s4">, </span><span class="s1">option_parser</span><span class="s4">,</span>
+<a name="l226"><span class="ln">226  </span></a>                                          <span class="s1">config_parser</span><span class="s4">, </span><span class="s1">config_section)</span>
+<a name="l227"><span class="ln">227  </span></a>    <span class="s0"># validate list elements</span>
+<a name="l228"><span class="ln">228  </span></a>    <span class="s1">lc_quotes = []</span>
+<a name="l229"><span class="ln">229  </span></a>    <span class="s4">for </span><span class="s1">item </span><span class="s4">in </span><span class="s1">value:</span>
+<a name="l230"><span class="ln">230  </span></a>        <span class="s4">try</span><span class="s1">:</span>
+<a name="l231"><span class="ln">231  </span></a>            <span class="s1">lang</span><span class="s4">, </span><span class="s1">quotes = item.split(</span><span class="s3">':'</span><span class="s4">, </span><span class="s5">1</span><span class="s1">)</span>
+<a name="l232"><span class="ln">232  </span></a>        <span class="s4">except </span><span class="s1">AttributeError:</span>
+<a name="l233"><span class="ln">233  </span></a>            <span class="s0"># this function is called for every option added to `value`</span>
+<a name="l234"><span class="ln">234  </span></a>            <span class="s0"># -&gt; ignore if already a tuple:</span>
+<a name="l235"><span class="ln">235  </span></a>            <span class="s1">lc_quotes.append(item)</span>
+<a name="l236"><span class="ln">236  </span></a>            <span class="s4">continue</span>
+<a name="l237"><span class="ln">237  </span></a>        <span class="s4">except </span><span class="s1">ValueError:</span>
+<a name="l238"><span class="ln">238  </span></a>            <span class="s4">raise </span><span class="s1">ValueError(</span><span class="s3">u'Invalid value &quot;%s&quot;.'</span>
+<a name="l239"><span class="ln">239  </span></a>                             <span class="s3">' Format is &quot;&lt;language&gt;:&lt;quotes&gt;&quot;.'</span>
+<a name="l240"><span class="ln">240  </span></a>                             <span class="s1">% item.encode(</span><span class="s3">'ascii'</span><span class="s4">, </span><span class="s3">'backslashreplace'</span><span class="s1">))</span>
+<a name="l241"><span class="ln">241  </span></a>        <span class="s0"># parse colon separated string list:</span>
+<a name="l242"><span class="ln">242  </span></a>        <span class="s1">quotes = quotes.strip()</span>
+<a name="l243"><span class="ln">243  </span></a>        <span class="s1">multichar_quotes = quotes.split(</span><span class="s3">':'</span><span class="s1">)</span>
+<a name="l244"><span class="ln">244  </span></a>        <span class="s4">if </span><span class="s1">len(multichar_quotes) == </span><span class="s5">4</span><span class="s1">:</span>
+<a name="l245"><span class="ln">245  </span></a>            <span class="s1">quotes = multichar_quotes</span>
+<a name="l246"><span class="ln">246  </span></a>        <span class="s4">elif </span><span class="s1">len(quotes) != </span><span class="s5">4</span><span class="s1">:</span>
+<a name="l247"><span class="ln">247  </span></a>            <span class="s4">raise </span><span class="s1">ValueError(</span><span class="s3">'Invalid value &quot;%s&quot;. Please specify 4 quotes</span><span class="s4">\n</span><span class="s3">'</span>
+<a name="l248"><span class="ln">248  </span></a>                <span class="s3">'    (primary open/close; secondary open/close).'</span>
+<a name="l249"><span class="ln">249  </span></a>                             <span class="s1">% item.encode(</span><span class="s3">'ascii'</span><span class="s4">, </span><span class="s3">'backslashreplace'</span><span class="s1">))</span>
+<a name="l250"><span class="ln">250  </span></a>        <span class="s1">lc_quotes.append((lang</span><span class="s4">, </span><span class="s1">quotes))</span>
+<a name="l251"><span class="ln">251  </span></a>    <span class="s4">return </span><span class="s1">lc_quotes</span>
+<a name="l252"><span class="ln">252  </span></a>
+<a name="l253"><span class="ln">253  </span></a><span class="s4">def </span><span class="s1">make_paths_absolute(pathdict</span><span class="s4">, </span><span class="s1">keys</span><span class="s4">, </span><span class="s1">base_path=</span><span class="s4">None</span><span class="s1">):</span>
+<a name="l254"><span class="ln">254  </span></a>    <span class="s2">&quot;&quot;&quot; 
+<a name="l255"><span class="ln">255  </span></a>    Interpret filesystem path settings relative to the `base_path` given. 
+<a name="l256"><span class="ln">256  </span></a> 
+<a name="l257"><span class="ln">257  </span></a>    Paths are values in `pathdict` whose keys are in `keys`.  Get `keys` from 
+<a name="l258"><span class="ln">258  </span></a>    `OptionParser.relative_path_settings`. 
+<a name="l259"><span class="ln">259  </span></a>    &quot;&quot;&quot;</span>
+<a name="l260"><span class="ln">260  </span></a>    <span class="s4">if </span><span class="s1">base_path </span><span class="s4">is None</span><span class="s1">:</span>
+<a name="l261"><span class="ln">261  </span></a>        <span class="s1">base_path = getcwd() </span><span class="s0"># type(base_path) == unicode</span>
+<a name="l262"><span class="ln">262  </span></a>        <span class="s0"># to allow combining non-ASCII cwd with unicode values in `pathdict`</span>
+<a name="l263"><span class="ln">263  </span></a>    <span class="s4">for </span><span class="s1">key </span><span class="s4">in </span><span class="s1">keys:</span>
+<a name="l264"><span class="ln">264  </span></a>        <span class="s4">if </span><span class="s1">key </span><span class="s4">in </span><span class="s1">pathdict:</span>
+<a name="l265"><span class="ln">265  </span></a>            <span class="s1">value = pathdict[key]</span>
+<a name="l266"><span class="ln">266  </span></a>            <span class="s4">if </span><span class="s1">isinstance(value</span><span class="s4">, </span><span class="s1">list):</span>
+<a name="l267"><span class="ln">267  </span></a>                <span class="s1">value = [make_one_path_absolute(base_path</span><span class="s4">, </span><span class="s1">path)</span>
+<a name="l268"><span class="ln">268  </span></a>                         <span class="s4">for </span><span class="s1">path </span><span class="s4">in </span><span class="s1">value]</span>
+<a name="l269"><span class="ln">269  </span></a>            <span class="s4">elif </span><span class="s1">value:</span>
+<a name="l270"><span class="ln">270  </span></a>                <span class="s1">value = make_one_path_absolute(base_path</span><span class="s4">, </span><span class="s1">value)</span>
+<a name="l271"><span class="ln">271  </span></a>            <span class="s1">pathdict[key] = value</span>
+<a name="l272"><span class="ln">272  </span></a>
+<a name="l273"><span class="ln">273  </span></a><span class="s4">def </span><span class="s1">make_one_path_absolute(base_path</span><span class="s4">, </span><span class="s1">path):</span>
+<a name="l274"><span class="ln">274  </span></a>    <span class="s4">return </span><span class="s1">os.path.abspath(os.path.join(base_path</span><span class="s4">, </span><span class="s1">path))</span>
+<a name="l275"><span class="ln">275  </span></a>
+<a name="l276"><span class="ln">276  </span></a><span class="s4">def </span><span class="s1">filter_settings_spec(settings_spec</span><span class="s4">, </span><span class="s1">*exclude</span><span class="s4">, </span><span class="s1">**replace):</span>
+<a name="l277"><span class="ln">277  </span></a>    <span class="s2">&quot;&quot;&quot;Return a copy of `settings_spec` excluding/replacing some settings. 
+<a name="l278"><span class="ln">278  </span></a> 
+<a name="l279"><span class="ln">279  </span></a>    `settings_spec` is a tuple of configuration settings with a structure 
+<a name="l280"><span class="ln">280  </span></a>    described for docutils.SettingsSpec.settings_spec. 
+<a name="l281"><span class="ln">281  </span></a> 
+<a name="l282"><span class="ln">282  </span></a>    Optional positional arguments are names of to-be-excluded settings. 
+<a name="l283"><span class="ln">283  </span></a>    Keyword arguments are option specification replacements. 
+<a name="l284"><span class="ln">284  </span></a>    (See the html4strict writer for an example.) 
+<a name="l285"><span class="ln">285  </span></a>    &quot;&quot;&quot;</span>
+<a name="l286"><span class="ln">286  </span></a>    <span class="s1">settings = list(settings_spec)</span>
+<a name="l287"><span class="ln">287  </span></a>    <span class="s0"># every third item is a sequence of option tuples</span>
+<a name="l288"><span class="ln">288  </span></a>    <span class="s4">for </span><span class="s1">i </span><span class="s4">in </span><span class="s1">range(</span><span class="s5">2</span><span class="s4">, </span><span class="s1">len(settings)</span><span class="s4">, </span><span class="s5">3</span><span class="s1">):</span>
+<a name="l289"><span class="ln">289  </span></a>        <span class="s1">newopts = []</span>
+<a name="l290"><span class="ln">290  </span></a>        <span class="s4">for </span><span class="s1">opt_spec </span><span class="s4">in </span><span class="s1">settings[i]:</span>
+<a name="l291"><span class="ln">291  </span></a>            <span class="s0"># opt_spec is (&quot;&lt;help&gt;&quot;, [&lt;option strings&gt;], {&lt;keyword args&gt;})</span>
+<a name="l292"><span class="ln">292  </span></a>            <span class="s1">opt_name = [opt_string[</span><span class="s5">2</span><span class="s1">:].replace(</span><span class="s3">'-'</span><span class="s4">, </span><span class="s3">'_'</span><span class="s1">)</span>
+<a name="l293"><span class="ln">293  </span></a>                        <span class="s4">for </span><span class="s1">opt_string </span><span class="s4">in </span><span class="s1">opt_spec[</span><span class="s5">1</span><span class="s1">]</span>
+<a name="l294"><span class="ln">294  </span></a>                            <span class="s4">if </span><span class="s1">opt_string.startswith(</span><span class="s3">'--'</span><span class="s1">)</span>
+<a name="l295"><span class="ln">295  </span></a>                       <span class="s1">][</span><span class="s5">0</span><span class="s1">]</span>
+<a name="l296"><span class="ln">296  </span></a>            <span class="s4">if </span><span class="s1">opt_name </span><span class="s4">in </span><span class="s1">exclude:</span>
+<a name="l297"><span class="ln">297  </span></a>                <span class="s4">continue</span>
+<a name="l298"><span class="ln">298  </span></a>            <span class="s4">if </span><span class="s1">opt_name </span><span class="s4">in </span><span class="s1">replace.keys():</span>
+<a name="l299"><span class="ln">299  </span></a>                <span class="s1">newopts.append(replace[opt_name])</span>
+<a name="l300"><span class="ln">300  </span></a>            <span class="s4">else</span><span class="s1">:</span>
+<a name="l301"><span class="ln">301  </span></a>                <span class="s1">newopts.append(opt_spec)</span>
+<a name="l302"><span class="ln">302  </span></a>        <span class="s1">settings[i] = tuple(newopts)</span>
+<a name="l303"><span class="ln">303  </span></a>    <span class="s4">return </span><span class="s1">tuple(settings)</span>
+<a name="l304"><span class="ln">304  </span></a>
+<a name="l305"><span class="ln">305  </span></a>
+<a name="l306"><span class="ln">306  </span></a><span class="s4">class </span><span class="s1">Values(optparse.Values):</span>
+<a name="l307"><span class="ln">307  </span></a>
+<a name="l308"><span class="ln">308  </span></a>    <span class="s2">&quot;&quot;&quot; 
+<a name="l309"><span class="ln">309  </span></a>    Updates list attributes by extension rather than by replacement. 
+<a name="l310"><span class="ln">310  </span></a>    Works in conjunction with the `OptionParser.lists` instance attribute. 
+<a name="l311"><span class="ln">311  </span></a>    &quot;&quot;&quot;</span>
+<a name="l312"><span class="ln">312  </span></a>
+<a name="l313"><span class="ln">313  </span></a>    <span class="s4">def </span><span class="s1">__init__(self</span><span class="s4">, </span><span class="s1">*args</span><span class="s4">, </span><span class="s1">**kwargs):</span>
+<a name="l314"><span class="ln">314  </span></a>        <span class="s1">optparse.Values.__init__(self</span><span class="s4">, </span><span class="s1">*args</span><span class="s4">, </span><span class="s1">**kwargs)</span>
+<a name="l315"><span class="ln">315  </span></a>        <span class="s4">if </span><span class="s1">(</span><span class="s4">not </span><span class="s1">hasattr(self</span><span class="s4">, </span><span class="s3">'record_dependencies'</span><span class="s1">)</span>
+<a name="l316"><span class="ln">316  </span></a>            <span class="s4">or </span><span class="s1">self.record_dependencies </span><span class="s4">is None</span><span class="s1">):</span>
+<a name="l317"><span class="ln">317  </span></a>            <span class="s0"># Set up dependency list, in case it is needed.</span>
+<a name="l318"><span class="ln">318  </span></a>            <span class="s1">self.record_dependencies = docutils.utils.DependencyList()</span>
+<a name="l319"><span class="ln">319  </span></a>
+<a name="l320"><span class="ln">320  </span></a>    <span class="s4">def </span><span class="s1">update(self</span><span class="s4">, </span><span class="s1">other_dict</span><span class="s4">, </span><span class="s1">option_parser):</span>
+<a name="l321"><span class="ln">321  </span></a>        <span class="s4">if </span><span class="s1">isinstance(other_dict</span><span class="s4">, </span><span class="s1">Values):</span>
+<a name="l322"><span class="ln">322  </span></a>            <span class="s1">other_dict = other_dict.__dict__</span>
+<a name="l323"><span class="ln">323  </span></a>        <span class="s1">other_dict = other_dict.copy()</span>
+<a name="l324"><span class="ln">324  </span></a>        <span class="s4">for </span><span class="s1">setting </span><span class="s4">in </span><span class="s1">option_parser.lists.keys():</span>
+<a name="l325"><span class="ln">325  </span></a>            <span class="s4">if </span><span class="s1">(hasattr(self</span><span class="s4">, </span><span class="s1">setting) </span><span class="s4">and </span><span class="s1">setting </span><span class="s4">in </span><span class="s1">other_dict):</span>
+<a name="l326"><span class="ln">326  </span></a>                <span class="s1">value = getattr(self</span><span class="s4">, </span><span class="s1">setting)</span>
+<a name="l327"><span class="ln">327  </span></a>                <span class="s4">if </span><span class="s1">value:</span>
+<a name="l328"><span class="ln">328  </span></a>                    <span class="s1">value += other_dict[setting]</span>
+<a name="l329"><span class="ln">329  </span></a>                    <span class="s4">del </span><span class="s1">other_dict[setting]</span>
+<a name="l330"><span class="ln">330  </span></a>        <span class="s1">self._update_loose(other_dict)</span>
+<a name="l331"><span class="ln">331  </span></a>
+<a name="l332"><span class="ln">332  </span></a>    <span class="s4">def </span><span class="s1">copy(self):</span>
+<a name="l333"><span class="ln">333  </span></a>        <span class="s2">&quot;&quot;&quot;Return a shallow copy of `self`.&quot;&quot;&quot;</span>
+<a name="l334"><span class="ln">334  </span></a>        <span class="s4">return </span><span class="s1">self.__class__(defaults=self.__dict__)</span>
+<a name="l335"><span class="ln">335  </span></a>
+<a name="l336"><span class="ln">336  </span></a>    <span class="s4">def </span><span class="s1">setdefault(self</span><span class="s4">, </span><span class="s1">name</span><span class="s4">, </span><span class="s1">default):</span>
+<a name="l337"><span class="ln">337  </span></a>        <span class="s2">&quot;&quot;&quot;V.setdefault(n[,d]) -&gt; getattr(V,n,d), also set D.n=d if n not in D or None. 
+<a name="l338"><span class="ln">338  </span></a>        &quot;&quot;&quot;</span>
+<a name="l339"><span class="ln">339  </span></a>        <span class="s4">if </span><span class="s1">getattr(self</span><span class="s4">, </span><span class="s1">name</span><span class="s4">, None</span><span class="s1">) </span><span class="s4">is None</span><span class="s1">:</span>
+<a name="l340"><span class="ln">340  </span></a>            <span class="s1">setattr(self</span><span class="s4">, </span><span class="s1">name</span><span class="s4">, </span><span class="s1">default)</span>
+<a name="l341"><span class="ln">341  </span></a>        <span class="s4">return </span><span class="s1">getattr(self</span><span class="s4">, </span><span class="s1">name)</span>
+<a name="l342"><span class="ln">342  </span></a>
+<a name="l343"><span class="ln">343  </span></a>
+<a name="l344"><span class="ln">344  </span></a><span class="s4">class </span><span class="s1">Option(optparse.Option):</span>
+<a name="l345"><span class="ln">345  </span></a>
+<a name="l346"><span class="ln">346  </span></a>    <span class="s1">ATTRS = optparse.Option.ATTRS + [</span><span class="s3">'validator'</span><span class="s4">, </span><span class="s3">'overrides'</span><span class="s1">]</span>
+<a name="l347"><span class="ln">347  </span></a>
+<a name="l348"><span class="ln">348  </span></a>    <span class="s4">def </span><span class="s1">process(self</span><span class="s4">, </span><span class="s1">opt</span><span class="s4">, </span><span class="s1">value</span><span class="s4">, </span><span class="s1">values</span><span class="s4">, </span><span class="s1">parser):</span>
+<a name="l349"><span class="ln">349  </span></a>        <span class="s2">&quot;&quot;&quot; 
+<a name="l350"><span class="ln">350  </span></a>        Call the validator function on applicable settings and 
+<a name="l351"><span class="ln">351  </span></a>        evaluate the 'overrides' option. 
+<a name="l352"><span class="ln">352  </span></a>        Extends `optparse.Option.process`. 
+<a name="l353"><span class="ln">353  </span></a>        &quot;&quot;&quot;</span>
+<a name="l354"><span class="ln">354  </span></a>        <span class="s1">result = optparse.Option.process(self</span><span class="s4">, </span><span class="s1">opt</span><span class="s4">, </span><span class="s1">value</span><span class="s4">, </span><span class="s1">values</span><span class="s4">, </span><span class="s1">parser)</span>
+<a name="l355"><span class="ln">355  </span></a>        <span class="s1">setting = self.dest</span>
+<a name="l356"><span class="ln">356  </span></a>        <span class="s4">if </span><span class="s1">setting:</span>
+<a name="l357"><span class="ln">357  </span></a>            <span class="s4">if </span><span class="s1">self.validator:</span>
+<a name="l358"><span class="ln">358  </span></a>                <span class="s1">value = getattr(values</span><span class="s4">, </span><span class="s1">setting)</span>
+<a name="l359"><span class="ln">359  </span></a>                <span class="s4">try</span><span class="s1">:</span>
+<a name="l360"><span class="ln">360  </span></a>                    <span class="s1">new_value = self.validator(setting</span><span class="s4">, </span><span class="s1">value</span><span class="s4">, </span><span class="s1">parser)</span>
+<a name="l361"><span class="ln">361  </span></a>                <span class="s4">except </span><span class="s1">Exception </span><span class="s4">as </span><span class="s1">error:</span>
+<a name="l362"><span class="ln">362  </span></a>                    <span class="s4">raise </span><span class="s1">optparse.OptionValueError(</span>
+<a name="l363"><span class="ln">363  </span></a>                        <span class="s3">'Error in option &quot;%s&quot;:</span><span class="s4">\n    </span><span class="s3">%s'</span>
+<a name="l364"><span class="ln">364  </span></a>                        <span class="s1">% (opt</span><span class="s4">, </span><span class="s1">ErrorString(error)))</span>
+<a name="l365"><span class="ln">365  </span></a>                <span class="s1">setattr(values</span><span class="s4">, </span><span class="s1">setting</span><span class="s4">, </span><span class="s1">new_value)</span>
+<a name="l366"><span class="ln">366  </span></a>            <span class="s4">if </span><span class="s1">self.overrides:</span>
+<a name="l367"><span class="ln">367  </span></a>                <span class="s1">setattr(values</span><span class="s4">, </span><span class="s1">self.overrides</span><span class="s4">, None</span><span class="s1">)</span>
+<a name="l368"><span class="ln">368  </span></a>        <span class="s4">return </span><span class="s1">result</span>
+<a name="l369"><span class="ln">369  </span></a>
+<a name="l370"><span class="ln">370  </span></a>
+<a name="l371"><span class="ln">371  </span></a><span class="s4">class </span><span class="s1">OptionParser(optparse.OptionParser</span><span class="s4">, </span><span class="s1">docutils.SettingsSpec):</span>
+<a name="l372"><span class="ln">372  </span></a>
+<a name="l373"><span class="ln">373  </span></a>    <span class="s2">&quot;&quot;&quot; 
+<a name="l374"><span class="ln">374  </span></a>    Parser for command-line and library use.  The `settings_spec` 
+<a name="l375"><span class="ln">375  </span></a>    specification here and in other Docutils components are merged to build 
+<a name="l376"><span class="ln">376  </span></a>    the set of command-line options and runtime settings for this process. 
+<a name="l377"><span class="ln">377  </span></a> 
+<a name="l378"><span class="ln">378  </span></a>    Common settings (defined below) and component-specific settings must not 
+<a name="l379"><span class="ln">379  </span></a>    conflict.  Short options are reserved for common settings, and components 
+<a name="l380"><span class="ln">380  </span></a>    are restrict to using long options. 
+<a name="l381"><span class="ln">381  </span></a>    &quot;&quot;&quot;</span>
+<a name="l382"><span class="ln">382  </span></a>
+<a name="l383"><span class="ln">383  </span></a>    <span class="s1">standard_config_files = [</span>
+<a name="l384"><span class="ln">384  </span></a>        <span class="s3">'/etc/docutils.conf'</span><span class="s4">,           </span><span class="s0"># system-wide</span>
+<a name="l385"><span class="ln">385  </span></a>        <span class="s3">'./docutils.conf'</span><span class="s4">,              </span><span class="s0"># project-specific</span>
+<a name="l386"><span class="ln">386  </span></a>        <span class="s3">'~/.docutils'</span><span class="s1">]                  </span><span class="s0"># user-specific</span>
+<a name="l387"><span class="ln">387  </span></a>    <span class="s3">&quot;&quot;&quot;Docutils configuration files, using ConfigParser syntax.  Filenames 
+<a name="l388"><span class="ln">388  </span></a>    will be tilde-expanded later.  Later files override earlier ones.&quot;&quot;&quot;</span>
+<a name="l389"><span class="ln">389  </span></a>
+<a name="l390"><span class="ln">390  </span></a>    <span class="s1">threshold_choices = </span><span class="s3">'info 1 warning 2 error 3 severe 4 none 5'</span><span class="s1">.split()</span>
+<a name="l391"><span class="ln">391  </span></a>    <span class="s3">&quot;&quot;&quot;Possible inputs for for --report and --halt threshold values.&quot;&quot;&quot;</span>
+<a name="l392"><span class="ln">392  </span></a>
+<a name="l393"><span class="ln">393  </span></a>    <span class="s1">thresholds = {</span><span class="s3">'info'</span><span class="s1">: </span><span class="s5">1</span><span class="s4">, </span><span class="s3">'warning'</span><span class="s1">: </span><span class="s5">2</span><span class="s4">, </span><span class="s3">'error'</span><span class="s1">: </span><span class="s5">3</span><span class="s4">, </span><span class="s3">'severe'</span><span class="s1">: </span><span class="s5">4</span><span class="s4">, </span><span class="s3">'none'</span><span class="s1">: </span><span class="s5">5</span><span class="s1">}</span>
+<a name="l394"><span class="ln">394  </span></a>    <span class="s3">&quot;&quot;&quot;Lookup table for --report and --halt threshold values.&quot;&quot;&quot;</span>
+<a name="l395"><span class="ln">395  </span></a>
+<a name="l396"><span class="ln">396  </span></a>    <span class="s1">booleans={</span><span class="s3">'1'</span><span class="s1">: </span><span class="s4">True, </span><span class="s3">'on'</span><span class="s1">: </span><span class="s4">True, </span><span class="s3">'yes'</span><span class="s1">: </span><span class="s4">True, </span><span class="s3">'true'</span><span class="s1">: </span><span class="s4">True,</span>
+<a name="l397"><span class="ln">397  </span></a>              <span class="s3">'0'</span><span class="s1">: </span><span class="s4">False, </span><span class="s3">'off'</span><span class="s1">: </span><span class="s4">False, </span><span class="s3">'no'</span><span class="s1">: </span><span class="s4">False, </span><span class="s3">'false'</span><span class="s1">: </span><span class="s4">False, </span><span class="s3">''</span><span class="s1">: </span><span class="s4">False</span><span class="s1">}</span>
+<a name="l398"><span class="ln">398  </span></a>    <span class="s3">&quot;&quot;&quot;Lookup table for boolean configuration file settings.&quot;&quot;&quot;</span>
+<a name="l399"><span class="ln">399  </span></a>
+<a name="l400"><span class="ln">400  </span></a>    <span class="s1">default_error_encoding = getattr(sys.stderr</span><span class="s4">, </span><span class="s3">'encoding'</span><span class="s4">,</span>
+<a name="l401"><span class="ln">401  </span></a>                                     <span class="s4">None</span><span class="s1">) </span><span class="s4">or </span><span class="s1">locale_encoding </span><span class="s4">or </span><span class="s3">'ascii'</span>
+<a name="l402"><span class="ln">402  </span></a>
+<a name="l403"><span class="ln">403  </span></a>    <span class="s1">default_error_encoding_error_handler = </span><span class="s3">'backslashreplace'</span>
+<a name="l404"><span class="ln">404  </span></a>
+<a name="l405"><span class="ln">405  </span></a>    <span class="s1">settings_spec = (</span>
+<a name="l406"><span class="ln">406  </span></a>        <span class="s3">'General Docutils Options'</span><span class="s4">,</span>
+<a name="l407"><span class="ln">407  </span></a>        <span class="s4">None,</span>
+<a name="l408"><span class="ln">408  </span></a>        <span class="s1">((</span><span class="s3">'Specify the document title as metadata.'</span><span class="s4">,</span>
+<a name="l409"><span class="ln">409  </span></a>          <span class="s1">[</span><span class="s3">'--title'</span><span class="s1">]</span><span class="s4">, </span><span class="s1">{})</span><span class="s4">,</span>
+<a name="l410"><span class="ln">410  </span></a>         <span class="s1">(</span><span class="s3">'Include a &quot;Generated by Docutils&quot; credit and link.'</span><span class="s4">,</span>
+<a name="l411"><span class="ln">411  </span></a>          <span class="s1">[</span><span class="s3">'--generator'</span><span class="s4">, </span><span class="s3">'-g'</span><span class="s1">]</span><span class="s4">, </span><span class="s1">{</span><span class="s3">'action'</span><span class="s1">: </span><span class="s3">'store_true'</span><span class="s4">,</span>
+<a name="l412"><span class="ln">412  </span></a>                                  <span class="s3">'validator'</span><span class="s1">: validate_boolean})</span><span class="s4">,</span>
+<a name="l413"><span class="ln">413  </span></a>         <span class="s1">(</span><span class="s3">'Do not include a generator credit.'</span><span class="s4">,</span>
+<a name="l414"><span class="ln">414  </span></a>          <span class="s1">[</span><span class="s3">'--no-generator'</span><span class="s1">]</span><span class="s4">, </span><span class="s1">{</span><span class="s3">'action'</span><span class="s1">: </span><span class="s3">'store_false'</span><span class="s4">, </span><span class="s3">'dest'</span><span class="s1">: </span><span class="s3">'generator'</span><span class="s1">})</span><span class="s4">,</span>
+<a name="l415"><span class="ln">415  </span></a>         <span class="s1">(</span><span class="s3">'Include the date at the end of the document (UTC).'</span><span class="s4">,</span>
+<a name="l416"><span class="ln">416  </span></a>          <span class="s1">[</span><span class="s3">'--date'</span><span class="s4">, </span><span class="s3">'-d'</span><span class="s1">]</span><span class="s4">, </span><span class="s1">{</span><span class="s3">'action'</span><span class="s1">: </span><span class="s3">'store_const'</span><span class="s4">, </span><span class="s3">'const'</span><span class="s1">: </span><span class="s3">'%Y-%m-%d'</span><span class="s4">,</span>
+<a name="l417"><span class="ln">417  </span></a>                             <span class="s3">'dest'</span><span class="s1">: </span><span class="s3">'datestamp'</span><span class="s1">})</span><span class="s4">,</span>
+<a name="l418"><span class="ln">418  </span></a>         <span class="s1">(</span><span class="s3">'Include the time &amp; date (UTC).'</span><span class="s4">,</span>
+<a name="l419"><span class="ln">419  </span></a>          <span class="s1">[</span><span class="s3">'--time'</span><span class="s4">, </span><span class="s3">'-t'</span><span class="s1">]</span><span class="s4">, </span><span class="s1">{</span><span class="s3">'action'</span><span class="s1">: </span><span class="s3">'store_const'</span><span class="s4">,</span>
+<a name="l420"><span class="ln">420  </span></a>                             <span class="s3">'const'</span><span class="s1">: </span><span class="s3">'%Y-%m-%d %H:%M UTC'</span><span class="s4">,</span>
+<a name="l421"><span class="ln">421  </span></a>                             <span class="s3">'dest'</span><span class="s1">: </span><span class="s3">'datestamp'</span><span class="s1">})</span><span class="s4">,</span>
+<a name="l422"><span class="ln">422  </span></a>         <span class="s1">(</span><span class="s3">'Do not include a datestamp of any kind.'</span><span class="s4">,</span>
+<a name="l423"><span class="ln">423  </span></a>          <span class="s1">[</span><span class="s3">'--no-datestamp'</span><span class="s1">]</span><span class="s4">, </span><span class="s1">{</span><span class="s3">'action'</span><span class="s1">: </span><span class="s3">'store_const'</span><span class="s4">, </span><span class="s3">'const'</span><span class="s1">: </span><span class="s4">None,</span>
+<a name="l424"><span class="ln">424  </span></a>                               <span class="s3">'dest'</span><span class="s1">: </span><span class="s3">'datestamp'</span><span class="s1">})</span><span class="s4">,</span>
+<a name="l425"><span class="ln">425  </span></a>         <span class="s1">(</span><span class="s3">'Include a &quot;View document source&quot; link.'</span><span class="s4">,</span>
+<a name="l426"><span class="ln">426  </span></a>          <span class="s1">[</span><span class="s3">'--source-link'</span><span class="s4">, </span><span class="s3">'-s'</span><span class="s1">]</span><span class="s4">, </span><span class="s1">{</span><span class="s3">'action'</span><span class="s1">: </span><span class="s3">'store_true'</span><span class="s4">,</span>
+<a name="l427"><span class="ln">427  </span></a>                                    <span class="s3">'validator'</span><span class="s1">: validate_boolean})</span><span class="s4">,</span>
+<a name="l428"><span class="ln">428  </span></a>         <span class="s1">(</span><span class="s3">'Use &lt;URL&gt; for a source link; implies --source-link.'</span><span class="s4">,</span>
+<a name="l429"><span class="ln">429  </span></a>          <span class="s1">[</span><span class="s3">'--source-url'</span><span class="s1">]</span><span class="s4">, </span><span class="s1">{</span><span class="s3">'metavar'</span><span class="s1">: </span><span class="s3">'&lt;URL&gt;'</span><span class="s1">})</span><span class="s4">,</span>
+<a name="l430"><span class="ln">430  </span></a>         <span class="s1">(</span><span class="s3">'Do not include a &quot;View document source&quot; link.'</span><span class="s4">,</span>
+<a name="l431"><span class="ln">431  </span></a>          <span class="s1">[</span><span class="s3">'--no-source-link'</span><span class="s1">]</span><span class="s4">,</span>
+<a name="l432"><span class="ln">432  </span></a>          <span class="s1">{</span><span class="s3">'action'</span><span class="s1">: </span><span class="s3">'callback'</span><span class="s4">, </span><span class="s3">'callback'</span><span class="s1">: store_multiple</span><span class="s4">,</span>
+<a name="l433"><span class="ln">433  </span></a>           <span class="s3">'callback_args'</span><span class="s1">: (</span><span class="s3">'source_link'</span><span class="s4">, </span><span class="s3">'source_url'</span><span class="s1">)})</span><span class="s4">,</span>
+<a name="l434"><span class="ln">434  </span></a>         <span class="s1">(</span><span class="s3">'Link from section headers to TOC entries.  (default)'</span><span class="s4">,</span>
+<a name="l435"><span class="ln">435  </span></a>          <span class="s1">[</span><span class="s3">'--toc-entry-backlinks'</span><span class="s1">]</span><span class="s4">,</span>
+<a name="l436"><span class="ln">436  </span></a>          <span class="s1">{</span><span class="s3">'dest'</span><span class="s1">: </span><span class="s3">'toc_backlinks'</span><span class="s4">, </span><span class="s3">'action'</span><span class="s1">: </span><span class="s3">'store_const'</span><span class="s4">, </span><span class="s3">'const'</span><span class="s1">: </span><span class="s3">'entry'</span><span class="s4">,</span>
+<a name="l437"><span class="ln">437  </span></a>           <span class="s3">'default'</span><span class="s1">: </span><span class="s3">'entry'</span><span class="s1">})</span><span class="s4">,</span>
+<a name="l438"><span class="ln">438  </span></a>         <span class="s1">(</span><span class="s3">'Link from section headers to the top of the TOC.'</span><span class="s4">,</span>
+<a name="l439"><span class="ln">439  </span></a>          <span class="s1">[</span><span class="s3">'--toc-top-backlinks'</span><span class="s1">]</span><span class="s4">,</span>
+<a name="l440"><span class="ln">440  </span></a>          <span class="s1">{</span><span class="s3">'dest'</span><span class="s1">: </span><span class="s3">'toc_backlinks'</span><span class="s4">, </span><span class="s3">'action'</span><span class="s1">: </span><span class="s3">'store_const'</span><span class="s4">, </span><span class="s3">'const'</span><span class="s1">: </span><span class="s3">'top'</span><span class="s1">})</span><span class="s4">,</span>
+<a name="l441"><span class="ln">441  </span></a>         <span class="s1">(</span><span class="s3">'Disable backlinks to the table of contents.'</span><span class="s4">,</span>
+<a name="l442"><span class="ln">442  </span></a>          <span class="s1">[</span><span class="s3">'--no-toc-backlinks'</span><span class="s1">]</span><span class="s4">,</span>
+<a name="l443"><span class="ln">443  </span></a>          <span class="s1">{</span><span class="s3">'dest'</span><span class="s1">: </span><span class="s3">'toc_backlinks'</span><span class="s4">, </span><span class="s3">'action'</span><span class="s1">: </span><span class="s3">'store_false'</span><span class="s1">})</span><span class="s4">,</span>
+<a name="l444"><span class="ln">444  </span></a>         <span class="s1">(</span><span class="s3">'Link from footnotes/citations to references. (default)'</span><span class="s4">,</span>
+<a name="l445"><span class="ln">445  </span></a>          <span class="s1">[</span><span class="s3">'--footnote-backlinks'</span><span class="s1">]</span><span class="s4">,</span>
+<a name="l446"><span class="ln">446  </span></a>          <span class="s1">{</span><span class="s3">'action'</span><span class="s1">: </span><span class="s3">'store_true'</span><span class="s4">, </span><span class="s3">'default'</span><span class="s1">: </span><span class="s5">1</span><span class="s4">,</span>
+<a name="l447"><span class="ln">447  </span></a>           <span class="s3">'validator'</span><span class="s1">: validate_boolean})</span><span class="s4">,</span>
+<a name="l448"><span class="ln">448  </span></a>         <span class="s1">(</span><span class="s3">'Disable backlinks from footnotes and citations.'</span><span class="s4">,</span>
+<a name="l449"><span class="ln">449  </span></a>          <span class="s1">[</span><span class="s3">'--no-footnote-backlinks'</span><span class="s1">]</span><span class="s4">,</span>
+<a name="l450"><span class="ln">450  </span></a>          <span class="s1">{</span><span class="s3">'dest'</span><span class="s1">: </span><span class="s3">'footnote_backlinks'</span><span class="s4">, </span><span class="s3">'action'</span><span class="s1">: </span><span class="s3">'store_false'</span><span class="s1">})</span><span class="s4">,</span>
+<a name="l451"><span class="ln">451  </span></a>         <span class="s1">(</span><span class="s3">'Enable section numbering by Docutils.  (default)'</span><span class="s4">,</span>
+<a name="l452"><span class="ln">452  </span></a>          <span class="s1">[</span><span class="s3">'--section-numbering'</span><span class="s1">]</span><span class="s4">,</span>
+<a name="l453"><span class="ln">453  </span></a>          <span class="s1">{</span><span class="s3">'action'</span><span class="s1">: </span><span class="s3">'store_true'</span><span class="s4">, </span><span class="s3">'dest'</span><span class="s1">: </span><span class="s3">'sectnum_xform'</span><span class="s4">,</span>
+<a name="l454"><span class="ln">454  </span></a>           <span class="s3">'default'</span><span class="s1">: </span><span class="s5">1</span><span class="s4">, </span><span class="s3">'validator'</span><span class="s1">: validate_boolean})</span><span class="s4">,</span>
+<a name="l455"><span class="ln">455  </span></a>         <span class="s1">(</span><span class="s3">'Disable section numbering by Docutils.'</span><span class="s4">,</span>
+<a name="l456"><span class="ln">456  </span></a>          <span class="s1">[</span><span class="s3">'--no-section-numbering'</span><span class="s1">]</span><span class="s4">,</span>
+<a name="l457"><span class="ln">457  </span></a>          <span class="s1">{</span><span class="s3">'action'</span><span class="s1">: </span><span class="s3">'store_false'</span><span class="s4">, </span><span class="s3">'dest'</span><span class="s1">: </span><span class="s3">'sectnum_xform'</span><span class="s1">})</span><span class="s4">,</span>
+<a name="l458"><span class="ln">458  </span></a>         <span class="s1">(</span><span class="s3">'Remove comment elements from the document tree.'</span><span class="s4">,</span>
+<a name="l459"><span class="ln">459  </span></a>          <span class="s1">[</span><span class="s3">'--strip-comments'</span><span class="s1">]</span><span class="s4">,</span>
+<a name="l460"><span class="ln">460  </span></a>          <span class="s1">{</span><span class="s3">'action'</span><span class="s1">: </span><span class="s3">'store_true'</span><span class="s4">, </span><span class="s3">'validator'</span><span class="s1">: validate_boolean})</span><span class="s4">,</span>
+<a name="l461"><span class="ln">461  </span></a>         <span class="s1">(</span><span class="s3">'Leave comment elements in the document tree. (default)'</span><span class="s4">,</span>
+<a name="l462"><span class="ln">462  </span></a>          <span class="s1">[</span><span class="s3">'--leave-comments'</span><span class="s1">]</span><span class="s4">,</span>
+<a name="l463"><span class="ln">463  </span></a>          <span class="s1">{</span><span class="s3">'action'</span><span class="s1">: </span><span class="s3">'store_false'</span><span class="s4">, </span><span class="s3">'dest'</span><span class="s1">: </span><span class="s3">'strip_comments'</span><span class="s1">})</span><span class="s4">,</span>
+<a name="l464"><span class="ln">464  </span></a>         <span class="s1">(</span><span class="s3">'Remove all elements with classes=&quot;&lt;class&gt;&quot; from the document tree. '</span>
+<a name="l465"><span class="ln">465  </span></a>          <span class="s3">'Warning: potentially dangerous; use with caution. '</span>
+<a name="l466"><span class="ln">466  </span></a>          <span class="s3">'(Multiple-use option.)'</span><span class="s4">,</span>
+<a name="l467"><span class="ln">467  </span></a>          <span class="s1">[</span><span class="s3">'--strip-elements-with-class'</span><span class="s1">]</span><span class="s4">,</span>
+<a name="l468"><span class="ln">468  </span></a>          <span class="s1">{</span><span class="s3">'action'</span><span class="s1">: </span><span class="s3">'append'</span><span class="s4">, </span><span class="s3">'dest'</span><span class="s1">: </span><span class="s3">'strip_elements_with_classes'</span><span class="s4">,</span>
+<a name="l469"><span class="ln">469  </span></a>           <span class="s3">'metavar'</span><span class="s1">: </span><span class="s3">'&lt;class&gt;'</span><span class="s4">, </span><span class="s3">'validator'</span><span class="s1">: validate_strip_class})</span><span class="s4">,</span>
+<a name="l470"><span class="ln">470  </span></a>         <span class="s1">(</span><span class="s3">'Remove all classes=&quot;&lt;class&gt;&quot; attributes from elements in the '</span>
+<a name="l471"><span class="ln">471  </span></a>          <span class="s3">'document tree. Warning: potentially dangerous; use with caution. '</span>
+<a name="l472"><span class="ln">472  </span></a>          <span class="s3">'(Multiple-use option.)'</span><span class="s4">,</span>
+<a name="l473"><span class="ln">473  </span></a>          <span class="s1">[</span><span class="s3">'--strip-class'</span><span class="s1">]</span><span class="s4">,</span>
+<a name="l474"><span class="ln">474  </span></a>          <span class="s1">{</span><span class="s3">'action'</span><span class="s1">: </span><span class="s3">'append'</span><span class="s4">, </span><span class="s3">'dest'</span><span class="s1">: </span><span class="s3">'strip_classes'</span><span class="s4">,</span>
+<a name="l475"><span class="ln">475  </span></a>           <span class="s3">'metavar'</span><span class="s1">: </span><span class="s3">'&lt;class&gt;'</span><span class="s4">, </span><span class="s3">'validator'</span><span class="s1">: validate_strip_class})</span><span class="s4">,</span>
+<a name="l476"><span class="ln">476  </span></a>         <span class="s1">(</span><span class="s3">'Report system messages at or higher than &lt;level&gt;: &quot;info&quot; or &quot;1&quot;, '</span>
+<a name="l477"><span class="ln">477  </span></a>          <span class="s3">'&quot;warning&quot;/&quot;2&quot; (default), &quot;error&quot;/&quot;3&quot;, &quot;severe&quot;/&quot;4&quot;, &quot;none&quot;/&quot;5&quot;'</span><span class="s4">,</span>
+<a name="l478"><span class="ln">478  </span></a>          <span class="s1">[</span><span class="s3">'--report'</span><span class="s4">, </span><span class="s3">'-r'</span><span class="s1">]</span><span class="s4">, </span><span class="s1">{</span><span class="s3">'choices'</span><span class="s1">: threshold_choices</span><span class="s4">, </span><span class="s3">'default'</span><span class="s1">: </span><span class="s5">2</span><span class="s4">,</span>
+<a name="l479"><span class="ln">479  </span></a>                               <span class="s3">'dest'</span><span class="s1">: </span><span class="s3">'report_level'</span><span class="s4">, </span><span class="s3">'metavar'</span><span class="s1">: </span><span class="s3">'&lt;level&gt;'</span><span class="s4">,</span>
+<a name="l480"><span class="ln">480  </span></a>                               <span class="s3">'validator'</span><span class="s1">: validate_threshold})</span><span class="s4">,</span>
+<a name="l481"><span class="ln">481  </span></a>         <span class="s1">(</span><span class="s3">'Report all system messages.  (Same as &quot;--report=1&quot;.)'</span><span class="s4">,</span>
+<a name="l482"><span class="ln">482  </span></a>          <span class="s1">[</span><span class="s3">'--verbose'</span><span class="s4">, </span><span class="s3">'-v'</span><span class="s1">]</span><span class="s4">, </span><span class="s1">{</span><span class="s3">'action'</span><span class="s1">: </span><span class="s3">'store_const'</span><span class="s4">, </span><span class="s3">'const'</span><span class="s1">: </span><span class="s5">1</span><span class="s4">,</span>
+<a name="l483"><span class="ln">483  </span></a>                                <span class="s3">'dest'</span><span class="s1">: </span><span class="s3">'report_level'</span><span class="s1">})</span><span class="s4">,</span>
+<a name="l484"><span class="ln">484  </span></a>         <span class="s1">(</span><span class="s3">'Report no system messages.  (Same as &quot;--report=5&quot;.)'</span><span class="s4">,</span>
+<a name="l485"><span class="ln">485  </span></a>          <span class="s1">[</span><span class="s3">'--quiet'</span><span class="s4">, </span><span class="s3">'-q'</span><span class="s1">]</span><span class="s4">, </span><span class="s1">{</span><span class="s3">'action'</span><span class="s1">: </span><span class="s3">'store_const'</span><span class="s4">, </span><span class="s3">'const'</span><span class="s1">: </span><span class="s5">5</span><span class="s4">,</span>
+<a name="l486"><span class="ln">486  </span></a>                              <span class="s3">'dest'</span><span class="s1">: </span><span class="s3">'report_level'</span><span class="s1">})</span><span class="s4">,</span>
+<a name="l487"><span class="ln">487  </span></a>         <span class="s1">(</span><span class="s3">'Halt execution at system messages at or above &lt;level&gt;.  '</span>
+<a name="l488"><span class="ln">488  </span></a>          <span class="s3">'Levels as in --report.  Default: 4 (severe).'</span><span class="s4">,</span>
+<a name="l489"><span class="ln">489  </span></a>          <span class="s1">[</span><span class="s3">'--halt'</span><span class="s1">]</span><span class="s4">, </span><span class="s1">{</span><span class="s3">'choices'</span><span class="s1">: threshold_choices</span><span class="s4">, </span><span class="s3">'dest'</span><span class="s1">: </span><span class="s3">'halt_level'</span><span class="s4">,</span>
+<a name="l490"><span class="ln">490  </span></a>                       <span class="s3">'default'</span><span class="s1">: </span><span class="s5">4</span><span class="s4">, </span><span class="s3">'metavar'</span><span class="s1">: </span><span class="s3">'&lt;level&gt;'</span><span class="s4">,</span>
+<a name="l491"><span class="ln">491  </span></a>                       <span class="s3">'validator'</span><span class="s1">: validate_threshold})</span><span class="s4">,</span>
+<a name="l492"><span class="ln">492  </span></a>         <span class="s1">(</span><span class="s3">'Halt at the slightest problem.  Same as &quot;--halt=info&quot;.'</span><span class="s4">,</span>
+<a name="l493"><span class="ln">493  </span></a>          <span class="s1">[</span><span class="s3">'--strict'</span><span class="s1">]</span><span class="s4">, </span><span class="s1">{</span><span class="s3">'action'</span><span class="s1">: </span><span class="s3">'store_const'</span><span class="s4">, </span><span class="s3">'const'</span><span class="s1">: </span><span class="s5">1</span><span class="s4">,</span>
+<a name="l494"><span class="ln">494  </span></a>                         <span class="s3">'dest'</span><span class="s1">: </span><span class="s3">'halt_level'</span><span class="s1">})</span><span class="s4">,</span>
+<a name="l495"><span class="ln">495  </span></a>         <span class="s1">(</span><span class="s3">'Enable a non-zero exit status for non-halting system messages at '</span>
+<a name="l496"><span class="ln">496  </span></a>          <span class="s3">'or above &lt;level&gt;.  Default: 5 (disabled).'</span><span class="s4">,</span>
+<a name="l497"><span class="ln">497  </span></a>          <span class="s1">[</span><span class="s3">'--exit-status'</span><span class="s1">]</span><span class="s4">, </span><span class="s1">{</span><span class="s3">'choices'</span><span class="s1">: threshold_choices</span><span class="s4">,</span>
+<a name="l498"><span class="ln">498  </span></a>                              <span class="s3">'dest'</span><span class="s1">: </span><span class="s3">'exit_status_level'</span><span class="s4">,</span>
+<a name="l499"><span class="ln">499  </span></a>                              <span class="s3">'default'</span><span class="s1">: </span><span class="s5">5</span><span class="s4">, </span><span class="s3">'metavar'</span><span class="s1">: </span><span class="s3">'&lt;level&gt;'</span><span class="s4">,</span>
+<a name="l500"><span class="ln">500  </span></a>                              <span class="s3">'validator'</span><span class="s1">: validate_threshold})</span><span class="s4">,</span>
+<a name="l501"><span class="ln">501  </span></a>         <span class="s1">(</span><span class="s3">'Enable debug-level system messages and diagnostics.'</span><span class="s4">,</span>
+<a name="l502"><span class="ln">502  </span></a>          <span class="s1">[</span><span class="s3">'--debug'</span><span class="s1">]</span><span class="s4">, </span><span class="s1">{</span><span class="s3">'action'</span><span class="s1">: </span><span class="s3">'store_true'</span><span class="s4">, </span><span class="s3">'validator'</span><span class="s1">: validate_boolean})</span><span class="s4">,</span>
+<a name="l503"><span class="ln">503  </span></a>         <span class="s1">(</span><span class="s3">'Disable debug output.  (default)'</span><span class="s4">,</span>
+<a name="l504"><span class="ln">504  </span></a>          <span class="s1">[</span><span class="s3">'--no-debug'</span><span class="s1">]</span><span class="s4">, </span><span class="s1">{</span><span class="s3">'action'</span><span class="s1">: </span><span class="s3">'store_false'</span><span class="s4">, </span><span class="s3">'dest'</span><span class="s1">: </span><span class="s3">'debug'</span><span class="s1">})</span><span class="s4">,</span>
+<a name="l505"><span class="ln">505  </span></a>         <span class="s1">(</span><span class="s3">'Send the output of system messages to &lt;file&gt;.'</span><span class="s4">,</span>
+<a name="l506"><span class="ln">506  </span></a>          <span class="s1">[</span><span class="s3">'--warnings'</span><span class="s1">]</span><span class="s4">, </span><span class="s1">{</span><span class="s3">'dest'</span><span class="s1">: </span><span class="s3">'warning_stream'</span><span class="s4">, </span><span class="s3">'metavar'</span><span class="s1">: </span><span class="s3">'&lt;file&gt;'</span><span class="s1">})</span><span class="s4">,</span>
+<a name="l507"><span class="ln">507  </span></a>         <span class="s1">(</span><span class="s3">'Enable Python tracebacks when Docutils is halted.'</span><span class="s4">,</span>
+<a name="l508"><span class="ln">508  </span></a>          <span class="s1">[</span><span class="s3">'--traceback'</span><span class="s1">]</span><span class="s4">, </span><span class="s1">{</span><span class="s3">'action'</span><span class="s1">: </span><span class="s3">'store_true'</span><span class="s4">, </span><span class="s3">'default'</span><span class="s1">: </span><span class="s4">None,</span>
+<a name="l509"><span class="ln">509  </span></a>                            <span class="s3">'validator'</span><span class="s1">: validate_boolean})</span><span class="s4">,</span>
+<a name="l510"><span class="ln">510  </span></a>         <span class="s1">(</span><span class="s3">'Disable Python tracebacks.  (default)'</span><span class="s4">,</span>
+<a name="l511"><span class="ln">511  </span></a>          <span class="s1">[</span><span class="s3">'--no-traceback'</span><span class="s1">]</span><span class="s4">, </span><span class="s1">{</span><span class="s3">'dest'</span><span class="s1">: </span><span class="s3">'traceback'</span><span class="s4">, </span><span class="s3">'action'</span><span class="s1">: </span><span class="s3">'store_false'</span><span class="s1">})</span><span class="s4">,</span>
+<a name="l512"><span class="ln">512  </span></a>         <span class="s1">(</span><span class="s3">'Specify the encoding and optionally the '</span>
+<a name="l513"><span class="ln">513  </span></a>          <span class="s3">'error handler of input text.  Default: &lt;locale-dependent&gt;:strict.'</span><span class="s4">,</span>
+<a name="l514"><span class="ln">514  </span></a>          <span class="s1">[</span><span class="s3">'--input-encoding'</span><span class="s4">, </span><span class="s3">'-i'</span><span class="s1">]</span><span class="s4">,</span>
+<a name="l515"><span class="ln">515  </span></a>          <span class="s1">{</span><span class="s3">'metavar'</span><span class="s1">: </span><span class="s3">'&lt;name[:handler]&gt;'</span><span class="s4">,</span>
+<a name="l516"><span class="ln">516  </span></a>           <span class="s3">'validator'</span><span class="s1">: validate_encoding_and_error_handler})</span><span class="s4">,</span>
+<a name="l517"><span class="ln">517  </span></a>         <span class="s1">(</span><span class="s3">'Specify the error handler for undecodable characters.  '</span>
+<a name="l518"><span class="ln">518  </span></a>          <span class="s3">'Choices: &quot;strict&quot; (default), &quot;ignore&quot;, and &quot;replace&quot;.'</span><span class="s4">,</span>
+<a name="l519"><span class="ln">519  </span></a>          <span class="s1">[</span><span class="s3">'--input-encoding-error-handler'</span><span class="s1">]</span><span class="s4">,</span>
+<a name="l520"><span class="ln">520  </span></a>          <span class="s1">{</span><span class="s3">'default'</span><span class="s1">: </span><span class="s3">'strict'</span><span class="s4">, </span><span class="s3">'validator'</span><span class="s1">: validate_encoding_error_handler})</span><span class="s4">,</span>
+<a name="l521"><span class="ln">521  </span></a>         <span class="s1">(</span><span class="s3">'Specify the text encoding and optionally the error handler for '</span>
+<a name="l522"><span class="ln">522  </span></a>          <span class="s3">'output.  Default: UTF-8:strict.'</span><span class="s4">,</span>
+<a name="l523"><span class="ln">523  </span></a>          <span class="s1">[</span><span class="s3">'--output-encoding'</span><span class="s4">, </span><span class="s3">'-o'</span><span class="s1">]</span><span class="s4">,</span>
+<a name="l524"><span class="ln">524  </span></a>          <span class="s1">{</span><span class="s3">'metavar'</span><span class="s1">: </span><span class="s3">'&lt;name[:handler]&gt;'</span><span class="s4">, </span><span class="s3">'default'</span><span class="s1">: </span><span class="s3">'utf-8'</span><span class="s4">,</span>
+<a name="l525"><span class="ln">525  </span></a>           <span class="s3">'validator'</span><span class="s1">: validate_encoding_and_error_handler})</span><span class="s4">,</span>
+<a name="l526"><span class="ln">526  </span></a>         <span class="s1">(</span><span class="s3">'Specify error handler for unencodable output characters; '</span>
+<a name="l527"><span class="ln">527  </span></a>          <span class="s3">'&quot;strict&quot; (default), &quot;ignore&quot;, &quot;replace&quot;, '</span>
+<a name="l528"><span class="ln">528  </span></a>          <span class="s3">'&quot;xmlcharrefreplace&quot;, &quot;backslashreplace&quot;.'</span><span class="s4">,</span>
+<a name="l529"><span class="ln">529  </span></a>          <span class="s1">[</span><span class="s3">'--output-encoding-error-handler'</span><span class="s1">]</span><span class="s4">,</span>
+<a name="l530"><span class="ln">530  </span></a>          <span class="s1">{</span><span class="s3">'default'</span><span class="s1">: </span><span class="s3">'strict'</span><span class="s4">, </span><span class="s3">'validator'</span><span class="s1">: validate_encoding_error_handler})</span><span class="s4">,</span>
+<a name="l531"><span class="ln">531  </span></a>         <span class="s1">(</span><span class="s3">'Specify text encoding and error handler for error output.  '</span>
+<a name="l532"><span class="ln">532  </span></a>          <span class="s3">'Default: %s:%s.'</span>
+<a name="l533"><span class="ln">533  </span></a>          <span class="s1">% (default_error_encoding</span><span class="s4">, </span><span class="s1">default_error_encoding_error_handler)</span><span class="s4">,</span>
+<a name="l534"><span class="ln">534  </span></a>          <span class="s1">[</span><span class="s3">'--error-encoding'</span><span class="s4">, </span><span class="s3">'-e'</span><span class="s1">]</span><span class="s4">,</span>
+<a name="l535"><span class="ln">535  </span></a>          <span class="s1">{</span><span class="s3">'metavar'</span><span class="s1">: </span><span class="s3">'&lt;name[:handler]&gt;'</span><span class="s4">, </span><span class="s3">'default'</span><span class="s1">: default_error_encoding</span><span class="s4">,</span>
+<a name="l536"><span class="ln">536  </span></a>           <span class="s3">'validator'</span><span class="s1">: validate_encoding_and_error_handler})</span><span class="s4">,</span>
+<a name="l537"><span class="ln">537  </span></a>         <span class="s1">(</span><span class="s3">'Specify the error handler for unencodable characters in '</span>
+<a name="l538"><span class="ln">538  </span></a>          <span class="s3">'error output.  Default: %s.'</span>
+<a name="l539"><span class="ln">539  </span></a>          <span class="s1">% default_error_encoding_error_handler</span><span class="s4">,</span>
+<a name="l540"><span class="ln">540  </span></a>          <span class="s1">[</span><span class="s3">'--error-encoding-error-handler'</span><span class="s1">]</span><span class="s4">,</span>
+<a name="l541"><span class="ln">541  </span></a>          <span class="s1">{</span><span class="s3">'default'</span><span class="s1">: default_error_encoding_error_handler</span><span class="s4">,</span>
+<a name="l542"><span class="ln">542  </span></a>           <span class="s3">'validator'</span><span class="s1">: validate_encoding_error_handler})</span><span class="s4">,</span>
+<a name="l543"><span class="ln">543  </span></a>         <span class="s1">(</span><span class="s3">'Specify the language (as BCP 47 language tag).  Default: en.'</span><span class="s4">,</span>
+<a name="l544"><span class="ln">544  </span></a>          <span class="s1">[</span><span class="s3">'--language'</span><span class="s4">, </span><span class="s3">'-l'</span><span class="s1">]</span><span class="s4">, </span><span class="s1">{</span><span class="s3">'dest'</span><span class="s1">: </span><span class="s3">'language_code'</span><span class="s4">, </span><span class="s3">'default'</span><span class="s1">: </span><span class="s3">'en'</span><span class="s4">,</span>
+<a name="l545"><span class="ln">545  </span></a>                                 <span class="s3">'metavar'</span><span class="s1">: </span><span class="s3">'&lt;name&gt;'</span><span class="s1">})</span><span class="s4">,</span>
+<a name="l546"><span class="ln">546  </span></a>         <span class="s1">(</span><span class="s3">'Write output file dependencies to &lt;file&gt;.'</span><span class="s4">,</span>
+<a name="l547"><span class="ln">547  </span></a>          <span class="s1">[</span><span class="s3">'--record-dependencies'</span><span class="s1">]</span><span class="s4">,</span>
+<a name="l548"><span class="ln">548  </span></a>          <span class="s1">{</span><span class="s3">'metavar'</span><span class="s1">: </span><span class="s3">'&lt;file&gt;'</span><span class="s4">, </span><span class="s3">'validator'</span><span class="s1">: validate_dependency_file</span><span class="s4">,</span>
+<a name="l549"><span class="ln">549  </span></a>           <span class="s3">'default'</span><span class="s1">: </span><span class="s4">None</span><span class="s1">})</span><span class="s4">,           </span><span class="s0"># default set in Values class</span>
+<a name="l550"><span class="ln">550  </span></a>         <span class="s1">(</span><span class="s3">'Read configuration settings from &lt;file&gt;, if it exists.'</span><span class="s4">,</span>
+<a name="l551"><span class="ln">551  </span></a>          <span class="s1">[</span><span class="s3">'--config'</span><span class="s1">]</span><span class="s4">, </span><span class="s1">{</span><span class="s3">'metavar'</span><span class="s1">: </span><span class="s3">'&lt;file&gt;'</span><span class="s4">, </span><span class="s3">'type'</span><span class="s1">: </span><span class="s3">'string'</span><span class="s4">,</span>
+<a name="l552"><span class="ln">552  </span></a>                         <span class="s3">'action'</span><span class="s1">: </span><span class="s3">'callback'</span><span class="s4">, </span><span class="s3">'callback'</span><span class="s1">: read_config_file})</span><span class="s4">,</span>
+<a name="l553"><span class="ln">553  </span></a>         <span class="s1">(</span><span class="s3">&quot;Show this program's version number and exit.&quot;</span><span class="s4">,</span>
+<a name="l554"><span class="ln">554  </span></a>          <span class="s1">[</span><span class="s3">'--version'</span><span class="s4">, </span><span class="s3">'-V'</span><span class="s1">]</span><span class="s4">, </span><span class="s1">{</span><span class="s3">'action'</span><span class="s1">: </span><span class="s3">'version'</span><span class="s1">})</span><span class="s4">,</span>
+<a name="l555"><span class="ln">555  </span></a>         <span class="s1">(</span><span class="s3">'Show this help message and exit.'</span><span class="s4">,</span>
+<a name="l556"><span class="ln">556  </span></a>          <span class="s1">[</span><span class="s3">'--help'</span><span class="s4">, </span><span class="s3">'-h'</span><span class="s1">]</span><span class="s4">, </span><span class="s1">{</span><span class="s3">'action'</span><span class="s1">: </span><span class="s3">'help'</span><span class="s1">})</span><span class="s4">,</span>
+<a name="l557"><span class="ln">557  </span></a>         <span class="s0"># Typically not useful for non-programmatical use:</span>
+<a name="l558"><span class="ln">558  </span></a>         <span class="s1">(SUPPRESS_HELP</span><span class="s4">, </span><span class="s1">[</span><span class="s3">'--id-prefix'</span><span class="s1">]</span><span class="s4">, </span><span class="s1">{</span><span class="s3">'default'</span><span class="s1">: </span><span class="s3">''</span><span class="s1">})</span><span class="s4">,</span>
+<a name="l559"><span class="ln">559  </span></a>         <span class="s1">(SUPPRESS_HELP</span><span class="s4">, </span><span class="s1">[</span><span class="s3">'--auto-id-prefix'</span><span class="s1">]</span><span class="s4">, </span><span class="s1">{</span><span class="s3">'default'</span><span class="s1">: </span><span class="s3">'%'</span><span class="s1">})</span><span class="s4">,</span>
+<a name="l560"><span class="ln">560  </span></a>         <span class="s0"># Hidden options, for development use only:</span>
+<a name="l561"><span class="ln">561  </span></a>         <span class="s1">(SUPPRESS_HELP</span><span class="s4">, </span><span class="s1">[</span><span class="s3">'--dump-settings'</span><span class="s1">]</span><span class="s4">, </span><span class="s1">{</span><span class="s3">'action'</span><span class="s1">: </span><span class="s3">'store_true'</span><span class="s1">})</span><span class="s4">,</span>
+<a name="l562"><span class="ln">562  </span></a>         <span class="s1">(SUPPRESS_HELP</span><span class="s4">, </span><span class="s1">[</span><span class="s3">'--dump-internals'</span><span class="s1">]</span><span class="s4">, </span><span class="s1">{</span><span class="s3">'action'</span><span class="s1">: </span><span class="s3">'store_true'</span><span class="s1">})</span><span class="s4">,</span>
+<a name="l563"><span class="ln">563  </span></a>         <span class="s1">(SUPPRESS_HELP</span><span class="s4">, </span><span class="s1">[</span><span class="s3">'--dump-transforms'</span><span class="s1">]</span><span class="s4">, </span><span class="s1">{</span><span class="s3">'action'</span><span class="s1">: </span><span class="s3">'store_true'</span><span class="s1">})</span><span class="s4">,</span>
+<a name="l564"><span class="ln">564  </span></a>         <span class="s1">(SUPPRESS_HELP</span><span class="s4">, </span><span class="s1">[</span><span class="s3">'--dump-pseudo-xml'</span><span class="s1">]</span><span class="s4">, </span><span class="s1">{</span><span class="s3">'action'</span><span class="s1">: </span><span class="s3">'store_true'</span><span class="s1">})</span><span class="s4">,</span>
+<a name="l565"><span class="ln">565  </span></a>         <span class="s1">(SUPPRESS_HELP</span><span class="s4">, </span><span class="s1">[</span><span class="s3">'--expose-internal-attribute'</span><span class="s1">]</span><span class="s4">,</span>
+<a name="l566"><span class="ln">566  </span></a>          <span class="s1">{</span><span class="s3">'action'</span><span class="s1">: </span><span class="s3">'append'</span><span class="s4">, </span><span class="s3">'dest'</span><span class="s1">: </span><span class="s3">'expose_internals'</span><span class="s4">,</span>
+<a name="l567"><span class="ln">567  </span></a>           <span class="s3">'validator'</span><span class="s1">: validate_colon_separated_string_list})</span><span class="s4">,</span>
+<a name="l568"><span class="ln">568  </span></a>         <span class="s1">(SUPPRESS_HELP</span><span class="s4">, </span><span class="s1">[</span><span class="s3">'--strict-visitor'</span><span class="s1">]</span><span class="s4">, </span><span class="s1">{</span><span class="s3">'action'</span><span class="s1">: </span><span class="s3">'store_true'</span><span class="s1">})</span><span class="s4">,</span>
+<a name="l569"><span class="ln">569  </span></a>         <span class="s1">))</span>
+<a name="l570"><span class="ln">570  </span></a>    <span class="s3">&quot;&quot;&quot;Runtime settings and command-line options common to all Docutils front 
+<a name="l571"><span class="ln">571  </span></a>    ends.  Setting specs specific to individual Docutils components are also 
+<a name="l572"><span class="ln">572  </span></a>    used (see `populate_from_components()`).&quot;&quot;&quot;</span>
+<a name="l573"><span class="ln">573  </span></a>
+<a name="l574"><span class="ln">574  </span></a>    <span class="s1">settings_defaults = {</span><span class="s3">'_disable_config'</span><span class="s1">: </span><span class="s4">None,</span>
+<a name="l575"><span class="ln">575  </span></a>                         <span class="s3">'_source'</span><span class="s1">: </span><span class="s4">None,</span>
+<a name="l576"><span class="ln">576  </span></a>                         <span class="s3">'_destination'</span><span class="s1">: </span><span class="s4">None,</span>
+<a name="l577"><span class="ln">577  </span></a>                         <span class="s3">'_config_files'</span><span class="s1">: </span><span class="s4">None</span><span class="s1">}</span>
+<a name="l578"><span class="ln">578  </span></a>    <span class="s3">&quot;&quot;&quot;Defaults for settings that don't have command-line option equivalents.&quot;&quot;&quot;</span>
+<a name="l579"><span class="ln">579  </span></a>
+<a name="l580"><span class="ln">580  </span></a>    <span class="s1">relative_path_settings = (</span><span class="s3">'warning_stream'</span><span class="s4">,</span><span class="s1">)</span>
+<a name="l581"><span class="ln">581  </span></a>
+<a name="l582"><span class="ln">582  </span></a>    <span class="s1">config_section = </span><span class="s3">'general'</span>
+<a name="l583"><span class="ln">583  </span></a>
+<a name="l584"><span class="ln">584  </span></a>    <span class="s1">version_template = (</span><span class="s3">'%%prog (Docutils %s%s, Python %s, on %s)'</span>
+<a name="l585"><span class="ln">585  </span></a>                        <span class="s1">% (docutils.__version__</span><span class="s4">,</span>
+<a name="l586"><span class="ln">586  </span></a>                           <span class="s1">docutils.__version_details__ </span><span class="s4">and</span>
+<a name="l587"><span class="ln">587  </span></a>                           <span class="s3">' [%s]'</span><span class="s1">%docutils.__version_details__ </span><span class="s4">or </span><span class="s3">''</span><span class="s4">,</span>
+<a name="l588"><span class="ln">588  </span></a>                           <span class="s1">sys.version.split()[</span><span class="s5">0</span><span class="s1">]</span><span class="s4">, </span><span class="s1">sys.platform))</span>
+<a name="l589"><span class="ln">589  </span></a>    <span class="s3">&quot;&quot;&quot;Default version message.&quot;&quot;&quot;</span>
+<a name="l590"><span class="ln">590  </span></a>
+<a name="l591"><span class="ln">591  </span></a>    <span class="s4">def </span><span class="s1">__init__(self</span><span class="s4">, </span><span class="s1">components=()</span><span class="s4">, </span><span class="s1">defaults=</span><span class="s4">None, </span><span class="s1">read_config_files=</span><span class="s4">None,</span>
+<a name="l592"><span class="ln">592  </span></a>                 <span class="s1">*args</span><span class="s4">, </span><span class="s1">**kwargs):</span>
+<a name="l593"><span class="ln">593  </span></a>        <span class="s2">&quot;&quot;&quot; 
+<a name="l594"><span class="ln">594  </span></a>        `components` is a list of Docutils components each containing a 
+<a name="l595"><span class="ln">595  </span></a>        ``.settings_spec`` attribute.  `defaults` is a mapping of setting 
+<a name="l596"><span class="ln">596  </span></a>        default overrides. 
+<a name="l597"><span class="ln">597  </span></a>        &quot;&quot;&quot;</span>
+<a name="l598"><span class="ln">598  </span></a>
+<a name="l599"><span class="ln">599  </span></a>        <span class="s1">self.lists = {}</span>
+<a name="l600"><span class="ln">600  </span></a>        <span class="s3">&quot;&quot;&quot;Set of list-type settings.&quot;&quot;&quot;</span>
+<a name="l601"><span class="ln">601  </span></a>
+<a name="l602"><span class="ln">602  </span></a>        <span class="s1">self.config_files = []</span>
+<a name="l603"><span class="ln">603  </span></a>        <span class="s3">&quot;&quot;&quot;List of paths of applied configuration files.&quot;&quot;&quot;</span>
+<a name="l604"><span class="ln">604  </span></a>
+<a name="l605"><span class="ln">605  </span></a>        <span class="s1">optparse.OptionParser.__init__(</span>
+<a name="l606"><span class="ln">606  </span></a>            <span class="s1">self</span><span class="s4">, </span><span class="s1">option_class=Option</span><span class="s4">, </span><span class="s1">add_help_option=</span><span class="s4">None,</span>
+<a name="l607"><span class="ln">607  </span></a>            <span class="s1">formatter=optparse.TitledHelpFormatter(width=</span><span class="s5">78</span><span class="s1">)</span><span class="s4">,</span>
+<a name="l608"><span class="ln">608  </span></a>            <span class="s1">*args</span><span class="s4">, </span><span class="s1">**kwargs)</span>
+<a name="l609"><span class="ln">609  </span></a>        <span class="s4">if not </span><span class="s1">self.version:</span>
+<a name="l610"><span class="ln">610  </span></a>            <span class="s1">self.version = self.version_template</span>
+<a name="l611"><span class="ln">611  </span></a>        <span class="s0"># Make an instance copy (it will be modified):</span>
+<a name="l612"><span class="ln">612  </span></a>        <span class="s1">self.relative_path_settings = list(self.relative_path_settings)</span>
+<a name="l613"><span class="ln">613  </span></a>        <span class="s1">self.components = (self</span><span class="s4">,</span><span class="s1">) + tuple(components)</span>
+<a name="l614"><span class="ln">614  </span></a>        <span class="s1">self.populate_from_components(self.components)</span>
+<a name="l615"><span class="ln">615  </span></a>        <span class="s1">self.set_defaults_from_dict(defaults </span><span class="s4">or </span><span class="s1">{})</span>
+<a name="l616"><span class="ln">616  </span></a>        <span class="s4">if </span><span class="s1">read_config_files </span><span class="s4">and not </span><span class="s1">self.defaults[</span><span class="s3">'_disable_config'</span><span class="s1">]:</span>
+<a name="l617"><span class="ln">617  </span></a>            <span class="s4">try</span><span class="s1">:</span>
+<a name="l618"><span class="ln">618  </span></a>                <span class="s1">config_settings = self.get_standard_config_settings()</span>
+<a name="l619"><span class="ln">619  </span></a>            <span class="s4">except </span><span class="s1">ValueError </span><span class="s4">as </span><span class="s1">error:</span>
+<a name="l620"><span class="ln">620  </span></a>                <span class="s1">self.error(SafeString(error))</span>
+<a name="l621"><span class="ln">621  </span></a>            <span class="s1">self.set_defaults_from_dict(config_settings.__dict__)</span>
+<a name="l622"><span class="ln">622  </span></a>
+<a name="l623"><span class="ln">623  </span></a>    <span class="s4">def </span><span class="s1">populate_from_components(self</span><span class="s4">, </span><span class="s1">components):</span>
+<a name="l624"><span class="ln">624  </span></a>        <span class="s2">&quot;&quot;&quot; 
+<a name="l625"><span class="ln">625  </span></a>        For each component, first populate from the `SettingsSpec.settings_spec` 
+<a name="l626"><span class="ln">626  </span></a>        structure, then from the `SettingsSpec.settings_defaults` dictionary. 
+<a name="l627"><span class="ln">627  </span></a>        After all components have been processed, check for and populate from 
+<a name="l628"><span class="ln">628  </span></a>        each component's `SettingsSpec.settings_default_overrides` dictionary. 
+<a name="l629"><span class="ln">629  </span></a>        &quot;&quot;&quot;</span>
+<a name="l630"><span class="ln">630  </span></a>        <span class="s4">for </span><span class="s1">component </span><span class="s4">in </span><span class="s1">components:</span>
+<a name="l631"><span class="ln">631  </span></a>            <span class="s4">if </span><span class="s1">component </span><span class="s4">is None</span><span class="s1">:</span>
+<a name="l632"><span class="ln">632  </span></a>                <span class="s4">continue</span>
+<a name="l633"><span class="ln">633  </span></a>            <span class="s1">settings_spec = component.settings_spec</span>
+<a name="l634"><span class="ln">634  </span></a>            <span class="s1">self.relative_path_settings.extend(</span>
+<a name="l635"><span class="ln">635  </span></a>                <span class="s1">component.relative_path_settings)</span>
+<a name="l636"><span class="ln">636  </span></a>            <span class="s4">for </span><span class="s1">i </span><span class="s4">in </span><span class="s1">range(</span><span class="s5">0</span><span class="s4">, </span><span class="s1">len(settings_spec)</span><span class="s4">, </span><span class="s5">3</span><span class="s1">):</span>
+<a name="l637"><span class="ln">637  </span></a>                <span class="s1">title</span><span class="s4">, </span><span class="s1">description</span><span class="s4">, </span><span class="s1">option_spec = settings_spec[i:i+</span><span class="s5">3</span><span class="s1">]</span>
+<a name="l638"><span class="ln">638  </span></a>                <span class="s4">if </span><span class="s1">title:</span>
+<a name="l639"><span class="ln">639  </span></a>                    <span class="s1">group = optparse.OptionGroup(self</span><span class="s4">, </span><span class="s1">title</span><span class="s4">, </span><span class="s1">description)</span>
+<a name="l640"><span class="ln">640  </span></a>                    <span class="s1">self.add_option_group(group)</span>
+<a name="l641"><span class="ln">641  </span></a>                <span class="s4">else</span><span class="s1">:</span>
+<a name="l642"><span class="ln">642  </span></a>                    <span class="s1">group = self        </span><span class="s0"># single options</span>
+<a name="l643"><span class="ln">643  </span></a>                <span class="s4">for </span><span class="s1">(help_text</span><span class="s4">, </span><span class="s1">option_strings</span><span class="s4">, </span><span class="s1">kwargs) </span><span class="s4">in </span><span class="s1">option_spec:</span>
+<a name="l644"><span class="ln">644  </span></a>                    <span class="s1">option = group.add_option(help=help_text</span><span class="s4">, </span><span class="s1">*option_strings</span><span class="s4">,</span>
+<a name="l645"><span class="ln">645  </span></a>                                              <span class="s1">**kwargs)</span>
+<a name="l646"><span class="ln">646  </span></a>                    <span class="s4">if </span><span class="s1">kwargs.get(</span><span class="s3">'action'</span><span class="s1">) == </span><span class="s3">'append'</span><span class="s1">:</span>
+<a name="l647"><span class="ln">647  </span></a>                        <span class="s1">self.lists[option.dest] = </span><span class="s4">True</span>
+<a name="l648"><span class="ln">648  </span></a>                <span class="s4">if </span><span class="s1">component.settings_defaults:</span>
+<a name="l649"><span class="ln">649  </span></a>                    <span class="s1">self.defaults.update(component.settings_defaults)</span>
+<a name="l650"><span class="ln">650  </span></a>        <span class="s4">for </span><span class="s1">component </span><span class="s4">in </span><span class="s1">components:</span>
+<a name="l651"><span class="ln">651  </span></a>            <span class="s4">if </span><span class="s1">component </span><span class="s4">and </span><span class="s1">component.settings_default_overrides:</span>
+<a name="l652"><span class="ln">652  </span></a>                <span class="s1">self.defaults.update(component.settings_default_overrides)</span>
+<a name="l653"><span class="ln">653  </span></a>
+<a name="l654"><span class="ln">654  </span></a>    <span class="s4">def </span><span class="s1">get_standard_config_files(self):</span>
+<a name="l655"><span class="ln">655  </span></a>        <span class="s2">&quot;&quot;&quot;Return list of config files, from environment or standard.&quot;&quot;&quot;</span>
+<a name="l656"><span class="ln">656  </span></a>        <span class="s4">try</span><span class="s1">:</span>
+<a name="l657"><span class="ln">657  </span></a>            <span class="s1">config_files = os.environ[</span><span class="s3">'DOCUTILSCONFIG'</span><span class="s1">].split(os.pathsep)</span>
+<a name="l658"><span class="ln">658  </span></a>        <span class="s4">except </span><span class="s1">KeyError:</span>
+<a name="l659"><span class="ln">659  </span></a>            <span class="s1">config_files = self.standard_config_files</span>
+<a name="l660"><span class="ln">660  </span></a>
+<a name="l661"><span class="ln">661  </span></a>        <span class="s0"># If 'HOME' is not set, expandvars() requires the 'pwd' module which is</span>
+<a name="l662"><span class="ln">662  </span></a>        <span class="s0"># not available under certain environments, for example, within</span>
+<a name="l663"><span class="ln">663  </span></a>        <span class="s0"># mod_python.  The publisher ends up in here, and we need to publish</span>
+<a name="l664"><span class="ln">664  </span></a>        <span class="s0"># from within mod_python.  Therefore we need to avoid expanding when we</span>
+<a name="l665"><span class="ln">665  </span></a>        <span class="s0"># are in those environments.</span>
+<a name="l666"><span class="ln">666  </span></a>        <span class="s1">expand = os.path.expanduser</span>
+<a name="l667"><span class="ln">667  </span></a>        <span class="s4">if </span><span class="s3">'HOME' </span><span class="s4">not in </span><span class="s1">os.environ:</span>
+<a name="l668"><span class="ln">668  </span></a>            <span class="s4">try</span><span class="s1">:</span>
+<a name="l669"><span class="ln">669  </span></a>                <span class="s4">import </span><span class="s1">pwd</span>
+<a name="l670"><span class="ln">670  </span></a>            <span class="s4">except </span><span class="s1">ImportError:</span>
+<a name="l671"><span class="ln">671  </span></a>                <span class="s1">expand = </span><span class="s4">lambda </span><span class="s1">x: x</span>
+<a name="l672"><span class="ln">672  </span></a>        <span class="s4">return </span><span class="s1">[expand(f) </span><span class="s4">for </span><span class="s1">f </span><span class="s4">in </span><span class="s1">config_files </span><span class="s4">if </span><span class="s1">f.strip()]</span>
+<a name="l673"><span class="ln">673  </span></a>
+<a name="l674"><span class="ln">674  </span></a>    <span class="s4">def </span><span class="s1">get_standard_config_settings(self):</span>
+<a name="l675"><span class="ln">675  </span></a>        <span class="s1">settings = Values()</span>
+<a name="l676"><span class="ln">676  </span></a>        <span class="s4">for </span><span class="s1">filename </span><span class="s4">in </span><span class="s1">self.get_standard_config_files():</span>
+<a name="l677"><span class="ln">677  </span></a>            <span class="s1">settings.update(self.get_config_file_settings(filename)</span><span class="s4">, </span><span class="s1">self)</span>
+<a name="l678"><span class="ln">678  </span></a>        <span class="s4">return </span><span class="s1">settings</span>
+<a name="l679"><span class="ln">679  </span></a>
+<a name="l680"><span class="ln">680  </span></a>    <span class="s4">def </span><span class="s1">get_config_file_settings(self</span><span class="s4">, </span><span class="s1">config_file):</span>
+<a name="l681"><span class="ln">681  </span></a>        <span class="s2">&quot;&quot;&quot;Returns a dictionary containing appropriate config file settings.&quot;&quot;&quot;</span>
+<a name="l682"><span class="ln">682  </span></a>        <span class="s1">parser = ConfigParser()</span>
+<a name="l683"><span class="ln">683  </span></a>        <span class="s1">parser.read(config_file</span><span class="s4">, </span><span class="s1">self)</span>
+<a name="l684"><span class="ln">684  </span></a>        <span class="s1">self.config_files.extend(parser._files)</span>
+<a name="l685"><span class="ln">685  </span></a>        <span class="s1">base_path = os.path.dirname(config_file)</span>
+<a name="l686"><span class="ln">686  </span></a>        <span class="s1">applied = set()</span>
+<a name="l687"><span class="ln">687  </span></a>        <span class="s1">settings = Values()</span>
+<a name="l688"><span class="ln">688  </span></a>        <span class="s4">for </span><span class="s1">component </span><span class="s4">in </span><span class="s1">self.components:</span>
+<a name="l689"><span class="ln">689  </span></a>            <span class="s4">if not </span><span class="s1">component:</span>
+<a name="l690"><span class="ln">690  </span></a>                <span class="s4">continue</span>
+<a name="l691"><span class="ln">691  </span></a>            <span class="s4">for </span><span class="s1">section </span><span class="s4">in </span><span class="s1">(tuple(component.config_section_dependencies </span><span class="s4">or </span><span class="s1">())</span>
+<a name="l692"><span class="ln">692  </span></a>                            <span class="s1">+ (component.config_section</span><span class="s4">,</span><span class="s1">)):</span>
+<a name="l693"><span class="ln">693  </span></a>                <span class="s4">if </span><span class="s1">section </span><span class="s4">in </span><span class="s1">applied:</span>
+<a name="l694"><span class="ln">694  </span></a>                    <span class="s4">continue</span>
+<a name="l695"><span class="ln">695  </span></a>                <span class="s1">applied.add(section)</span>
+<a name="l696"><span class="ln">696  </span></a>                <span class="s1">settings.update(parser.get_section(section)</span><span class="s4">, </span><span class="s1">self)</span>
+<a name="l697"><span class="ln">697  </span></a>        <span class="s1">make_paths_absolute(</span>
+<a name="l698"><span class="ln">698  </span></a>            <span class="s1">settings.__dict__</span><span class="s4">, </span><span class="s1">self.relative_path_settings</span><span class="s4">, </span><span class="s1">base_path)</span>
+<a name="l699"><span class="ln">699  </span></a>        <span class="s4">return </span><span class="s1">settings.__dict__</span>
+<a name="l700"><span class="ln">700  </span></a>
+<a name="l701"><span class="ln">701  </span></a>    <span class="s4">def </span><span class="s1">check_values(self</span><span class="s4">, </span><span class="s1">values</span><span class="s4">, </span><span class="s1">args):</span>
+<a name="l702"><span class="ln">702  </span></a>        <span class="s2">&quot;&quot;&quot;Store positional arguments as runtime settings.&quot;&quot;&quot;</span>
+<a name="l703"><span class="ln">703  </span></a>        <span class="s1">values._source</span><span class="s4">, </span><span class="s1">values._destination = self.check_args(args)</span>
+<a name="l704"><span class="ln">704  </span></a>        <span class="s1">make_paths_absolute(values.__dict__</span><span class="s4">, </span><span class="s1">self.relative_path_settings)</span>
+<a name="l705"><span class="ln">705  </span></a>        <span class="s1">values._config_files = self.config_files</span>
+<a name="l706"><span class="ln">706  </span></a>        <span class="s4">return </span><span class="s1">values</span>
+<a name="l707"><span class="ln">707  </span></a>
+<a name="l708"><span class="ln">708  </span></a>    <span class="s4">def </span><span class="s1">check_args(self</span><span class="s4">, </span><span class="s1">args):</span>
+<a name="l709"><span class="ln">709  </span></a>        <span class="s1">source = destination = </span><span class="s4">None</span>
+<a name="l710"><span class="ln">710  </span></a>        <span class="s4">if </span><span class="s1">args:</span>
+<a name="l711"><span class="ln">711  </span></a>            <span class="s1">source = args.pop(</span><span class="s5">0</span><span class="s1">)</span>
+<a name="l712"><span class="ln">712  </span></a>            <span class="s4">if </span><span class="s1">source == </span><span class="s3">'-'</span><span class="s1">:           </span><span class="s0"># means stdin</span>
+<a name="l713"><span class="ln">713  </span></a>                <span class="s1">source = </span><span class="s4">None</span>
+<a name="l714"><span class="ln">714  </span></a>        <span class="s4">if </span><span class="s1">args:</span>
+<a name="l715"><span class="ln">715  </span></a>            <span class="s1">destination = args.pop(</span><span class="s5">0</span><span class="s1">)</span>
+<a name="l716"><span class="ln">716  </span></a>            <span class="s4">if </span><span class="s1">destination == </span><span class="s3">'-'</span><span class="s1">:      </span><span class="s0"># means stdout</span>
+<a name="l717"><span class="ln">717  </span></a>                <span class="s1">destination = </span><span class="s4">None</span>
+<a name="l718"><span class="ln">718  </span></a>        <span class="s4">if </span><span class="s1">args:</span>
+<a name="l719"><span class="ln">719  </span></a>            <span class="s1">self.error(</span><span class="s3">'Maximum 2 arguments allowed.'</span><span class="s1">)</span>
+<a name="l720"><span class="ln">720  </span></a>        <span class="s4">if </span><span class="s1">source </span><span class="s4">and </span><span class="s1">source == destination:</span>
+<a name="l721"><span class="ln">721  </span></a>            <span class="s1">self.error(</span><span class="s3">'Do not specify the same file for both source and '</span>
+<a name="l722"><span class="ln">722  </span></a>                       <span class="s3">'destination.  It will clobber the source file.'</span><span class="s1">)</span>
+<a name="l723"><span class="ln">723  </span></a>        <span class="s4">return </span><span class="s1">source</span><span class="s4">, </span><span class="s1">destination</span>
+<a name="l724"><span class="ln">724  </span></a>
+<a name="l725"><span class="ln">725  </span></a>    <span class="s4">def </span><span class="s1">set_defaults_from_dict(self</span><span class="s4">, </span><span class="s1">defaults):</span>
+<a name="l726"><span class="ln">726  </span></a>        <span class="s1">self.defaults.update(defaults)</span>
+<a name="l727"><span class="ln">727  </span></a>
+<a name="l728"><span class="ln">728  </span></a>    <span class="s4">def </span><span class="s1">get_default_values(self):</span>
+<a name="l729"><span class="ln">729  </span></a>        <span class="s2">&quot;&quot;&quot;Needed to get custom `Values` instances.&quot;&quot;&quot;</span>
+<a name="l730"><span class="ln">730  </span></a>        <span class="s1">defaults = Values(self.defaults)</span>
+<a name="l731"><span class="ln">731  </span></a>        <span class="s1">defaults._config_files = self.config_files</span>
+<a name="l732"><span class="ln">732  </span></a>        <span class="s4">return </span><span class="s1">defaults</span>
+<a name="l733"><span class="ln">733  </span></a>
+<a name="l734"><span class="ln">734  </span></a>    <span class="s4">def </span><span class="s1">get_option_by_dest(self</span><span class="s4">, </span><span class="s1">dest):</span>
+<a name="l735"><span class="ln">735  </span></a>        <span class="s2">&quot;&quot;&quot; 
+<a name="l736"><span class="ln">736  </span></a>        Get an option by its dest. 
+<a name="l737"><span class="ln">737  </span></a> 
+<a name="l738"><span class="ln">738  </span></a>        If you're supplying a dest which is shared by several options, 
+<a name="l739"><span class="ln">739  </span></a>        it is undefined which option of those is returned. 
+<a name="l740"><span class="ln">740  </span></a> 
+<a name="l741"><span class="ln">741  </span></a>        A KeyError is raised if there is no option with the supplied 
+<a name="l742"><span class="ln">742  </span></a>        dest. 
+<a name="l743"><span class="ln">743  </span></a>        &quot;&quot;&quot;</span>
+<a name="l744"><span class="ln">744  </span></a>        <span class="s4">for </span><span class="s1">group </span><span class="s4">in </span><span class="s1">self.option_groups + [self]:</span>
+<a name="l745"><span class="ln">745  </span></a>            <span class="s4">for </span><span class="s1">option </span><span class="s4">in </span><span class="s1">group.option_list:</span>
+<a name="l746"><span class="ln">746  </span></a>                <span class="s4">if </span><span class="s1">option.dest == dest:</span>
+<a name="l747"><span class="ln">747  </span></a>                    <span class="s4">return </span><span class="s1">option</span>
+<a name="l748"><span class="ln">748  </span></a>        <span class="s4">raise </span><span class="s1">KeyError(</span><span class="s3">'No option with dest == %r.' </span><span class="s1">% dest)</span>
+<a name="l749"><span class="ln">749  </span></a>
+<a name="l750"><span class="ln">750  </span></a>
+<a name="l751"><span class="ln">751  </span></a><span class="s4">class </span><span class="s1">ConfigParser(RawConfigParser):</span>
+<a name="l752"><span class="ln">752  </span></a>
+<a name="l753"><span class="ln">753  </span></a>    <span class="s1">old_settings = {</span>
+<a name="l754"><span class="ln">754  </span></a>        <span class="s3">'pep_stylesheet'</span><span class="s1">: (</span><span class="s3">'pep_html writer'</span><span class="s4">, </span><span class="s3">'stylesheet'</span><span class="s1">)</span><span class="s4">,</span>
+<a name="l755"><span class="ln">755  </span></a>        <span class="s3">'pep_stylesheet_path'</span><span class="s1">: (</span><span class="s3">'pep_html writer'</span><span class="s4">, </span><span class="s3">'stylesheet_path'</span><span class="s1">)</span><span class="s4">,</span>
+<a name="l756"><span class="ln">756  </span></a>        <span class="s3">'pep_template'</span><span class="s1">: (</span><span class="s3">'pep_html writer'</span><span class="s4">, </span><span class="s3">'template'</span><span class="s1">)}</span>
+<a name="l757"><span class="ln">757  </span></a>    <span class="s3">&quot;&quot;&quot;{old setting: (new section, new setting)} mapping, used by 
+<a name="l758"><span class="ln">758  </span></a>    `handle_old_config`, to convert settings from the old [options] section.&quot;&quot;&quot;</span>
+<a name="l759"><span class="ln">759  </span></a>
+<a name="l760"><span class="ln">760  </span></a>    <span class="s1">old_warning = </span><span class="s3">&quot;&quot;&quot; 
+<a name="l761"><span class="ln">761  </span></a>The &quot;[option]&quot; section is deprecated.  Support for old-format configuration 
+<a name="l762"><span class="ln">762  </span></a>files may be removed in a future Docutils release.  Please revise your 
+<a name="l763"><span class="ln">763  </span></a>configuration files.  See &lt;http://docutils.sf.net/docs/user/config.html&gt;, 
+<a name="l764"><span class="ln">764  </span></a>section &quot;Old-Format Configuration Files&quot;. 
+<a name="l765"><span class="ln">765  </span></a>&quot;&quot;&quot;</span>
+<a name="l766"><span class="ln">766  </span></a>
+<a name="l767"><span class="ln">767  </span></a>    <span class="s1">not_utf8_error = </span><span class="s3">&quot;&quot;&quot;</span><span class="s4">\ 
+<a name="l768"><span class="ln">768  </span></a></span><span class="s3">Unable to read configuration file &quot;%s&quot;: content not encoded as UTF-8. 
+<a name="l769"><span class="ln">769  </span></a>Skipping &quot;%s&quot; configuration file. 
+<a name="l770"><span class="ln">770  </span></a>&quot;&quot;&quot;</span>
+<a name="l771"><span class="ln">771  </span></a>
+<a name="l772"><span class="ln">772  </span></a>    <span class="s4">def </span><span class="s1">__init__(self</span><span class="s4">, </span><span class="s1">*args</span><span class="s4">, </span><span class="s1">**kwargs):</span>
+<a name="l773"><span class="ln">773  </span></a>        <span class="s1">RawConfigParser.__init__(self</span><span class="s4">, </span><span class="s1">*args</span><span class="s4">, </span><span class="s1">**kwargs)</span>
+<a name="l774"><span class="ln">774  </span></a>
+<a name="l775"><span class="ln">775  </span></a>        <span class="s1">self._files = []</span>
+<a name="l776"><span class="ln">776  </span></a>        <span class="s3">&quot;&quot;&quot;List of paths of configuration files read.&quot;&quot;&quot;</span>
+<a name="l777"><span class="ln">777  </span></a>
+<a name="l778"><span class="ln">778  </span></a>        <span class="s1">self._stderr = ErrorOutput()</span>
+<a name="l779"><span class="ln">779  </span></a>        <span class="s3">&quot;&quot;&quot;Wrapper around sys.stderr catching en-/decoding errors&quot;&quot;&quot;</span>
+<a name="l780"><span class="ln">780  </span></a>
+<a name="l781"><span class="ln">781  </span></a>    <span class="s4">def </span><span class="s1">read(self</span><span class="s4">, </span><span class="s1">filenames</span><span class="s4">, </span><span class="s1">option_parser):</span>
+<a name="l782"><span class="ln">782  </span></a>        <span class="s4">if </span><span class="s1">type(filenames) </span><span class="s4">in </span><span class="s1">(str</span><span class="s4">, </span><span class="s1">unicode):</span>
+<a name="l783"><span class="ln">783  </span></a>            <span class="s1">filenames = [filenames]</span>
+<a name="l784"><span class="ln">784  </span></a>        <span class="s4">for </span><span class="s1">filename </span><span class="s4">in </span><span class="s1">filenames:</span>
+<a name="l785"><span class="ln">785  </span></a>            <span class="s4">try</span><span class="s1">:</span>
+<a name="l786"><span class="ln">786  </span></a>                <span class="s0"># Config files are UTF-8-encoded:</span>
+<a name="l787"><span class="ln">787  </span></a>                <span class="s1">fp = codecs.open(filename</span><span class="s4">, </span><span class="s3">'r'</span><span class="s4">, </span><span class="s3">'utf-8'</span><span class="s1">)</span>
+<a name="l788"><span class="ln">788  </span></a>            <span class="s4">except </span><span class="s1">IOError:</span>
+<a name="l789"><span class="ln">789  </span></a>                <span class="s4">continue</span>
+<a name="l790"><span class="ln">790  </span></a>            <span class="s4">try</span><span class="s1">:</span>
+<a name="l791"><span class="ln">791  </span></a>                <span class="s4">if </span><span class="s1">sys.version_info &lt; (</span><span class="s5">3</span><span class="s4">, </span><span class="s5">0</span><span class="s1">):</span>
+<a name="l792"><span class="ln">792  </span></a>                    <span class="s1">RawConfigParser.readfp(self</span><span class="s4">, </span><span class="s1">fp</span><span class="s4">, </span><span class="s1">filename)</span>
+<a name="l793"><span class="ln">793  </span></a>                <span class="s4">else</span><span class="s1">:</span>
+<a name="l794"><span class="ln">794  </span></a>                    <span class="s1">RawConfigParser.read_file(self</span><span class="s4">, </span><span class="s1">fp</span><span class="s4">, </span><span class="s1">filename)</span>
+<a name="l795"><span class="ln">795  </span></a>            <span class="s4">except </span><span class="s1">UnicodeDecodeError:</span>
+<a name="l796"><span class="ln">796  </span></a>                <span class="s1">self._stderr.write(self.not_utf8_error % (filename</span><span class="s4">, </span><span class="s1">filename))</span>
+<a name="l797"><span class="ln">797  </span></a>                <span class="s1">fp.close()</span>
+<a name="l798"><span class="ln">798  </span></a>                <span class="s4">continue</span>
+<a name="l799"><span class="ln">799  </span></a>            <span class="s1">fp.close()</span>
+<a name="l800"><span class="ln">800  </span></a>            <span class="s1">self._files.append(filename)</span>
+<a name="l801"><span class="ln">801  </span></a>            <span class="s4">if </span><span class="s1">self.has_section(</span><span class="s3">'options'</span><span class="s1">):</span>
+<a name="l802"><span class="ln">802  </span></a>                <span class="s1">self.handle_old_config(filename)</span>
+<a name="l803"><span class="ln">803  </span></a>            <span class="s1">self.validate_settings(filename</span><span class="s4">, </span><span class="s1">option_parser)</span>
+<a name="l804"><span class="ln">804  </span></a>
+<a name="l805"><span class="ln">805  </span></a>    <span class="s4">def </span><span class="s1">handle_old_config(self</span><span class="s4">, </span><span class="s1">filename):</span>
+<a name="l806"><span class="ln">806  </span></a>        <span class="s1">warnings.warn_explicit(self.old_warning</span><span class="s4">, </span><span class="s1">ConfigDeprecationWarning</span><span class="s4">,</span>
+<a name="l807"><span class="ln">807  </span></a>                               <span class="s1">filename</span><span class="s4">, </span><span class="s5">0</span><span class="s1">)</span>
+<a name="l808"><span class="ln">808  </span></a>        <span class="s1">options = self.get_section(</span><span class="s3">'options'</span><span class="s1">)</span>
+<a name="l809"><span class="ln">809  </span></a>        <span class="s4">if not </span><span class="s1">self.has_section(</span><span class="s3">'general'</span><span class="s1">):</span>
+<a name="l810"><span class="ln">810  </span></a>            <span class="s1">self.add_section(</span><span class="s3">'general'</span><span class="s1">)</span>
+<a name="l811"><span class="ln">811  </span></a>        <span class="s4">for </span><span class="s1">key</span><span class="s4">, </span><span class="s1">value </span><span class="s4">in </span><span class="s1">options.items():</span>
+<a name="l812"><span class="ln">812  </span></a>            <span class="s4">if </span><span class="s1">key </span><span class="s4">in </span><span class="s1">self.old_settings:</span>
+<a name="l813"><span class="ln">813  </span></a>                <span class="s1">section</span><span class="s4">, </span><span class="s1">setting = self.old_settings[key]</span>
+<a name="l814"><span class="ln">814  </span></a>                <span class="s4">if not </span><span class="s1">self.has_section(section):</span>
+<a name="l815"><span class="ln">815  </span></a>                    <span class="s1">self.add_section(section)</span>
+<a name="l816"><span class="ln">816  </span></a>            <span class="s4">else</span><span class="s1">:</span>
+<a name="l817"><span class="ln">817  </span></a>                <span class="s1">section = </span><span class="s3">'general'</span>
+<a name="l818"><span class="ln">818  </span></a>                <span class="s1">setting = key</span>
+<a name="l819"><span class="ln">819  </span></a>            <span class="s4">if not </span><span class="s1">self.has_option(section</span><span class="s4">, </span><span class="s1">setting):</span>
+<a name="l820"><span class="ln">820  </span></a>                <span class="s1">self.set(section</span><span class="s4">, </span><span class="s1">setting</span><span class="s4">, </span><span class="s1">value)</span>
+<a name="l821"><span class="ln">821  </span></a>        <span class="s1">self.remove_section(</span><span class="s3">'options'</span><span class="s1">)</span>
+<a name="l822"><span class="ln">822  </span></a>
+<a name="l823"><span class="ln">823  </span></a>    <span class="s4">def </span><span class="s1">validate_settings(self</span><span class="s4">, </span><span class="s1">filename</span><span class="s4">, </span><span class="s1">option_parser):</span>
+<a name="l824"><span class="ln">824  </span></a>        <span class="s2">&quot;&quot;&quot; 
+<a name="l825"><span class="ln">825  </span></a>        Call the validator function and implement overrides on all applicable 
+<a name="l826"><span class="ln">826  </span></a>        settings. 
+<a name="l827"><span class="ln">827  </span></a>        &quot;&quot;&quot;</span>
+<a name="l828"><span class="ln">828  </span></a>        <span class="s4">for </span><span class="s1">section </span><span class="s4">in </span><span class="s1">self.sections():</span>
+<a name="l829"><span class="ln">829  </span></a>            <span class="s4">for </span><span class="s1">setting </span><span class="s4">in </span><span class="s1">self.options(section):</span>
+<a name="l830"><span class="ln">830  </span></a>                <span class="s4">try</span><span class="s1">:</span>
+<a name="l831"><span class="ln">831  </span></a>                    <span class="s1">option = option_parser.get_option_by_dest(setting)</span>
+<a name="l832"><span class="ln">832  </span></a>                <span class="s4">except </span><span class="s1">KeyError:</span>
+<a name="l833"><span class="ln">833  </span></a>                    <span class="s4">continue</span>
+<a name="l834"><span class="ln">834  </span></a>                <span class="s4">if </span><span class="s1">option.validator:</span>
+<a name="l835"><span class="ln">835  </span></a>                    <span class="s1">value = self.get(section</span><span class="s4">, </span><span class="s1">setting)</span>
+<a name="l836"><span class="ln">836  </span></a>                    <span class="s4">try</span><span class="s1">:</span>
+<a name="l837"><span class="ln">837  </span></a>                        <span class="s1">new_value = option.validator(</span>
+<a name="l838"><span class="ln">838  </span></a>                            <span class="s1">setting</span><span class="s4">, </span><span class="s1">value</span><span class="s4">, </span><span class="s1">option_parser</span><span class="s4">,</span>
+<a name="l839"><span class="ln">839  </span></a>                            <span class="s1">config_parser=self</span><span class="s4">, </span><span class="s1">config_section=section)</span>
+<a name="l840"><span class="ln">840  </span></a>                    <span class="s4">except </span><span class="s1">Exception </span><span class="s4">as </span><span class="s1">error:</span>
+<a name="l841"><span class="ln">841  </span></a>                        <span class="s4">raise </span><span class="s1">ValueError(</span>
+<a name="l842"><span class="ln">842  </span></a>                            <span class="s3">'Error in config file &quot;%s&quot;, section &quot;[%s]&quot;:</span><span class="s4">\n</span><span class="s3">'</span>
+<a name="l843"><span class="ln">843  </span></a>                            <span class="s3">'    %s</span><span class="s4">\n</span><span class="s3">'</span>
+<a name="l844"><span class="ln">844  </span></a>                            <span class="s3">'        %s = %s'</span>
+<a name="l845"><span class="ln">845  </span></a>                            <span class="s1">% (filename</span><span class="s4">, </span><span class="s1">section</span><span class="s4">, </span><span class="s1">ErrorString(error)</span><span class="s4">,</span>
+<a name="l846"><span class="ln">846  </span></a>                               <span class="s1">setting</span><span class="s4">, </span><span class="s1">value))</span>
+<a name="l847"><span class="ln">847  </span></a>                    <span class="s1">self.set(section</span><span class="s4">, </span><span class="s1">setting</span><span class="s4">, </span><span class="s1">new_value)</span>
+<a name="l848"><span class="ln">848  </span></a>                <span class="s4">if </span><span class="s1">option.overrides:</span>
+<a name="l849"><span class="ln">849  </span></a>                    <span class="s1">self.set(section</span><span class="s4">, </span><span class="s1">option.overrides</span><span class="s4">, None</span><span class="s1">)</span>
+<a name="l850"><span class="ln">850  </span></a>
+<a name="l851"><span class="ln">851  </span></a>    <span class="s4">def </span><span class="s1">optionxform(self</span><span class="s4">, </span><span class="s1">optionstr):</span>
+<a name="l852"><span class="ln">852  </span></a>        <span class="s2">&quot;&quot;&quot; 
+<a name="l853"><span class="ln">853  </span></a>        Transform '-' to '_' so the cmdline form of option names can be used. 
+<a name="l854"><span class="ln">854  </span></a>        &quot;&quot;&quot;</span>
+<a name="l855"><span class="ln">855  </span></a>        <span class="s4">return </span><span class="s1">optionstr.lower().replace(</span><span class="s3">'-'</span><span class="s4">, </span><span class="s3">'_'</span><span class="s1">)</span>
+<a name="l856"><span class="ln">856  </span></a>
+<a name="l857"><span class="ln">857  </span></a>    <span class="s4">def </span><span class="s1">get_section(self</span><span class="s4">, </span><span class="s1">section):</span>
+<a name="l858"><span class="ln">858  </span></a>        <span class="s2">&quot;&quot;&quot; 
+<a name="l859"><span class="ln">859  </span></a>        Return a given section as a dictionary (empty if the section 
+<a name="l860"><span class="ln">860  </span></a>        doesn't exist). 
+<a name="l861"><span class="ln">861  </span></a>        &quot;&quot;&quot;</span>
+<a name="l862"><span class="ln">862  </span></a>        <span class="s1">section_dict = {}</span>
+<a name="l863"><span class="ln">863  </span></a>        <span class="s4">if </span><span class="s1">self.has_section(section):</span>
+<a name="l864"><span class="ln">864  </span></a>            <span class="s4">for </span><span class="s1">option </span><span class="s4">in </span><span class="s1">self.options(section):</span>
+<a name="l865"><span class="ln">865  </span></a>                <span class="s1">section_dict[option] = self.get(section</span><span class="s4">, </span><span class="s1">option)</span>
+<a name="l866"><span class="ln">866  </span></a>        <span class="s4">return </span><span class="s1">section_dict</span>
+<a name="l867"><span class="ln">867  </span></a>
+<a name="l868"><span class="ln">868  </span></a>
+<a name="l869"><span class="ln">869  </span></a><span class="s4">class </span><span class="s1">ConfigDeprecationWarning(DeprecationWarning):</span>
+<a name="l870"><span class="ln">870  </span></a>    <span class="s2">&quot;&quot;&quot;Warning for deprecated configuration file features.&quot;&quot;&quot;</span>
+<a name="l871"><span class="ln">871  </span></a></pre>
+</body>
+</html>

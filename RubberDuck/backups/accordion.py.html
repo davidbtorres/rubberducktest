@@ -1,0 +1,506 @@
+<html>
+<head>
+<title>accordion.py</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type="text/css">
+.s0 { color: #629755; font-style: italic;}
+.s1 { color: #a9b7c6;}
+.s2 { color: #6a8759;}
+.s3 { color: #cc7832;}
+.s4 { color: #6897bb;}
+.ln { color: #606366; font-weight: normal; font-style: normal; }
+</style>
+</head>
+<body bgcolor="#2b2b2b">
+<table CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#606060" >
+<tr><td><center>
+<font face="Arial, Helvetica" color="#000000">
+accordion.py</font>
+</center></td></tr></table>
+<pre><a name="l1"><span class="ln">1    </span></a><span class="s0">''' 
+<a name="l2"><span class="ln">2    </span></a>Accordion 
+<a name="l3"><span class="ln">3    </span></a>========= 
+<a name="l4"><span class="ln">4    </span></a> 
+<a name="l5"><span class="ln">5    </span></a>.. versionadded:: 1.0.8 
+<a name="l6"><span class="ln">6    </span></a> 
+<a name="l7"><span class="ln">7    </span></a> 
+<a name="l8"><span class="ln">8    </span></a>.. image:: images/accordion.jpg 
+<a name="l9"><span class="ln">9    </span></a>    :align: right 
+<a name="l10"><span class="ln">10   </span></a> 
+<a name="l11"><span class="ln">11   </span></a>The Accordion widget is a form of menu where the options are stacked either 
+<a name="l12"><span class="ln">12   </span></a>vertically or horizontally and the item in focus (when touched) opens up to 
+<a name="l13"><span class="ln">13   </span></a>display its content. 
+<a name="l14"><span class="ln">14   </span></a> 
+<a name="l15"><span class="ln">15   </span></a>The :class:`Accordion` should contain one or many :class:`AccordionItem` 
+<a name="l16"><span class="ln">16   </span></a>instances, each of which should contain one root content widget. You'll end up 
+<a name="l17"><span class="ln">17   </span></a>with a Tree something like this: 
+<a name="l18"><span class="ln">18   </span></a> 
+<a name="l19"><span class="ln">19   </span></a>- Accordion 
+<a name="l20"><span class="ln">20   </span></a> 
+<a name="l21"><span class="ln">21   </span></a>  - AccordionItem 
+<a name="l22"><span class="ln">22   </span></a> 
+<a name="l23"><span class="ln">23   </span></a>    - YourContent 
+<a name="l24"><span class="ln">24   </span></a> 
+<a name="l25"><span class="ln">25   </span></a>  - AccordionItem 
+<a name="l26"><span class="ln">26   </span></a> 
+<a name="l27"><span class="ln">27   </span></a>    - BoxLayout 
+<a name="l28"><span class="ln">28   </span></a> 
+<a name="l29"><span class="ln">29   </span></a>      - Another user content 1 
+<a name="l30"><span class="ln">30   </span></a> 
+<a name="l31"><span class="ln">31   </span></a>      - Another user content 2 
+<a name="l32"><span class="ln">32   </span></a> 
+<a name="l33"><span class="ln">33   </span></a>  - AccordionItem 
+<a name="l34"><span class="ln">34   </span></a> 
+<a name="l35"><span class="ln">35   </span></a>    - Another user content 
+<a name="l36"><span class="ln">36   </span></a> 
+<a name="l37"><span class="ln">37   </span></a> 
+<a name="l38"><span class="ln">38   </span></a>The current implementation divides the :class:`AccordionItem` into two parts: 
+<a name="l39"><span class="ln">39   </span></a> 
+<a name="l40"><span class="ln">40   </span></a>#. One container for the title bar 
+<a name="l41"><span class="ln">41   </span></a>#. One container for the content 
+<a name="l42"><span class="ln">42   </span></a> 
+<a name="l43"><span class="ln">43   </span></a>The title bar is made from a Kv template. We'll see how to create a new 
+<a name="l44"><span class="ln">44   </span></a>template to customize the design of the title bar. 
+<a name="l45"><span class="ln">45   </span></a> 
+<a name="l46"><span class="ln">46   </span></a>.. warning:: 
+<a name="l47"><span class="ln">47   </span></a> 
+<a name="l48"><span class="ln">48   </span></a>    If you see message like:: 
+<a name="l49"><span class="ln">49   </span></a> 
+<a name="l50"><span class="ln">50   </span></a>        [WARNING] [Accordion] not have enough space for displaying all children 
+<a name="l51"><span class="ln">51   </span></a>        [WARNING] [Accordion] need 440px, got 100px 
+<a name="l52"><span class="ln">52   </span></a>        [WARNING] [Accordion] layout aborted. 
+<a name="l53"><span class="ln">53   </span></a> 
+<a name="l54"><span class="ln">54   </span></a>    That means you have too many children and there is no more space to 
+<a name="l55"><span class="ln">55   </span></a>    display the content. This is &quot;normal&quot; and nothing will be done. Try to 
+<a name="l56"><span class="ln">56   </span></a>    increase the space for the accordion or reduce the number of children. You 
+<a name="l57"><span class="ln">57   </span></a>    can also reduce the :attr:`Accordion.min_space`. 
+<a name="l58"><span class="ln">58   </span></a> 
+<a name="l59"><span class="ln">59   </span></a>Simple example 
+<a name="l60"><span class="ln">60   </span></a>-------------- 
+<a name="l61"><span class="ln">61   </span></a> 
+<a name="l62"><span class="ln">62   </span></a>.. include:: ../../examples/widgets/accordion_1.py 
+<a name="l63"><span class="ln">63   </span></a>    :literal: 
+<a name="l64"><span class="ln">64   </span></a> 
+<a name="l65"><span class="ln">65   </span></a>Customize the accordion 
+<a name="l66"><span class="ln">66   </span></a>----------------------- 
+<a name="l67"><span class="ln">67   </span></a> 
+<a name="l68"><span class="ln">68   </span></a>You can increase the default size of the title bar:: 
+<a name="l69"><span class="ln">69   </span></a> 
+<a name="l70"><span class="ln">70   </span></a>    root = Accordion(min_space=60) 
+<a name="l71"><span class="ln">71   </span></a> 
+<a name="l72"><span class="ln">72   </span></a>Or change the orientation to vertical:: 
+<a name="l73"><span class="ln">73   </span></a> 
+<a name="l74"><span class="ln">74   </span></a>    root = Accordion(orientation='vertical') 
+<a name="l75"><span class="ln">75   </span></a> 
+<a name="l76"><span class="ln">76   </span></a>The AccordionItem is more configurable and you can set your own title 
+<a name="l77"><span class="ln">77   </span></a>background when the item is collapsed or opened:: 
+<a name="l78"><span class="ln">78   </span></a> 
+<a name="l79"><span class="ln">79   </span></a>    item = AccordionItem(background_normal='image_when_collapsed.png', 
+<a name="l80"><span class="ln">80   </span></a>        background_selected='image_when_selected.png') 
+<a name="l81"><span class="ln">81   </span></a> 
+<a name="l82"><span class="ln">82   </span></a>'''</span>
+<a name="l83"><span class="ln">83   </span></a>
+<a name="l84"><span class="ln">84   </span></a><span class="s1">__all__ = (</span><span class="s2">'Accordion'</span><span class="s3">, </span><span class="s2">'AccordionItem'</span><span class="s3">, </span><span class="s2">'AccordionException'</span><span class="s1">)</span>
+<a name="l85"><span class="ln">85   </span></a>
+<a name="l86"><span class="ln">86   </span></a><span class="s3">from </span><span class="s1">kivy.animation </span><span class="s3">import </span><span class="s1">Animation</span>
+<a name="l87"><span class="ln">87   </span></a><span class="s3">from </span><span class="s1">kivy.uix.floatlayout </span><span class="s3">import </span><span class="s1">FloatLayout</span>
+<a name="l88"><span class="ln">88   </span></a><span class="s3">from </span><span class="s1">kivy.clock </span><span class="s3">import </span><span class="s1">Clock</span>
+<a name="l89"><span class="ln">89   </span></a><span class="s3">from </span><span class="s1">kivy.lang </span><span class="s3">import </span><span class="s1">Builder</span>
+<a name="l90"><span class="ln">90   </span></a><span class="s3">from </span><span class="s1">kivy.properties </span><span class="s3">import </span><span class="s1">(ObjectProperty</span><span class="s3">, </span><span class="s1">StringProperty</span><span class="s3">,</span>
+<a name="l91"><span class="ln">91   </span></a>                             <span class="s1">BooleanProperty</span><span class="s3">, </span><span class="s1">NumericProperty</span><span class="s3">,</span>
+<a name="l92"><span class="ln">92   </span></a>                             <span class="s1">ListProperty</span><span class="s3">, </span><span class="s1">OptionProperty</span><span class="s3">, </span><span class="s1">DictProperty)</span>
+<a name="l93"><span class="ln">93   </span></a><span class="s3">from </span><span class="s1">kivy.uix.widget </span><span class="s3">import </span><span class="s1">Widget</span>
+<a name="l94"><span class="ln">94   </span></a><span class="s3">from </span><span class="s1">kivy.logger </span><span class="s3">import </span><span class="s1">Logger</span>
+<a name="l95"><span class="ln">95   </span></a>
+<a name="l96"><span class="ln">96   </span></a>
+<a name="l97"><span class="ln">97   </span></a><span class="s3">class </span><span class="s1">AccordionException(Exception):</span>
+<a name="l98"><span class="ln">98   </span></a>    <span class="s0">'''AccordionException class. 
+<a name="l99"><span class="ln">99   </span></a>    '''</span>
+<a name="l100"><span class="ln">100  </span></a>    <span class="s3">pass</span>
+<a name="l101"><span class="ln">101  </span></a>
+<a name="l102"><span class="ln">102  </span></a>
+<a name="l103"><span class="ln">103  </span></a><span class="s3">class </span><span class="s1">AccordionItem(FloatLayout):</span>
+<a name="l104"><span class="ln">104  </span></a>    <span class="s0">'''AccordionItem class that must be used in conjunction with the 
+<a name="l105"><span class="ln">105  </span></a>    :class:`Accordion` class. See the module documentation for more 
+<a name="l106"><span class="ln">106  </span></a>    information. 
+<a name="l107"><span class="ln">107  </span></a>    '''</span>
+<a name="l108"><span class="ln">108  </span></a>
+<a name="l109"><span class="ln">109  </span></a>    <span class="s1">title = StringProperty(</span><span class="s2">''</span><span class="s1">)</span>
+<a name="l110"><span class="ln">110  </span></a>    <span class="s2">'''Title string of the item. The title might be used in conjunction with the 
+<a name="l111"><span class="ln">111  </span></a>    `AccordionItemTitle` template. If you are using a custom template, you can 
+<a name="l112"><span class="ln">112  </span></a>    use that property as a text entry, or not. By default, it's used for the 
+<a name="l113"><span class="ln">113  </span></a>    title text. See title_template and the example below. 
+<a name="l114"><span class="ln">114  </span></a> 
+<a name="l115"><span class="ln">115  </span></a>    :attr:`title` is a :class:`~kivy.properties.StringProperty` and defaults 
+<a name="l116"><span class="ln">116  </span></a>    to ''. 
+<a name="l117"><span class="ln">117  </span></a>    '''</span>
+<a name="l118"><span class="ln">118  </span></a>
+<a name="l119"><span class="ln">119  </span></a>    <span class="s1">title_template = StringProperty(</span><span class="s2">'AccordionItemTitle'</span><span class="s1">)</span>
+<a name="l120"><span class="ln">120  </span></a>    <span class="s2">'''Template to use for creating the title part of the accordion item. The 
+<a name="l121"><span class="ln">121  </span></a>    default template is a simple Label, not customizable (except the text) that 
+<a name="l122"><span class="ln">122  </span></a>    supports vertical and horizontal orientation and different backgrounds for 
+<a name="l123"><span class="ln">123  </span></a>    collapse and selected mode. 
+<a name="l124"><span class="ln">124  </span></a> 
+<a name="l125"><span class="ln">125  </span></a>    It's better to create and use your own template if the default template 
+<a name="l126"><span class="ln">126  </span></a>    does not suffice. 
+<a name="l127"><span class="ln">127  </span></a> 
+<a name="l128"><span class="ln">128  </span></a>    :attr:`title` is a :class:`~kivy.properties.StringProperty` and defaults to 
+<a name="l129"><span class="ln">129  </span></a>    'AccordionItemTitle'. The current default template lives in the 
+<a name="l130"><span class="ln">130  </span></a>    `kivy/data/style.kv` file. 
+<a name="l131"><span class="ln">131  </span></a> 
+<a name="l132"><span class="ln">132  </span></a>    Here is the code if you want to build your own template:: 
+<a name="l133"><span class="ln">133  </span></a> 
+<a name="l134"><span class="ln">134  </span></a>        [AccordionItemTitle@Label]: 
+<a name="l135"><span class="ln">135  </span></a>            text: ctx.title 
+<a name="l136"><span class="ln">136  </span></a>            canvas.before: 
+<a name="l137"><span class="ln">137  </span></a>                Color: 
+<a name="l138"><span class="ln">138  </span></a>                    rgb: 1, 1, 1 
+<a name="l139"><span class="ln">139  </span></a>                BorderImage: 
+<a name="l140"><span class="ln">140  </span></a>                    source: 
+<a name="l141"><span class="ln">141  </span></a>                        ctx.item.background_normal </span><span class="s3">\ 
+<a name="l142"><span class="ln">142  </span></a>                        </span><span class="s2">if ctx.item.collapse </span><span class="s3">\ 
+<a name="l143"><span class="ln">143  </span></a>                        </span><span class="s2">else ctx.item.background_selected 
+<a name="l144"><span class="ln">144  </span></a>                    pos: self.pos 
+<a name="l145"><span class="ln">145  </span></a>                    size: self.size 
+<a name="l146"><span class="ln">146  </span></a>                PushMatrix 
+<a name="l147"><span class="ln">147  </span></a>                Translate: 
+<a name="l148"><span class="ln">148  </span></a>                    xy: self.center_x, self.center_y 
+<a name="l149"><span class="ln">149  </span></a>                Rotate: 
+<a name="l150"><span class="ln">150  </span></a>                    angle: 90 if ctx.item.orientation == 'horizontal' else 0 
+<a name="l151"><span class="ln">151  </span></a>                    axis: 0, 0, 1 
+<a name="l152"><span class="ln">152  </span></a>                Translate: 
+<a name="l153"><span class="ln">153  </span></a>                    xy: -self.center_x, -self.center_y 
+<a name="l154"><span class="ln">154  </span></a>            canvas.after: 
+<a name="l155"><span class="ln">155  </span></a>                PopMatrix 
+<a name="l156"><span class="ln">156  </span></a> 
+<a name="l157"><span class="ln">157  </span></a> 
+<a name="l158"><span class="ln">158  </span></a>    '''</span>
+<a name="l159"><span class="ln">159  </span></a>
+<a name="l160"><span class="ln">160  </span></a>    <span class="s1">title_args = DictProperty({})</span>
+<a name="l161"><span class="ln">161  </span></a>    <span class="s2">'''Default arguments that will be passed to the 
+<a name="l162"><span class="ln">162  </span></a>    :meth:`kivy.lang.Builder.template` method. 
+<a name="l163"><span class="ln">163  </span></a> 
+<a name="l164"><span class="ln">164  </span></a>    :attr:`title_args` is a :class:`~kivy.properties.DictProperty` and defaults 
+<a name="l165"><span class="ln">165  </span></a>    to {}. 
+<a name="l166"><span class="ln">166  </span></a>    '''</span>
+<a name="l167"><span class="ln">167  </span></a>
+<a name="l168"><span class="ln">168  </span></a>    <span class="s1">collapse = BooleanProperty(</span><span class="s3">True</span><span class="s1">)</span>
+<a name="l169"><span class="ln">169  </span></a>    <span class="s2">'''Boolean to indicate if the current item is collapsed or not. 
+<a name="l170"><span class="ln">170  </span></a> 
+<a name="l171"><span class="ln">171  </span></a>    :attr:`collapse` is a :class:`~kivy.properties.BooleanProperty` and 
+<a name="l172"><span class="ln">172  </span></a>    defaults to True. 
+<a name="l173"><span class="ln">173  </span></a>    '''</span>
+<a name="l174"><span class="ln">174  </span></a>
+<a name="l175"><span class="ln">175  </span></a>    <span class="s1">collapse_alpha = NumericProperty(</span><span class="s4">1.</span><span class="s1">)</span>
+<a name="l176"><span class="ln">176  </span></a>    <span class="s2">'''Value between 0 and 1 to indicate how much the item is collapsed (1) or 
+<a name="l177"><span class="ln">177  </span></a>    whether it is selected (0). It's mostly used for animation. 
+<a name="l178"><span class="ln">178  </span></a> 
+<a name="l179"><span class="ln">179  </span></a>    :attr:`collapse_alpha` is a :class:`~kivy.properties.NumericProperty` and 
+<a name="l180"><span class="ln">180  </span></a>    defaults to 1. 
+<a name="l181"><span class="ln">181  </span></a>    '''</span>
+<a name="l182"><span class="ln">182  </span></a>
+<a name="l183"><span class="ln">183  </span></a>    <span class="s1">accordion = ObjectProperty(</span><span class="s3">None</span><span class="s1">)</span>
+<a name="l184"><span class="ln">184  </span></a>    <span class="s2">'''Instance of the :class:`Accordion` that the item belongs to. 
+<a name="l185"><span class="ln">185  </span></a> 
+<a name="l186"><span class="ln">186  </span></a>    :attr:`accordion` is an :class:`~kivy.properties.ObjectProperty` and 
+<a name="l187"><span class="ln">187  </span></a>    defaults to None. 
+<a name="l188"><span class="ln">188  </span></a>    '''</span>
+<a name="l189"><span class="ln">189  </span></a>
+<a name="l190"><span class="ln">190  </span></a>    <span class="s1">background_normal = StringProperty(</span>
+<a name="l191"><span class="ln">191  </span></a>        <span class="s2">'atlas://data/images/defaulttheme/button'</span><span class="s1">)</span>
+<a name="l192"><span class="ln">192  </span></a>    <span class="s2">'''Background image of the accordion item used for the default graphical 
+<a name="l193"><span class="ln">193  </span></a>    representation when the item is collapsed. 
+<a name="l194"><span class="ln">194  </span></a> 
+<a name="l195"><span class="ln">195  </span></a>    :attr:`background_normal` is a :class:`~kivy.properties.StringProperty` and 
+<a name="l196"><span class="ln">196  </span></a>    defaults to 'atlas://data/images/defaulttheme/button'. 
+<a name="l197"><span class="ln">197  </span></a>    '''</span>
+<a name="l198"><span class="ln">198  </span></a>
+<a name="l199"><span class="ln">199  </span></a>    <span class="s1">background_disabled_normal = StringProperty(</span>
+<a name="l200"><span class="ln">200  </span></a>        <span class="s2">'atlas://data/images/defaulttheme/button_disabled'</span><span class="s1">)</span>
+<a name="l201"><span class="ln">201  </span></a>    <span class="s2">'''Background image of the accordion item used for the default graphical 
+<a name="l202"><span class="ln">202  </span></a>    representation when the item is collapsed and disabled. 
+<a name="l203"><span class="ln">203  </span></a> 
+<a name="l204"><span class="ln">204  </span></a>    .. versionadded:: 1.8.0 
+<a name="l205"><span class="ln">205  </span></a> 
+<a name="l206"><span class="ln">206  </span></a>    :attr:`background__disabled_normal` is a 
+<a name="l207"><span class="ln">207  </span></a>    :class:`~kivy.properties.StringProperty` and defaults to 
+<a name="l208"><span class="ln">208  </span></a>    'atlas://data/images/defaulttheme/button_disabled'. 
+<a name="l209"><span class="ln">209  </span></a>    '''</span>
+<a name="l210"><span class="ln">210  </span></a>
+<a name="l211"><span class="ln">211  </span></a>    <span class="s1">background_selected = StringProperty(</span>
+<a name="l212"><span class="ln">212  </span></a>        <span class="s2">'atlas://data/images/defaulttheme/button_pressed'</span><span class="s1">)</span>
+<a name="l213"><span class="ln">213  </span></a>    <span class="s2">'''Background image of the accordion item used for the default graphical 
+<a name="l214"><span class="ln">214  </span></a>    representation when the item is selected (not collapsed). 
+<a name="l215"><span class="ln">215  </span></a> 
+<a name="l216"><span class="ln">216  </span></a>    :attr:`background_normal` is a :class:`~kivy.properties.StringProperty` and 
+<a name="l217"><span class="ln">217  </span></a>    defaults to 'atlas://data/images/defaulttheme/button_pressed'. 
+<a name="l218"><span class="ln">218  </span></a>    '''</span>
+<a name="l219"><span class="ln">219  </span></a>
+<a name="l220"><span class="ln">220  </span></a>    <span class="s1">background_disabled_selected = StringProperty(</span>
+<a name="l221"><span class="ln">221  </span></a>        <span class="s2">'atlas://data/images/defaulttheme/button_disabled_pressed'</span><span class="s1">)</span>
+<a name="l222"><span class="ln">222  </span></a>    <span class="s2">'''Background image of the accordion item used for the default graphical 
+<a name="l223"><span class="ln">223  </span></a>    representation when the item is selected (not collapsed) and disabled. 
+<a name="l224"><span class="ln">224  </span></a> 
+<a name="l225"><span class="ln">225  </span></a>    .. versionadded:: 1.8.0 
+<a name="l226"><span class="ln">226  </span></a> 
+<a name="l227"><span class="ln">227  </span></a>    :attr:`background_disabled_selected` is a 
+<a name="l228"><span class="ln">228  </span></a>    :class:`~kivy.properties.StringProperty` and defaults to 
+<a name="l229"><span class="ln">229  </span></a>    'atlas://data/images/defaulttheme/button_disabled_pressed'. 
+<a name="l230"><span class="ln">230  </span></a>    '''</span>
+<a name="l231"><span class="ln">231  </span></a>
+<a name="l232"><span class="ln">232  </span></a>    <span class="s1">orientation = OptionProperty(</span><span class="s2">'vertical'</span><span class="s3">, </span><span class="s1">options=(</span>
+<a name="l233"><span class="ln">233  </span></a>        <span class="s2">'horizontal'</span><span class="s3">, </span><span class="s2">'vertical'</span><span class="s1">))</span>
+<a name="l234"><span class="ln">234  </span></a>    <span class="s2">'''Link to the :attr:`Accordion.orientation` property. 
+<a name="l235"><span class="ln">235  </span></a>    '''</span>
+<a name="l236"><span class="ln">236  </span></a>
+<a name="l237"><span class="ln">237  </span></a>    <span class="s1">min_space = NumericProperty(</span><span class="s2">'44dp'</span><span class="s1">)</span>
+<a name="l238"><span class="ln">238  </span></a>    <span class="s2">'''Link to the :attr:`Accordion.min_space` property. 
+<a name="l239"><span class="ln">239  </span></a>    '''</span>
+<a name="l240"><span class="ln">240  </span></a>
+<a name="l241"><span class="ln">241  </span></a>    <span class="s1">content_size = ListProperty([</span><span class="s4">100</span><span class="s3">, </span><span class="s4">100</span><span class="s1">])</span>
+<a name="l242"><span class="ln">242  </span></a>    <span class="s2">'''(internal) Set by the :class:`Accordion` to the size allocated for the 
+<a name="l243"><span class="ln">243  </span></a>    content. 
+<a name="l244"><span class="ln">244  </span></a>    '''</span>
+<a name="l245"><span class="ln">245  </span></a>
+<a name="l246"><span class="ln">246  </span></a>    <span class="s1">container = ObjectProperty(</span><span class="s3">None</span><span class="s1">)</span>
+<a name="l247"><span class="ln">247  </span></a>    <span class="s2">'''(internal) Property that will be set to the container of children inside 
+<a name="l248"><span class="ln">248  </span></a>    the AccordionItem representation. 
+<a name="l249"><span class="ln">249  </span></a>    '''</span>
+<a name="l250"><span class="ln">250  </span></a>
+<a name="l251"><span class="ln">251  </span></a>    <span class="s1">container_title = ObjectProperty(</span><span class="s3">None</span><span class="s1">)</span>
+<a name="l252"><span class="ln">252  </span></a>    <span class="s2">'''(internal) Property that will be set to the container of title inside 
+<a name="l253"><span class="ln">253  </span></a>    the AccordionItem representation. 
+<a name="l254"><span class="ln">254  </span></a>    '''</span>
+<a name="l255"><span class="ln">255  </span></a>
+<a name="l256"><span class="ln">256  </span></a>    <span class="s3">def </span><span class="s1">__init__(self</span><span class="s3">, </span><span class="s1">**kwargs):</span>
+<a name="l257"><span class="ln">257  </span></a>        <span class="s1">self._trigger_title = Clock.create_trigger(self._update_title</span><span class="s3">, </span><span class="s1">-</span><span class="s4">1</span><span class="s1">)</span>
+<a name="l258"><span class="ln">258  </span></a>        <span class="s1">self._anim_collapse = </span><span class="s3">None</span>
+<a name="l259"><span class="ln">259  </span></a>        <span class="s1">super(AccordionItem</span><span class="s3">, </span><span class="s1">self).__init__(**kwargs)</span>
+<a name="l260"><span class="ln">260  </span></a>        <span class="s1">trigger_title = self._trigger_title</span>
+<a name="l261"><span class="ln">261  </span></a>        <span class="s1">fbind = self.fbind</span>
+<a name="l262"><span class="ln">262  </span></a>        <span class="s1">fbind(</span><span class="s2">'title'</span><span class="s3">, </span><span class="s1">trigger_title)</span>
+<a name="l263"><span class="ln">263  </span></a>        <span class="s1">fbind(</span><span class="s2">'title_template'</span><span class="s3">, </span><span class="s1">trigger_title)</span>
+<a name="l264"><span class="ln">264  </span></a>        <span class="s1">fbind(</span><span class="s2">'title_args'</span><span class="s3">, </span><span class="s1">trigger_title)</span>
+<a name="l265"><span class="ln">265  </span></a>        <span class="s1">trigger_title()</span>
+<a name="l266"><span class="ln">266  </span></a>
+<a name="l267"><span class="ln">267  </span></a>    <span class="s3">def </span><span class="s1">add_widget(self</span><span class="s3">, </span><span class="s1">widget):</span>
+<a name="l268"><span class="ln">268  </span></a>        <span class="s3">if </span><span class="s1">self.container </span><span class="s3">is None</span><span class="s1">:</span>
+<a name="l269"><span class="ln">269  </span></a>            <span class="s3">return </span><span class="s1">super(AccordionItem</span><span class="s3">, </span><span class="s1">self).add_widget(widget)</span>
+<a name="l270"><span class="ln">270  </span></a>        <span class="s3">return </span><span class="s1">self.container.add_widget(widget)</span>
+<a name="l271"><span class="ln">271  </span></a>
+<a name="l272"><span class="ln">272  </span></a>    <span class="s3">def </span><span class="s1">remove_widget(self</span><span class="s3">, </span><span class="s1">widget):</span>
+<a name="l273"><span class="ln">273  </span></a>        <span class="s3">if </span><span class="s1">self.container:</span>
+<a name="l274"><span class="ln">274  </span></a>            <span class="s1">self.container.remove_widget(widget)</span>
+<a name="l275"><span class="ln">275  </span></a>        <span class="s1">super(AccordionItem</span><span class="s3">, </span><span class="s1">self).remove_widget(widget)</span>
+<a name="l276"><span class="ln">276  </span></a>
+<a name="l277"><span class="ln">277  </span></a>    <span class="s3">def </span><span class="s1">on_collapse(self</span><span class="s3">, </span><span class="s1">instance</span><span class="s3">, </span><span class="s1">value):</span>
+<a name="l278"><span class="ln">278  </span></a>        <span class="s1">accordion = self.accordion</span>
+<a name="l279"><span class="ln">279  </span></a>        <span class="s3">if </span><span class="s1">accordion </span><span class="s3">is None</span><span class="s1">:</span>
+<a name="l280"><span class="ln">280  </span></a>            <span class="s3">return</span>
+<a name="l281"><span class="ln">281  </span></a>        <span class="s3">if not </span><span class="s1">value:</span>
+<a name="l282"><span class="ln">282  </span></a>            <span class="s1">self.accordion.select(self)</span>
+<a name="l283"><span class="ln">283  </span></a>        <span class="s1">collapse_alpha = float(value)</span>
+<a name="l284"><span class="ln">284  </span></a>        <span class="s3">if </span><span class="s1">self._anim_collapse:</span>
+<a name="l285"><span class="ln">285  </span></a>            <span class="s1">self._anim_collapse.stop(self)</span>
+<a name="l286"><span class="ln">286  </span></a>            <span class="s1">self._anim_collapse = </span><span class="s3">None</span>
+<a name="l287"><span class="ln">287  </span></a>        <span class="s3">if </span><span class="s1">self.collapse_alpha != collapse_alpha:</span>
+<a name="l288"><span class="ln">288  </span></a>            <span class="s1">self._anim_collapse = Animation(</span>
+<a name="l289"><span class="ln">289  </span></a>                <span class="s1">collapse_alpha=collapse_alpha</span><span class="s3">,</span>
+<a name="l290"><span class="ln">290  </span></a>                <span class="s1">t=accordion.anim_func</span><span class="s3">,</span>
+<a name="l291"><span class="ln">291  </span></a>                <span class="s1">d=accordion.anim_duration)</span>
+<a name="l292"><span class="ln">292  </span></a>            <span class="s1">self._anim_collapse.start(self)</span>
+<a name="l293"><span class="ln">293  </span></a>
+<a name="l294"><span class="ln">294  </span></a>    <span class="s3">def </span><span class="s1">on_collapse_alpha(self</span><span class="s3">, </span><span class="s1">instance</span><span class="s3">, </span><span class="s1">value):</span>
+<a name="l295"><span class="ln">295  </span></a>        <span class="s1">self.accordion._trigger_layout()</span>
+<a name="l296"><span class="ln">296  </span></a>
+<a name="l297"><span class="ln">297  </span></a>    <span class="s3">def </span><span class="s1">on_touch_down(self</span><span class="s3">, </span><span class="s1">touch):</span>
+<a name="l298"><span class="ln">298  </span></a>        <span class="s3">if not </span><span class="s1">self.collide_point(*touch.pos):</span>
+<a name="l299"><span class="ln">299  </span></a>            <span class="s3">return</span>
+<a name="l300"><span class="ln">300  </span></a>        <span class="s3">if </span><span class="s1">self.disabled:</span>
+<a name="l301"><span class="ln">301  </span></a>            <span class="s3">return True</span>
+<a name="l302"><span class="ln">302  </span></a>        <span class="s3">if </span><span class="s1">self.collapse:</span>
+<a name="l303"><span class="ln">303  </span></a>            <span class="s1">self.collapse = </span><span class="s3">False</span>
+<a name="l304"><span class="ln">304  </span></a>            <span class="s3">return True</span>
+<a name="l305"><span class="ln">305  </span></a>        <span class="s3">else</span><span class="s1">:</span>
+<a name="l306"><span class="ln">306  </span></a>            <span class="s3">return </span><span class="s1">super(AccordionItem</span><span class="s3">, </span><span class="s1">self).on_touch_down(touch)</span>
+<a name="l307"><span class="ln">307  </span></a>
+<a name="l308"><span class="ln">308  </span></a>    <span class="s3">def </span><span class="s1">_update_title(self</span><span class="s3">, </span><span class="s1">dt):</span>
+<a name="l309"><span class="ln">309  </span></a>        <span class="s3">if not </span><span class="s1">self.container_title:</span>
+<a name="l310"><span class="ln">310  </span></a>            <span class="s1">self._trigger_title()</span>
+<a name="l311"><span class="ln">311  </span></a>            <span class="s3">return</span>
+<a name="l312"><span class="ln">312  </span></a>        <span class="s1">c = self.container_title</span>
+<a name="l313"><span class="ln">313  </span></a>        <span class="s1">c.clear_widgets()</span>
+<a name="l314"><span class="ln">314  </span></a>        <span class="s1">instance = Builder.template(self.title_template</span><span class="s3">,</span>
+<a name="l315"><span class="ln">315  </span></a>                                    <span class="s1">title=self.title</span><span class="s3">,</span>
+<a name="l316"><span class="ln">316  </span></a>                                    <span class="s1">item=self</span><span class="s3">,</span>
+<a name="l317"><span class="ln">317  </span></a>                                    <span class="s1">**self.title_args)</span>
+<a name="l318"><span class="ln">318  </span></a>        <span class="s1">c.add_widget(instance)</span>
+<a name="l319"><span class="ln">319  </span></a>
+<a name="l320"><span class="ln">320  </span></a>
+<a name="l321"><span class="ln">321  </span></a><span class="s3">class </span><span class="s1">Accordion(Widget):</span>
+<a name="l322"><span class="ln">322  </span></a>    <span class="s0">'''Accordion class. See module documentation for more information. 
+<a name="l323"><span class="ln">323  </span></a>    '''</span>
+<a name="l324"><span class="ln">324  </span></a>
+<a name="l325"><span class="ln">325  </span></a>    <span class="s1">orientation = OptionProperty(</span><span class="s2">'horizontal'</span><span class="s3">, </span><span class="s1">options=(</span>
+<a name="l326"><span class="ln">326  </span></a>        <span class="s2">'horizontal'</span><span class="s3">, </span><span class="s2">'vertical'</span><span class="s1">))</span>
+<a name="l327"><span class="ln">327  </span></a>    <span class="s2">'''Orientation of the layout. 
+<a name="l328"><span class="ln">328  </span></a> 
+<a name="l329"><span class="ln">329  </span></a>    :attr:`orientation` is an :class:`~kivy.properties.OptionProperty` 
+<a name="l330"><span class="ln">330  </span></a>    and defaults to 'horizontal'. Can take a value of 'vertical' or 
+<a name="l331"><span class="ln">331  </span></a>    'horizontal'. 
+<a name="l332"><span class="ln">332  </span></a> 
+<a name="l333"><span class="ln">333  </span></a>    '''</span>
+<a name="l334"><span class="ln">334  </span></a>
+<a name="l335"><span class="ln">335  </span></a>    <span class="s1">anim_duration = NumericProperty(</span><span class="s4">.25</span><span class="s1">)</span>
+<a name="l336"><span class="ln">336  </span></a>    <span class="s2">'''Duration of the animation in seconds when a new accordion item is 
+<a name="l337"><span class="ln">337  </span></a>    selected. 
+<a name="l338"><span class="ln">338  </span></a> 
+<a name="l339"><span class="ln">339  </span></a>    :attr:`anim_duration` is a :class:`~kivy.properties.NumericProperty` and 
+<a name="l340"><span class="ln">340  </span></a>    defaults to .25 (250ms). 
+<a name="l341"><span class="ln">341  </span></a>    '''</span>
+<a name="l342"><span class="ln">342  </span></a>
+<a name="l343"><span class="ln">343  </span></a>    <span class="s1">anim_func = ObjectProperty(</span><span class="s2">'out_expo'</span><span class="s1">)</span>
+<a name="l344"><span class="ln">344  </span></a>    <span class="s2">'''Easing function to use for the animation. Check 
+<a name="l345"><span class="ln">345  </span></a>    :class:`kivy.animation.AnimationTransition` for more information about 
+<a name="l346"><span class="ln">346  </span></a>    available animation functions. 
+<a name="l347"><span class="ln">347  </span></a> 
+<a name="l348"><span class="ln">348  </span></a>    :attr:`anim_func` is an :class:`~kivy.properties.ObjectProperty` and 
+<a name="l349"><span class="ln">349  </span></a>    defaults to 'out_expo'. You can set a string or a function to use as an 
+<a name="l350"><span class="ln">350  </span></a>    easing function. 
+<a name="l351"><span class="ln">351  </span></a>    '''</span>
+<a name="l352"><span class="ln">352  </span></a>
+<a name="l353"><span class="ln">353  </span></a>    <span class="s1">min_space = NumericProperty(</span><span class="s2">'44dp'</span><span class="s1">)</span>
+<a name="l354"><span class="ln">354  </span></a>    <span class="s2">'''Minimum space to use for the title of each item. This value is 
+<a name="l355"><span class="ln">355  </span></a>    automatically set for each child every time the layout event occurs. 
+<a name="l356"><span class="ln">356  </span></a> 
+<a name="l357"><span class="ln">357  </span></a>    :attr:`min_space` is a :class:`~kivy.properties.NumericProperty` and 
+<a name="l358"><span class="ln">358  </span></a>    defaults to 44 (px). 
+<a name="l359"><span class="ln">359  </span></a>    '''</span>
+<a name="l360"><span class="ln">360  </span></a>
+<a name="l361"><span class="ln">361  </span></a>    <span class="s3">def </span><span class="s1">__init__(self</span><span class="s3">, </span><span class="s1">**kwargs):</span>
+<a name="l362"><span class="ln">362  </span></a>        <span class="s1">super(Accordion</span><span class="s3">, </span><span class="s1">self).__init__(**kwargs)</span>
+<a name="l363"><span class="ln">363  </span></a>        <span class="s1">update = self._trigger_layout = \</span>
+<a name="l364"><span class="ln">364  </span></a>            <span class="s1">Clock.create_trigger(self._do_layout</span><span class="s3">, </span><span class="s1">-</span><span class="s4">1</span><span class="s1">)</span>
+<a name="l365"><span class="ln">365  </span></a>        <span class="s1">fbind = self.fbind</span>
+<a name="l366"><span class="ln">366  </span></a>        <span class="s1">fbind(</span><span class="s2">'orientation'</span><span class="s3">, </span><span class="s1">update)</span>
+<a name="l367"><span class="ln">367  </span></a>        <span class="s1">fbind(</span><span class="s2">'children'</span><span class="s3">, </span><span class="s1">update)</span>
+<a name="l368"><span class="ln">368  </span></a>        <span class="s1">fbind(</span><span class="s2">'size'</span><span class="s3">, </span><span class="s1">update)</span>
+<a name="l369"><span class="ln">369  </span></a>        <span class="s1">fbind(</span><span class="s2">'pos'</span><span class="s3">, </span><span class="s1">update)</span>
+<a name="l370"><span class="ln">370  </span></a>        <span class="s1">fbind(</span><span class="s2">'min_space'</span><span class="s3">, </span><span class="s1">update)</span>
+<a name="l371"><span class="ln">371  </span></a>
+<a name="l372"><span class="ln">372  </span></a>    <span class="s3">def </span><span class="s1">add_widget(self</span><span class="s3">, </span><span class="s1">widget</span><span class="s3">, </span><span class="s1">*largs):</span>
+<a name="l373"><span class="ln">373  </span></a>        <span class="s3">if not </span><span class="s1">isinstance(widget</span><span class="s3">, </span><span class="s1">AccordionItem):</span>
+<a name="l374"><span class="ln">374  </span></a>            <span class="s3">raise </span><span class="s1">AccordionException(</span><span class="s2">'Accordion accept only AccordionItem'</span><span class="s1">)</span>
+<a name="l375"><span class="ln">375  </span></a>
+<a name="l376"><span class="ln">376  </span></a>        <span class="s1">widget.accordion = self</span>
+<a name="l377"><span class="ln">377  </span></a>        <span class="s1">ret = super(Accordion</span><span class="s3">, </span><span class="s1">self).add_widget(widget</span><span class="s3">, </span><span class="s1">*largs)</span>
+<a name="l378"><span class="ln">378  </span></a>        <span class="s3">return </span><span class="s1">ret</span>
+<a name="l379"><span class="ln">379  </span></a>
+<a name="l380"><span class="ln">380  </span></a>    <span class="s3">def </span><span class="s1">select(self</span><span class="s3">, </span><span class="s1">instance):</span>
+<a name="l381"><span class="ln">381  </span></a>        <span class="s3">if </span><span class="s1">instance </span><span class="s3">not in </span><span class="s1">self.children:</span>
+<a name="l382"><span class="ln">382  </span></a>            <span class="s3">raise </span><span class="s1">AccordionException(</span>
+<a name="l383"><span class="ln">383  </span></a>                <span class="s2">'Accordion: instance not found in children'</span><span class="s1">)</span>
+<a name="l384"><span class="ln">384  </span></a>        <span class="s3">for </span><span class="s1">widget </span><span class="s3">in </span><span class="s1">self.children:</span>
+<a name="l385"><span class="ln">385  </span></a>            <span class="s1">widget.collapse = widget </span><span class="s3">is not </span><span class="s1">instance</span>
+<a name="l386"><span class="ln">386  </span></a>        <span class="s1">self._trigger_layout()</span>
+<a name="l387"><span class="ln">387  </span></a>
+<a name="l388"><span class="ln">388  </span></a>    <span class="s3">def </span><span class="s1">_do_layout(self</span><span class="s3">, </span><span class="s1">dt):</span>
+<a name="l389"><span class="ln">389  </span></a>        <span class="s1">children = self.children</span>
+<a name="l390"><span class="ln">390  </span></a>        <span class="s3">if </span><span class="s1">children:</span>
+<a name="l391"><span class="ln">391  </span></a>            <span class="s1">all_collapsed = all(x.collapse </span><span class="s3">for </span><span class="s1">x </span><span class="s3">in </span><span class="s1">children)</span>
+<a name="l392"><span class="ln">392  </span></a>        <span class="s3">else</span><span class="s1">:</span>
+<a name="l393"><span class="ln">393  </span></a>            <span class="s1">all_collapsed = </span><span class="s3">False</span>
+<a name="l394"><span class="ln">394  </span></a>
+<a name="l395"><span class="ln">395  </span></a>        <span class="s3">if </span><span class="s1">all_collapsed:</span>
+<a name="l396"><span class="ln">396  </span></a>            <span class="s1">children[</span><span class="s4">0</span><span class="s1">].collapse = </span><span class="s3">False</span>
+<a name="l397"><span class="ln">397  </span></a>
+<a name="l398"><span class="ln">398  </span></a>        <span class="s1">orientation = self.orientation</span>
+<a name="l399"><span class="ln">399  </span></a>        <span class="s1">min_space = self.min_space</span>
+<a name="l400"><span class="ln">400  </span></a>        <span class="s1">min_space_total = len(children) * self.min_space</span>
+<a name="l401"><span class="ln">401  </span></a>        <span class="s1">w</span><span class="s3">, </span><span class="s1">h = self.size</span>
+<a name="l402"><span class="ln">402  </span></a>        <span class="s1">x</span><span class="s3">, </span><span class="s1">y = self.pos</span>
+<a name="l403"><span class="ln">403  </span></a>        <span class="s3">if </span><span class="s1">orientation == </span><span class="s2">'horizontal'</span><span class="s1">:</span>
+<a name="l404"><span class="ln">404  </span></a>            <span class="s1">display_space = self.width - min_space_total</span>
+<a name="l405"><span class="ln">405  </span></a>        <span class="s3">else</span><span class="s1">:</span>
+<a name="l406"><span class="ln">406  </span></a>            <span class="s1">display_space = self.height - min_space_total</span>
+<a name="l407"><span class="ln">407  </span></a>
+<a name="l408"><span class="ln">408  </span></a>        <span class="s3">if </span><span class="s1">display_space &lt;= </span><span class="s4">0</span><span class="s1">:</span>
+<a name="l409"><span class="ln">409  </span></a>            <span class="s1">Logger.warning(</span><span class="s2">'Accordion: not enough space '</span>
+<a name="l410"><span class="ln">410  </span></a>                           <span class="s2">'for displaying all children'</span><span class="s1">)</span>
+<a name="l411"><span class="ln">411  </span></a>            <span class="s1">Logger.warning(</span><span class="s2">'Accordion: need %dpx, got %dpx' </span><span class="s1">% (</span>
+<a name="l412"><span class="ln">412  </span></a>                <span class="s1">min_space_total</span><span class="s3">, </span><span class="s1">min_space_total + display_space))</span>
+<a name="l413"><span class="ln">413  </span></a>            <span class="s1">Logger.warning(</span><span class="s2">'Accordion: layout aborted.'</span><span class="s1">)</span>
+<a name="l414"><span class="ln">414  </span></a>            <span class="s3">return</span>
+<a name="l415"><span class="ln">415  </span></a>
+<a name="l416"><span class="ln">416  </span></a>        <span class="s3">if </span><span class="s1">orientation == </span><span class="s2">'horizontal'</span><span class="s1">:</span>
+<a name="l417"><span class="ln">417  </span></a>            <span class="s1">children = reversed(children)</span>
+<a name="l418"><span class="ln">418  </span></a>
+<a name="l419"><span class="ln">419  </span></a>        <span class="s3">for </span><span class="s1">child </span><span class="s3">in </span><span class="s1">children:</span>
+<a name="l420"><span class="ln">420  </span></a>            <span class="s1">child_space = min_space</span>
+<a name="l421"><span class="ln">421  </span></a>            <span class="s1">child_space += display_space * (</span><span class="s4">1 </span><span class="s1">- child.collapse_alpha)</span>
+<a name="l422"><span class="ln">422  </span></a>            <span class="s1">child._min_space = min_space</span>
+<a name="l423"><span class="ln">423  </span></a>            <span class="s1">child.x = x</span>
+<a name="l424"><span class="ln">424  </span></a>            <span class="s1">child.y = y</span>
+<a name="l425"><span class="ln">425  </span></a>            <span class="s1">child.orientation = self.orientation</span>
+<a name="l426"><span class="ln">426  </span></a>            <span class="s3">if </span><span class="s1">orientation == </span><span class="s2">'horizontal'</span><span class="s1">:</span>
+<a name="l427"><span class="ln">427  </span></a>                <span class="s1">child.content_size = display_space</span><span class="s3">, </span><span class="s1">h</span>
+<a name="l428"><span class="ln">428  </span></a>                <span class="s1">child.width = child_space</span>
+<a name="l429"><span class="ln">429  </span></a>                <span class="s1">child.height = h</span>
+<a name="l430"><span class="ln">430  </span></a>                <span class="s1">x += child_space</span>
+<a name="l431"><span class="ln">431  </span></a>            <span class="s3">else</span><span class="s1">:</span>
+<a name="l432"><span class="ln">432  </span></a>                <span class="s1">child.content_size = w</span><span class="s3">, </span><span class="s1">display_space</span>
+<a name="l433"><span class="ln">433  </span></a>                <span class="s1">child.width = w</span>
+<a name="l434"><span class="ln">434  </span></a>                <span class="s1">child.height = child_space</span>
+<a name="l435"><span class="ln">435  </span></a>                <span class="s1">y += child_space</span>
+<a name="l436"><span class="ln">436  </span></a>
+<a name="l437"><span class="ln">437  </span></a>
+<a name="l438"><span class="ln">438  </span></a><span class="s3">if </span><span class="s1">__name__ == </span><span class="s2">'__main__'</span><span class="s1">:</span>
+<a name="l439"><span class="ln">439  </span></a>    <span class="s3">from </span><span class="s1">kivy.base </span><span class="s3">import </span><span class="s1">runTouchApp</span>
+<a name="l440"><span class="ln">440  </span></a>    <span class="s3">from </span><span class="s1">kivy.uix.button </span><span class="s3">import </span><span class="s1">Button</span>
+<a name="l441"><span class="ln">441  </span></a>    <span class="s3">from </span><span class="s1">kivy.uix.boxlayout </span><span class="s3">import </span><span class="s1">BoxLayout</span>
+<a name="l442"><span class="ln">442  </span></a>    <span class="s3">from </span><span class="s1">kivy.uix.label </span><span class="s3">import </span><span class="s1">Label</span>
+<a name="l443"><span class="ln">443  </span></a>
+<a name="l444"><span class="ln">444  </span></a>    <span class="s1">acc = Accordion()</span>
+<a name="l445"><span class="ln">445  </span></a>    <span class="s3">for </span><span class="s1">x </span><span class="s3">in </span><span class="s1">range(</span><span class="s4">10</span><span class="s1">):</span>
+<a name="l446"><span class="ln">446  </span></a>        <span class="s1">item = AccordionItem(title=</span><span class="s2">'Title %d' </span><span class="s1">% x)</span>
+<a name="l447"><span class="ln">447  </span></a>        <span class="s3">if </span><span class="s1">x == </span><span class="s4">0</span><span class="s1">:</span>
+<a name="l448"><span class="ln">448  </span></a>            <span class="s1">item.add_widget(Button(text=</span><span class="s2">'Content %d' </span><span class="s1">% x))</span>
+<a name="l449"><span class="ln">449  </span></a>        <span class="s3">elif </span><span class="s1">x == </span><span class="s4">1</span><span class="s1">:</span>
+<a name="l450"><span class="ln">450  </span></a>            <span class="s1">z = BoxLayout(orientation=</span><span class="s2">'vertical'</span><span class="s1">)</span>
+<a name="l451"><span class="ln">451  </span></a>            <span class="s1">z.add_widget(Button(text=str(x)</span><span class="s3">, </span><span class="s1">size_hint_y=</span><span class="s3">None, </span><span class="s1">height=</span><span class="s4">35</span><span class="s1">))</span>
+<a name="l452"><span class="ln">452  </span></a>            <span class="s1">z.add_widget(Label(text=</span><span class="s2">'Content %d' </span><span class="s1">% x))</span>
+<a name="l453"><span class="ln">453  </span></a>            <span class="s1">item.add_widget(z)</span>
+<a name="l454"><span class="ln">454  </span></a>        <span class="s3">else</span><span class="s1">:</span>
+<a name="l455"><span class="ln">455  </span></a>            <span class="s1">item.add_widget(Label(text=</span><span class="s2">'This is a big content</span><span class="s3">\n</span><span class="s2">' </span><span class="s1">* </span><span class="s4">20</span><span class="s1">))</span>
+<a name="l456"><span class="ln">456  </span></a>        <span class="s1">acc.add_widget(item)</span>
+<a name="l457"><span class="ln">457  </span></a>
+<a name="l458"><span class="ln">458  </span></a>    <span class="s3">def </span><span class="s1">toggle_layout(*l):</span>
+<a name="l459"><span class="ln">459  </span></a>        <span class="s1">o = acc.orientation</span>
+<a name="l460"><span class="ln">460  </span></a>        <span class="s1">acc.orientation = </span><span class="s2">'vertical' </span><span class="s3">if </span><span class="s1">o == </span><span class="s2">'horizontal' </span><span class="s3">else </span><span class="s2">'horizontal'</span>
+<a name="l461"><span class="ln">461  </span></a>    <span class="s1">btn = Button(text=</span><span class="s2">'Toggle layout'</span><span class="s1">)</span>
+<a name="l462"><span class="ln">462  </span></a>    <span class="s1">btn.bind(on_release=toggle_layout)</span>
+<a name="l463"><span class="ln">463  </span></a>
+<a name="l464"><span class="ln">464  </span></a>    <span class="s3">def </span><span class="s1">select_2nd_item(*l):</span>
+<a name="l465"><span class="ln">465  </span></a>        <span class="s1">acc.select(acc.children[-</span><span class="s4">2</span><span class="s1">])</span>
+<a name="l466"><span class="ln">466  </span></a>    <span class="s1">btn2 = Button(text=</span><span class="s2">'Select 2nd item'</span><span class="s1">)</span>
+<a name="l467"><span class="ln">467  </span></a>    <span class="s1">btn2.bind(on_release=select_2nd_item)</span>
+<a name="l468"><span class="ln">468  </span></a>
+<a name="l469"><span class="ln">469  </span></a>    <span class="s3">from </span><span class="s1">kivy.uix.slider </span><span class="s3">import </span><span class="s1">Slider</span>
+<a name="l470"><span class="ln">470  </span></a>    <span class="s1">slider = Slider()</span>
+<a name="l471"><span class="ln">471  </span></a>
+<a name="l472"><span class="ln">472  </span></a>    <span class="s3">def </span><span class="s1">update_min_space(instance</span><span class="s3">, </span><span class="s1">value):</span>
+<a name="l473"><span class="ln">473  </span></a>        <span class="s1">acc.min_space = value</span>
+<a name="l474"><span class="ln">474  </span></a>
+<a name="l475"><span class="ln">475  </span></a>    <span class="s1">slider.bind(value=update_min_space)</span>
+<a name="l476"><span class="ln">476  </span></a>
+<a name="l477"><span class="ln">477  </span></a>    <span class="s1">root = BoxLayout(spacing=</span><span class="s4">20</span><span class="s3">, </span><span class="s1">padding=</span><span class="s4">20</span><span class="s1">)</span>
+<a name="l478"><span class="ln">478  </span></a>    <span class="s1">controls = BoxLayout(orientation=</span><span class="s2">'vertical'</span><span class="s3">, </span><span class="s1">size_hint_x=</span><span class="s4">.3</span><span class="s1">)</span>
+<a name="l479"><span class="ln">479  </span></a>    <span class="s1">controls.add_widget(btn)</span>
+<a name="l480"><span class="ln">480  </span></a>    <span class="s1">controls.add_widget(btn2)</span>
+<a name="l481"><span class="ln">481  </span></a>    <span class="s1">controls.add_widget(slider)</span>
+<a name="l482"><span class="ln">482  </span></a>    <span class="s1">root.add_widget(controls)</span>
+<a name="l483"><span class="ln">483  </span></a>    <span class="s1">root.add_widget(acc)</span>
+<a name="l484"><span class="ln">484  </span></a>    <span class="s1">runTouchApp(root)</span>
+<a name="l485"><span class="ln">485  </span></a></pre>
+</body>
+</html>

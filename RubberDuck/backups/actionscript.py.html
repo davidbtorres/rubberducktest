@@ -1,0 +1,266 @@
+<html>
+<head>
+<title>actionscript.py</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type="text/css">
+.s0 { color: #629755; font-style: italic;}
+.s1 { color: #a9b7c6;}
+.s2 { color: #cc7832;}
+.s3 { color: #6a8759;}
+.s4 { color: #6897bb;}
+.ln { color: #606366; font-weight: normal; font-style: normal; }
+</style>
+</head>
+<body bgcolor="#2b2b2b">
+<table CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#606060" >
+<tr><td><center>
+<font face="Arial, Helvetica" color="#000000">
+actionscript.py</font>
+</center></td></tr></table>
+<pre><a name="l1"><span class="ln">1    </span></a><span class="s0">&quot;&quot;&quot; 
+<a name="l2"><span class="ln">2    </span></a>    pygments.lexers.actionscript 
+<a name="l3"><span class="ln">3    </span></a>    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
+<a name="l4"><span class="ln">4    </span></a> 
+<a name="l5"><span class="ln">5    </span></a>    Lexers for ActionScript and MXML. 
+<a name="l6"><span class="ln">6    </span></a> 
+<a name="l7"><span class="ln">7    </span></a>    :copyright: Copyright 2006-2021 by the Pygments team, see AUTHORS. 
+<a name="l8"><span class="ln">8    </span></a>    :license: BSD, see LICENSE for details. 
+<a name="l9"><span class="ln">9    </span></a>&quot;&quot;&quot;</span>
+<a name="l10"><span class="ln">10   </span></a>
+<a name="l11"><span class="ln">11   </span></a><span class="s2">import </span><span class="s1">re</span>
+<a name="l12"><span class="ln">12   </span></a>
+<a name="l13"><span class="ln">13   </span></a><span class="s2">from </span><span class="s1">pygments.lexer </span><span class="s2">import </span><span class="s1">RegexLexer</span><span class="s2">, </span><span class="s1">bygroups</span><span class="s2">, </span><span class="s1">using</span><span class="s2">, </span><span class="s1">this</span><span class="s2">, </span><span class="s1">words</span><span class="s2">, </span><span class="s1">default</span>
+<a name="l14"><span class="ln">14   </span></a><span class="s2">from </span><span class="s1">pygments.token </span><span class="s2">import </span><span class="s1">Text</span><span class="s2">, </span><span class="s1">Comment</span><span class="s2">, </span><span class="s1">Operator</span><span class="s2">, </span><span class="s1">Keyword</span><span class="s2">, </span><span class="s1">Name</span><span class="s2">, </span><span class="s1">String</span><span class="s2">, </span><span class="s1">\</span>
+<a name="l15"><span class="ln">15   </span></a>    <span class="s1">Number</span><span class="s2">, </span><span class="s1">Punctuation</span>
+<a name="l16"><span class="ln">16   </span></a>
+<a name="l17"><span class="ln">17   </span></a><span class="s1">__all__ = [</span><span class="s3">'ActionScriptLexer'</span><span class="s2">, </span><span class="s3">'ActionScript3Lexer'</span><span class="s2">, </span><span class="s3">'MxmlLexer'</span><span class="s1">]</span>
+<a name="l18"><span class="ln">18   </span></a>
+<a name="l19"><span class="ln">19   </span></a>
+<a name="l20"><span class="ln">20   </span></a><span class="s2">class </span><span class="s1">ActionScriptLexer(RegexLexer):</span>
+<a name="l21"><span class="ln">21   </span></a>    <span class="s0">&quot;&quot;&quot; 
+<a name="l22"><span class="ln">22   </span></a>    For ActionScript source code. 
+<a name="l23"><span class="ln">23   </span></a> 
+<a name="l24"><span class="ln">24   </span></a>    .. versionadded:: 0.9 
+<a name="l25"><span class="ln">25   </span></a>    &quot;&quot;&quot;</span>
+<a name="l26"><span class="ln">26   </span></a>
+<a name="l27"><span class="ln">27   </span></a>    <span class="s1">name = </span><span class="s3">'ActionScript'</span>
+<a name="l28"><span class="ln">28   </span></a>    <span class="s1">aliases = [</span><span class="s3">'actionscript'</span><span class="s2">, </span><span class="s3">'as'</span><span class="s1">]</span>
+<a name="l29"><span class="ln">29   </span></a>    <span class="s1">filenames = [</span><span class="s3">'*.as'</span><span class="s1">]</span>
+<a name="l30"><span class="ln">30   </span></a>    <span class="s1">mimetypes = [</span><span class="s3">'application/x-actionscript'</span><span class="s2">, </span><span class="s3">'text/x-actionscript'</span><span class="s2">,</span>
+<a name="l31"><span class="ln">31   </span></a>                 <span class="s3">'text/actionscript'</span><span class="s1">]</span>
+<a name="l32"><span class="ln">32   </span></a>
+<a name="l33"><span class="ln">33   </span></a>    <span class="s1">flags = re.DOTALL</span>
+<a name="l34"><span class="ln">34   </span></a>    <span class="s1">tokens = {</span>
+<a name="l35"><span class="ln">35   </span></a>        <span class="s3">'root'</span><span class="s1">: [</span>
+<a name="l36"><span class="ln">36   </span></a>            <span class="s1">(</span><span class="s3">r'\s+'</span><span class="s2">, </span><span class="s1">Text)</span><span class="s2">,</span>
+<a name="l37"><span class="ln">37   </span></a>            <span class="s1">(</span><span class="s3">r'//.*?\n'</span><span class="s2">, </span><span class="s1">Comment.Single)</span><span class="s2">,</span>
+<a name="l38"><span class="ln">38   </span></a>            <span class="s1">(</span><span class="s3">r'/\*.*?\*/'</span><span class="s2">, </span><span class="s1">Comment.Multiline)</span><span class="s2">,</span>
+<a name="l39"><span class="ln">39   </span></a>            <span class="s1">(</span><span class="s3">r'/(\\\\|\\[^\\]|[^/\\\n])*/[gim]*'</span><span class="s2">, </span><span class="s1">String.Regex)</span><span class="s2">,</span>
+<a name="l40"><span class="ln">40   </span></a>            <span class="s1">(</span><span class="s3">r'[~^*!%&amp;&lt;&gt;|+=:;,/?\\-]+'</span><span class="s2">, </span><span class="s1">Operator)</span><span class="s2">,</span>
+<a name="l41"><span class="ln">41   </span></a>            <span class="s1">(</span><span class="s3">r'[{}\[\]();.]+'</span><span class="s2">, </span><span class="s1">Punctuation)</span><span class="s2">,</span>
+<a name="l42"><span class="ln">42   </span></a>            <span class="s1">(words((</span>
+<a name="l43"><span class="ln">43   </span></a>                <span class="s3">'case'</span><span class="s2">, </span><span class="s3">'default'</span><span class="s2">, </span><span class="s3">'for'</span><span class="s2">, </span><span class="s3">'each'</span><span class="s2">, </span><span class="s3">'in'</span><span class="s2">, </span><span class="s3">'while'</span><span class="s2">, </span><span class="s3">'do'</span><span class="s2">, </span><span class="s3">'break'</span><span class="s2">,</span>
+<a name="l44"><span class="ln">44   </span></a>                <span class="s3">'return'</span><span class="s2">, </span><span class="s3">'continue'</span><span class="s2">, </span><span class="s3">'if'</span><span class="s2">, </span><span class="s3">'else'</span><span class="s2">, </span><span class="s3">'throw'</span><span class="s2">, </span><span class="s3">'try'</span><span class="s2">, </span><span class="s3">'catch'</span><span class="s2">,</span>
+<a name="l45"><span class="ln">45   </span></a>                <span class="s3">'var'</span><span class="s2">, </span><span class="s3">'with'</span><span class="s2">, </span><span class="s3">'new'</span><span class="s2">, </span><span class="s3">'typeof'</span><span class="s2">, </span><span class="s3">'arguments'</span><span class="s2">, </span><span class="s3">'instanceof'</span><span class="s2">, </span><span class="s3">'this'</span><span class="s2">,</span>
+<a name="l46"><span class="ln">46   </span></a>                <span class="s3">'switch'</span><span class="s1">)</span><span class="s2">, </span><span class="s1">suffix=</span><span class="s3">r'\b'</span><span class="s1">)</span><span class="s2">,</span>
+<a name="l47"><span class="ln">47   </span></a>             <span class="s1">Keyword)</span><span class="s2">,</span>
+<a name="l48"><span class="ln">48   </span></a>            <span class="s1">(words((</span>
+<a name="l49"><span class="ln">49   </span></a>                <span class="s3">'class'</span><span class="s2">, </span><span class="s3">'public'</span><span class="s2">, </span><span class="s3">'final'</span><span class="s2">, </span><span class="s3">'internal'</span><span class="s2">, </span><span class="s3">'native'</span><span class="s2">, </span><span class="s3">'override'</span><span class="s2">, </span><span class="s3">'private'</span><span class="s2">,</span>
+<a name="l50"><span class="ln">50   </span></a>                <span class="s3">'protected'</span><span class="s2">, </span><span class="s3">'static'</span><span class="s2">, </span><span class="s3">'import'</span><span class="s2">, </span><span class="s3">'extends'</span><span class="s2">, </span><span class="s3">'implements'</span><span class="s2">, </span><span class="s3">'interface'</span><span class="s2">,</span>
+<a name="l51"><span class="ln">51   </span></a>                <span class="s3">'intrinsic'</span><span class="s2">, </span><span class="s3">'return'</span><span class="s2">, </span><span class="s3">'super'</span><span class="s2">, </span><span class="s3">'dynamic'</span><span class="s2">, </span><span class="s3">'function'</span><span class="s2">, </span><span class="s3">'const'</span><span class="s2">, </span><span class="s3">'get'</span><span class="s2">,</span>
+<a name="l52"><span class="ln">52   </span></a>                <span class="s3">'namespace'</span><span class="s2">, </span><span class="s3">'package'</span><span class="s2">, </span><span class="s3">'set'</span><span class="s1">)</span><span class="s2">, </span><span class="s1">suffix=</span><span class="s3">r'\b'</span><span class="s1">)</span><span class="s2">,</span>
+<a name="l53"><span class="ln">53   </span></a>             <span class="s1">Keyword.Declaration)</span><span class="s2">,</span>
+<a name="l54"><span class="ln">54   </span></a>            <span class="s1">(</span><span class="s3">r'(true|false|null|NaN|Infinity|-Infinity|undefined|Void)\b'</span><span class="s2">,</span>
+<a name="l55"><span class="ln">55   </span></a>             <span class="s1">Keyword.Constant)</span><span class="s2">,</span>
+<a name="l56"><span class="ln">56   </span></a>            <span class="s1">(words((</span>
+<a name="l57"><span class="ln">57   </span></a>                <span class="s3">'Accessibility'</span><span class="s2">, </span><span class="s3">'AccessibilityProperties'</span><span class="s2">, </span><span class="s3">'ActionScriptVersion'</span><span class="s2">,</span>
+<a name="l58"><span class="ln">58   </span></a>                <span class="s3">'ActivityEvent'</span><span class="s2">, </span><span class="s3">'AntiAliasType'</span><span class="s2">, </span><span class="s3">'ApplicationDomain'</span><span class="s2">, </span><span class="s3">'AsBroadcaster'</span><span class="s2">, </span><span class="s3">'Array'</span><span class="s2">,</span>
+<a name="l59"><span class="ln">59   </span></a>                <span class="s3">'AsyncErrorEvent'</span><span class="s2">, </span><span class="s3">'AVM1Movie'</span><span class="s2">, </span><span class="s3">'BevelFilter'</span><span class="s2">, </span><span class="s3">'Bitmap'</span><span class="s2">, </span><span class="s3">'BitmapData'</span><span class="s2">,</span>
+<a name="l60"><span class="ln">60   </span></a>                <span class="s3">'BitmapDataChannel'</span><span class="s2">, </span><span class="s3">'BitmapFilter'</span><span class="s2">, </span><span class="s3">'BitmapFilterQuality'</span><span class="s2">, </span><span class="s3">'BitmapFilterType'</span><span class="s2">,</span>
+<a name="l61"><span class="ln">61   </span></a>                <span class="s3">'BlendMode'</span><span class="s2">, </span><span class="s3">'BlurFilter'</span><span class="s2">, </span><span class="s3">'Boolean'</span><span class="s2">, </span><span class="s3">'ByteArray'</span><span class="s2">, </span><span class="s3">'Camera'</span><span class="s2">, </span><span class="s3">'Capabilities'</span><span class="s2">, </span><span class="s3">'CapsStyle'</span><span class="s2">,</span>
+<a name="l62"><span class="ln">62   </span></a>                <span class="s3">'Class'</span><span class="s2">, </span><span class="s3">'Color'</span><span class="s2">, </span><span class="s3">'ColorMatrixFilter'</span><span class="s2">, </span><span class="s3">'ColorTransform'</span><span class="s2">, </span><span class="s3">'ContextMenu'</span><span class="s2">,</span>
+<a name="l63"><span class="ln">63   </span></a>                <span class="s3">'ContextMenuBuiltInItems'</span><span class="s2">, </span><span class="s3">'ContextMenuEvent'</span><span class="s2">, </span><span class="s3">'ContextMenuItem'</span><span class="s2">,</span>
+<a name="l64"><span class="ln">64   </span></a>                <span class="s3">'ConvultionFilter'</span><span class="s2">, </span><span class="s3">'CSMSettings'</span><span class="s2">, </span><span class="s3">'DataEvent'</span><span class="s2">, </span><span class="s3">'Date'</span><span class="s2">, </span><span class="s3">'DefinitionError'</span><span class="s2">,</span>
+<a name="l65"><span class="ln">65   </span></a>                <span class="s3">'DeleteObjectSample'</span><span class="s2">, </span><span class="s3">'Dictionary'</span><span class="s2">, </span><span class="s3">'DisplacmentMapFilter'</span><span class="s2">, </span><span class="s3">'DisplayObject'</span><span class="s2">,</span>
+<a name="l66"><span class="ln">66   </span></a>                <span class="s3">'DisplacmentMapFilterMode'</span><span class="s2">, </span><span class="s3">'DisplayObjectContainer'</span><span class="s2">, </span><span class="s3">'DropShadowFilter'</span><span class="s2">,</span>
+<a name="l67"><span class="ln">67   </span></a>                <span class="s3">'Endian'</span><span class="s2">, </span><span class="s3">'EOFError'</span><span class="s2">, </span><span class="s3">'Error'</span><span class="s2">, </span><span class="s3">'ErrorEvent'</span><span class="s2">, </span><span class="s3">'EvalError'</span><span class="s2">, </span><span class="s3">'Event'</span><span class="s2">, </span><span class="s3">'EventDispatcher'</span><span class="s2">,</span>
+<a name="l68"><span class="ln">68   </span></a>                <span class="s3">'EventPhase'</span><span class="s2">, </span><span class="s3">'ExternalInterface'</span><span class="s2">, </span><span class="s3">'FileFilter'</span><span class="s2">, </span><span class="s3">'FileReference'</span><span class="s2">,</span>
+<a name="l69"><span class="ln">69   </span></a>                <span class="s3">'FileReferenceList'</span><span class="s2">, </span><span class="s3">'FocusDirection'</span><span class="s2">, </span><span class="s3">'FocusEvent'</span><span class="s2">, </span><span class="s3">'Font'</span><span class="s2">, </span><span class="s3">'FontStyle'</span><span class="s2">, </span><span class="s3">'FontType'</span><span class="s2">,</span>
+<a name="l70"><span class="ln">70   </span></a>                <span class="s3">'FrameLabel'</span><span class="s2">, </span><span class="s3">'FullScreenEvent'</span><span class="s2">, </span><span class="s3">'Function'</span><span class="s2">, </span><span class="s3">'GlowFilter'</span><span class="s2">, </span><span class="s3">'GradientBevelFilter'</span><span class="s2">,</span>
+<a name="l71"><span class="ln">71   </span></a>                <span class="s3">'GradientGlowFilter'</span><span class="s2">, </span><span class="s3">'GradientType'</span><span class="s2">, </span><span class="s3">'Graphics'</span><span class="s2">, </span><span class="s3">'GridFitType'</span><span class="s2">, </span><span class="s3">'HTTPStatusEvent'</span><span class="s2">,</span>
+<a name="l72"><span class="ln">72   </span></a>                <span class="s3">'IBitmapDrawable'</span><span class="s2">, </span><span class="s3">'ID3Info'</span><span class="s2">, </span><span class="s3">'IDataInput'</span><span class="s2">, </span><span class="s3">'IDataOutput'</span><span class="s2">, </span><span class="s3">'IDynamicPropertyOutput'</span>
+<a name="l73"><span class="ln">73   </span></a>                <span class="s3">'IDynamicPropertyWriter'</span><span class="s2">, </span><span class="s3">'IEventDispatcher'</span><span class="s2">, </span><span class="s3">'IExternalizable'</span><span class="s2">,</span>
+<a name="l74"><span class="ln">74   </span></a>                <span class="s3">'IllegalOperationError'</span><span class="s2">, </span><span class="s3">'IME'</span><span class="s2">, </span><span class="s3">'IMEConversionMode'</span><span class="s2">, </span><span class="s3">'IMEEvent'</span><span class="s2">, </span><span class="s3">'int'</span><span class="s2">,</span>
+<a name="l75"><span class="ln">75   </span></a>                <span class="s3">'InteractiveObject'</span><span class="s2">, </span><span class="s3">'InterpolationMethod'</span><span class="s2">, </span><span class="s3">'InvalidSWFError'</span><span class="s2">, </span><span class="s3">'InvokeEvent'</span><span class="s2">,</span>
+<a name="l76"><span class="ln">76   </span></a>                <span class="s3">'IOError'</span><span class="s2">, </span><span class="s3">'IOErrorEvent'</span><span class="s2">, </span><span class="s3">'JointStyle'</span><span class="s2">, </span><span class="s3">'Key'</span><span class="s2">, </span><span class="s3">'Keyboard'</span><span class="s2">, </span><span class="s3">'KeyboardEvent'</span><span class="s2">, </span><span class="s3">'KeyLocation'</span><span class="s2">,</span>
+<a name="l77"><span class="ln">77   </span></a>                <span class="s3">'LineScaleMode'</span><span class="s2">, </span><span class="s3">'Loader'</span><span class="s2">, </span><span class="s3">'LoaderContext'</span><span class="s2">, </span><span class="s3">'LoaderInfo'</span><span class="s2">, </span><span class="s3">'LoadVars'</span><span class="s2">, </span><span class="s3">'LocalConnection'</span><span class="s2">,</span>
+<a name="l78"><span class="ln">78   </span></a>                <span class="s3">'Locale'</span><span class="s2">, </span><span class="s3">'Math'</span><span class="s2">, </span><span class="s3">'Matrix'</span><span class="s2">, </span><span class="s3">'MemoryError'</span><span class="s2">, </span><span class="s3">'Microphone'</span><span class="s2">, </span><span class="s3">'MorphShape'</span><span class="s2">, </span><span class="s3">'Mouse'</span><span class="s2">, </span><span class="s3">'MouseEvent'</span><span class="s2">,</span>
+<a name="l79"><span class="ln">79   </span></a>                <span class="s3">'MovieClip'</span><span class="s2">, </span><span class="s3">'MovieClipLoader'</span><span class="s2">, </span><span class="s3">'Namespace'</span><span class="s2">, </span><span class="s3">'NetConnection'</span><span class="s2">, </span><span class="s3">'NetStatusEvent'</span><span class="s2">,</span>
+<a name="l80"><span class="ln">80   </span></a>                <span class="s3">'NetStream'</span><span class="s2">, </span><span class="s3">'NewObjectSample'</span><span class="s2">, </span><span class="s3">'Number'</span><span class="s2">, </span><span class="s3">'Object'</span><span class="s2">, </span><span class="s3">'ObjectEncoding'</span><span class="s2">, </span><span class="s3">'PixelSnapping'</span><span class="s2">,</span>
+<a name="l81"><span class="ln">81   </span></a>                <span class="s3">'Point'</span><span class="s2">, </span><span class="s3">'PrintJob'</span><span class="s2">, </span><span class="s3">'PrintJobOptions'</span><span class="s2">, </span><span class="s3">'PrintJobOrientation'</span><span class="s2">, </span><span class="s3">'ProgressEvent'</span><span class="s2">, </span><span class="s3">'Proxy'</span><span class="s2">,</span>
+<a name="l82"><span class="ln">82   </span></a>                <span class="s3">'QName'</span><span class="s2">, </span><span class="s3">'RangeError'</span><span class="s2">, </span><span class="s3">'Rectangle'</span><span class="s2">, </span><span class="s3">'ReferenceError'</span><span class="s2">, </span><span class="s3">'RegExp'</span><span class="s2">, </span><span class="s3">'Responder'</span><span class="s2">, </span><span class="s3">'Sample'</span><span class="s2">,</span>
+<a name="l83"><span class="ln">83   </span></a>                <span class="s3">'Scene'</span><span class="s2">, </span><span class="s3">'ScriptTimeoutError'</span><span class="s2">, </span><span class="s3">'Security'</span><span class="s2">, </span><span class="s3">'SecurityDomain'</span><span class="s2">, </span><span class="s3">'SecurityError'</span><span class="s2">,</span>
+<a name="l84"><span class="ln">84   </span></a>                <span class="s3">'SecurityErrorEvent'</span><span class="s2">, </span><span class="s3">'SecurityPanel'</span><span class="s2">, </span><span class="s3">'Selection'</span><span class="s2">, </span><span class="s3">'Shape'</span><span class="s2">, </span><span class="s3">'SharedObject'</span><span class="s2">,</span>
+<a name="l85"><span class="ln">85   </span></a>                <span class="s3">'SharedObjectFlushStatus'</span><span class="s2">, </span><span class="s3">'SimpleButton'</span><span class="s2">, </span><span class="s3">'Socket'</span><span class="s2">, </span><span class="s3">'Sound'</span><span class="s2">, </span><span class="s3">'SoundChannel'</span><span class="s2">,</span>
+<a name="l86"><span class="ln">86   </span></a>                <span class="s3">'SoundLoaderContext'</span><span class="s2">, </span><span class="s3">'SoundMixer'</span><span class="s2">, </span><span class="s3">'SoundTransform'</span><span class="s2">, </span><span class="s3">'SpreadMethod'</span><span class="s2">, </span><span class="s3">'Sprite'</span><span class="s2">,</span>
+<a name="l87"><span class="ln">87   </span></a>                <span class="s3">'StackFrame'</span><span class="s2">, </span><span class="s3">'StackOverflowError'</span><span class="s2">, </span><span class="s3">'Stage'</span><span class="s2">, </span><span class="s3">'StageAlign'</span><span class="s2">, </span><span class="s3">'StageDisplayState'</span><span class="s2">,</span>
+<a name="l88"><span class="ln">88   </span></a>                <span class="s3">'StageQuality'</span><span class="s2">, </span><span class="s3">'StageScaleMode'</span><span class="s2">, </span><span class="s3">'StaticText'</span><span class="s2">, </span><span class="s3">'StatusEvent'</span><span class="s2">, </span><span class="s3">'String'</span><span class="s2">, </span><span class="s3">'StyleSheet'</span><span class="s2">,</span>
+<a name="l89"><span class="ln">89   </span></a>                <span class="s3">'SWFVersion'</span><span class="s2">, </span><span class="s3">'SyncEvent'</span><span class="s2">, </span><span class="s3">'SyntaxError'</span><span class="s2">, </span><span class="s3">'System'</span><span class="s2">, </span><span class="s3">'TextColorType'</span><span class="s2">, </span><span class="s3">'TextField'</span><span class="s2">,</span>
+<a name="l90"><span class="ln">90   </span></a>                <span class="s3">'TextFieldAutoSize'</span><span class="s2">, </span><span class="s3">'TextFieldType'</span><span class="s2">, </span><span class="s3">'TextFormat'</span><span class="s2">, </span><span class="s3">'TextFormatAlign'</span><span class="s2">,</span>
+<a name="l91"><span class="ln">91   </span></a>                <span class="s3">'TextLineMetrics'</span><span class="s2">, </span><span class="s3">'TextRenderer'</span><span class="s2">, </span><span class="s3">'TextSnapshot'</span><span class="s2">, </span><span class="s3">'Timer'</span><span class="s2">, </span><span class="s3">'TimerEvent'</span><span class="s2">, </span><span class="s3">'Transform'</span><span class="s2">,</span>
+<a name="l92"><span class="ln">92   </span></a>                <span class="s3">'TypeError'</span><span class="s2">, </span><span class="s3">'uint'</span><span class="s2">, </span><span class="s3">'URIError'</span><span class="s2">, </span><span class="s3">'URLLoader'</span><span class="s2">, </span><span class="s3">'URLLoaderDataFormat'</span><span class="s2">, </span><span class="s3">'URLRequest'</span><span class="s2">,</span>
+<a name="l93"><span class="ln">93   </span></a>                <span class="s3">'URLRequestHeader'</span><span class="s2">, </span><span class="s3">'URLRequestMethod'</span><span class="s2">, </span><span class="s3">'URLStream'</span><span class="s2">, </span><span class="s3">'URLVariabeles'</span><span class="s2">, </span><span class="s3">'VerifyError'</span><span class="s2">,</span>
+<a name="l94"><span class="ln">94   </span></a>                <span class="s3">'Video'</span><span class="s2">, </span><span class="s3">'XML'</span><span class="s2">, </span><span class="s3">'XMLDocument'</span><span class="s2">, </span><span class="s3">'XMLList'</span><span class="s2">, </span><span class="s3">'XMLNode'</span><span class="s2">, </span><span class="s3">'XMLNodeType'</span><span class="s2">, </span><span class="s3">'XMLSocket'</span><span class="s2">,</span>
+<a name="l95"><span class="ln">95   </span></a>                <span class="s3">'XMLUI'</span><span class="s1">)</span><span class="s2">, </span><span class="s1">suffix=</span><span class="s3">r'\b'</span><span class="s1">)</span><span class="s2">,</span>
+<a name="l96"><span class="ln">96   </span></a>             <span class="s1">Name.Builtin)</span><span class="s2">,</span>
+<a name="l97"><span class="ln">97   </span></a>            <span class="s1">(words((</span>
+<a name="l98"><span class="ln">98   </span></a>                <span class="s3">'decodeURI'</span><span class="s2">, </span><span class="s3">'decodeURIComponent'</span><span class="s2">, </span><span class="s3">'encodeURI'</span><span class="s2">, </span><span class="s3">'escape'</span><span class="s2">, </span><span class="s3">'eval'</span><span class="s2">, </span><span class="s3">'isFinite'</span><span class="s2">, </span><span class="s3">'isNaN'</span><span class="s2">,</span>
+<a name="l99"><span class="ln">99   </span></a>                <span class="s3">'isXMLName'</span><span class="s2">, </span><span class="s3">'clearInterval'</span><span class="s2">, </span><span class="s3">'fscommand'</span><span class="s2">, </span><span class="s3">'getTimer'</span><span class="s2">, </span><span class="s3">'getURL'</span><span class="s2">, </span><span class="s3">'getVersion'</span><span class="s2">,</span>
+<a name="l100"><span class="ln">100  </span></a>                <span class="s3">'parseFloat'</span><span class="s2">, </span><span class="s3">'parseInt'</span><span class="s2">, </span><span class="s3">'setInterval'</span><span class="s2">, </span><span class="s3">'trace'</span><span class="s2">, </span><span class="s3">'updateAfterEvent'</span><span class="s2">,</span>
+<a name="l101"><span class="ln">101  </span></a>                <span class="s3">'unescape'</span><span class="s1">)</span><span class="s2">, </span><span class="s1">suffix=</span><span class="s3">r'\b'</span><span class="s1">)</span><span class="s2">,</span>
+<a name="l102"><span class="ln">102  </span></a>             <span class="s1">Name.Function)</span><span class="s2">,</span>
+<a name="l103"><span class="ln">103  </span></a>            <span class="s1">(</span><span class="s3">r'[$a-zA-Z_]\w*'</span><span class="s2">, </span><span class="s1">Name.Other)</span><span class="s2">,</span>
+<a name="l104"><span class="ln">104  </span></a>            <span class="s1">(</span><span class="s3">r'[0-9][0-9]*\.[0-9]+([eE][0-9]+)?[fd]?'</span><span class="s2">, </span><span class="s1">Number.Float)</span><span class="s2">,</span>
+<a name="l105"><span class="ln">105  </span></a>            <span class="s1">(</span><span class="s3">r'0x[0-9a-f]+'</span><span class="s2">, </span><span class="s1">Number.Hex)</span><span class="s2">,</span>
+<a name="l106"><span class="ln">106  </span></a>            <span class="s1">(</span><span class="s3">r'[0-9]+'</span><span class="s2">, </span><span class="s1">Number.Integer)</span><span class="s2">,</span>
+<a name="l107"><span class="ln">107  </span></a>            <span class="s1">(</span><span class="s3">r'&quot;(\\\\|\\[^\\]|[^&quot;\\])*&quot;'</span><span class="s2">, </span><span class="s1">String.Double)</span><span class="s2">,</span>
+<a name="l108"><span class="ln">108  </span></a>            <span class="s1">(</span><span class="s3">r&quot;'(\\\\|\\[^\\]|[^'\\])*'&quot;</span><span class="s2">, </span><span class="s1">String.Single)</span><span class="s2">,</span>
+<a name="l109"><span class="ln">109  </span></a>        <span class="s1">]</span>
+<a name="l110"><span class="ln">110  </span></a>    <span class="s1">}</span>
+<a name="l111"><span class="ln">111  </span></a>
+<a name="l112"><span class="ln">112  </span></a>    <span class="s2">def </span><span class="s1">analyse_text(text):</span>
+<a name="l113"><span class="ln">113  </span></a>        <span class="s0">&quot;&quot;&quot;This is only used to disambiguate between ActionScript and 
+<a name="l114"><span class="ln">114  </span></a>        ActionScript3. We return 0 here; the ActionScript3 lexer will match 
+<a name="l115"><span class="ln">115  </span></a>        AS3 variable definitions and that will hopefully suffice.&quot;&quot;&quot;</span>
+<a name="l116"><span class="ln">116  </span></a>        <span class="s2">return </span><span class="s4">0</span>
+<a name="l117"><span class="ln">117  </span></a>
+<a name="l118"><span class="ln">118  </span></a><span class="s2">class </span><span class="s1">ActionScript3Lexer(RegexLexer):</span>
+<a name="l119"><span class="ln">119  </span></a>    <span class="s0">&quot;&quot;&quot; 
+<a name="l120"><span class="ln">120  </span></a>    For ActionScript 3 source code. 
+<a name="l121"><span class="ln">121  </span></a> 
+<a name="l122"><span class="ln">122  </span></a>    .. versionadded:: 0.11 
+<a name="l123"><span class="ln">123  </span></a>    &quot;&quot;&quot;</span>
+<a name="l124"><span class="ln">124  </span></a>
+<a name="l125"><span class="ln">125  </span></a>    <span class="s1">name = </span><span class="s3">'ActionScript 3'</span>
+<a name="l126"><span class="ln">126  </span></a>    <span class="s1">aliases = [</span><span class="s3">'actionscript3'</span><span class="s2">, </span><span class="s3">'as3'</span><span class="s1">]</span>
+<a name="l127"><span class="ln">127  </span></a>    <span class="s1">filenames = [</span><span class="s3">'*.as'</span><span class="s1">]</span>
+<a name="l128"><span class="ln">128  </span></a>    <span class="s1">mimetypes = [</span><span class="s3">'application/x-actionscript3'</span><span class="s2">, </span><span class="s3">'text/x-actionscript3'</span><span class="s2">,</span>
+<a name="l129"><span class="ln">129  </span></a>                 <span class="s3">'text/actionscript3'</span><span class="s1">]</span>
+<a name="l130"><span class="ln">130  </span></a>
+<a name="l131"><span class="ln">131  </span></a>    <span class="s1">identifier = </span><span class="s3">r'[$a-zA-Z_]\w*'</span>
+<a name="l132"><span class="ln">132  </span></a>    <span class="s1">typeidentifier = identifier + </span><span class="s3">r'(?:\.&lt;\w+&gt;)?'</span>
+<a name="l133"><span class="ln">133  </span></a>
+<a name="l134"><span class="ln">134  </span></a>    <span class="s1">flags = re.DOTALL | re.MULTILINE</span>
+<a name="l135"><span class="ln">135  </span></a>    <span class="s1">tokens = {</span>
+<a name="l136"><span class="ln">136  </span></a>        <span class="s3">'root'</span><span class="s1">: [</span>
+<a name="l137"><span class="ln">137  </span></a>            <span class="s1">(</span><span class="s3">r'\s+'</span><span class="s2">, </span><span class="s1">Text)</span><span class="s2">,</span>
+<a name="l138"><span class="ln">138  </span></a>            <span class="s1">(</span><span class="s3">r'(function\s+)(' </span><span class="s1">+ identifier + </span><span class="s3">r')(\s*)(\()'</span><span class="s2">,</span>
+<a name="l139"><span class="ln">139  </span></a>             <span class="s1">bygroups(Keyword.Declaration</span><span class="s2">, </span><span class="s1">Name.Function</span><span class="s2">, </span><span class="s1">Text</span><span class="s2">, </span><span class="s1">Operator)</span><span class="s2">,</span>
+<a name="l140"><span class="ln">140  </span></a>             <span class="s3">'funcparams'</span><span class="s1">)</span><span class="s2">,</span>
+<a name="l141"><span class="ln">141  </span></a>            <span class="s1">(</span><span class="s3">r'(var|const)(\s+)(' </span><span class="s1">+ identifier + </span><span class="s3">r')(\s*)(:)(\s*)(' </span><span class="s1">+</span>
+<a name="l142"><span class="ln">142  </span></a>             <span class="s1">typeidentifier + </span><span class="s3">r')'</span><span class="s2">,</span>
+<a name="l143"><span class="ln">143  </span></a>             <span class="s1">bygroups(Keyword.Declaration</span><span class="s2">, </span><span class="s1">Text</span><span class="s2">, </span><span class="s1">Name</span><span class="s2">, </span><span class="s1">Text</span><span class="s2">, </span><span class="s1">Punctuation</span><span class="s2">, </span><span class="s1">Text</span><span class="s2">,</span>
+<a name="l144"><span class="ln">144  </span></a>                      <span class="s1">Keyword.Type))</span><span class="s2">,</span>
+<a name="l145"><span class="ln">145  </span></a>            <span class="s1">(</span><span class="s3">r'(import|package)(\s+)((?:' </span><span class="s1">+ identifier + </span><span class="s3">r'|\.)+)(\s*)'</span><span class="s2">,</span>
+<a name="l146"><span class="ln">146  </span></a>             <span class="s1">bygroups(Keyword</span><span class="s2">, </span><span class="s1">Text</span><span class="s2">, </span><span class="s1">Name.Namespace</span><span class="s2">, </span><span class="s1">Text))</span><span class="s2">,</span>
+<a name="l147"><span class="ln">147  </span></a>            <span class="s1">(</span><span class="s3">r'(new)(\s+)(' </span><span class="s1">+ typeidentifier + </span><span class="s3">r')(\s*)(\()'</span><span class="s2">,</span>
+<a name="l148"><span class="ln">148  </span></a>             <span class="s1">bygroups(Keyword</span><span class="s2">, </span><span class="s1">Text</span><span class="s2">, </span><span class="s1">Keyword.Type</span><span class="s2">, </span><span class="s1">Text</span><span class="s2">, </span><span class="s1">Operator))</span><span class="s2">,</span>
+<a name="l149"><span class="ln">149  </span></a>            <span class="s1">(</span><span class="s3">r'//.*?\n'</span><span class="s2">, </span><span class="s1">Comment.Single)</span><span class="s2">,</span>
+<a name="l150"><span class="ln">150  </span></a>            <span class="s1">(</span><span class="s3">r'/\*.*?\*/'</span><span class="s2">, </span><span class="s1">Comment.Multiline)</span><span class="s2">,</span>
+<a name="l151"><span class="ln">151  </span></a>            <span class="s1">(</span><span class="s3">r'/(\\\\|\\[^\\]|[^\\\n])*/[gisx]*'</span><span class="s2">, </span><span class="s1">String.Regex)</span><span class="s2">,</span>
+<a name="l152"><span class="ln">152  </span></a>            <span class="s1">(</span><span class="s3">r'(\.)(' </span><span class="s1">+ identifier + </span><span class="s3">r')'</span><span class="s2">, </span><span class="s1">bygroups(Operator</span><span class="s2">, </span><span class="s1">Name.Attribute))</span><span class="s2">,</span>
+<a name="l153"><span class="ln">153  </span></a>            <span class="s1">(</span><span class="s3">r'(case|default|for|each|in|while|do|break|return|continue|if|else|'</span>
+<a name="l154"><span class="ln">154  </span></a>             <span class="s3">r'throw|try|catch|with|new|typeof|arguments|instanceof|this|'</span>
+<a name="l155"><span class="ln">155  </span></a>             <span class="s3">r'switch|import|include|as|is)\b'</span><span class="s2">,</span>
+<a name="l156"><span class="ln">156  </span></a>             <span class="s1">Keyword)</span><span class="s2">,</span>
+<a name="l157"><span class="ln">157  </span></a>            <span class="s1">(</span><span class="s3">r'(class|public|final|internal|native|override|private|protected|'</span>
+<a name="l158"><span class="ln">158  </span></a>             <span class="s3">r'static|import|extends|implements|interface|intrinsic|return|super|'</span>
+<a name="l159"><span class="ln">159  </span></a>             <span class="s3">r'dynamic|function|const|get|namespace|package|set)\b'</span><span class="s2">,</span>
+<a name="l160"><span class="ln">160  </span></a>             <span class="s1">Keyword.Declaration)</span><span class="s2">,</span>
+<a name="l161"><span class="ln">161  </span></a>            <span class="s1">(</span><span class="s3">r'(true|false|null|NaN|Infinity|-Infinity|undefined|void)\b'</span><span class="s2">,</span>
+<a name="l162"><span class="ln">162  </span></a>             <span class="s1">Keyword.Constant)</span><span class="s2">,</span>
+<a name="l163"><span class="ln">163  </span></a>            <span class="s1">(</span><span class="s3">r'(decodeURI|decodeURIComponent|encodeURI|escape|eval|isFinite|isNaN|'</span>
+<a name="l164"><span class="ln">164  </span></a>             <span class="s3">r'isXMLName|clearInterval|fscommand|getTimer|getURL|getVersion|'</span>
+<a name="l165"><span class="ln">165  </span></a>             <span class="s3">r'isFinite|parseFloat|parseInt|setInterval|trace|updateAfterEvent|'</span>
+<a name="l166"><span class="ln">166  </span></a>             <span class="s3">r'unescape)\b'</span><span class="s2">, </span><span class="s1">Name.Function)</span><span class="s2">,</span>
+<a name="l167"><span class="ln">167  </span></a>            <span class="s1">(identifier</span><span class="s2">, </span><span class="s1">Name)</span><span class="s2">,</span>
+<a name="l168"><span class="ln">168  </span></a>            <span class="s1">(</span><span class="s3">r'[0-9][0-9]*\.[0-9]+([eE][0-9]+)?[fd]?'</span><span class="s2">, </span><span class="s1">Number.Float)</span><span class="s2">,</span>
+<a name="l169"><span class="ln">169  </span></a>            <span class="s1">(</span><span class="s3">r'0x[0-9a-f]+'</span><span class="s2">, </span><span class="s1">Number.Hex)</span><span class="s2">,</span>
+<a name="l170"><span class="ln">170  </span></a>            <span class="s1">(</span><span class="s3">r'[0-9]+'</span><span class="s2">, </span><span class="s1">Number.Integer)</span><span class="s2">,</span>
+<a name="l171"><span class="ln">171  </span></a>            <span class="s1">(</span><span class="s3">r'&quot;(\\\\|\\[^\\]|[^&quot;\\])*&quot;'</span><span class="s2">, </span><span class="s1">String.Double)</span><span class="s2">,</span>
+<a name="l172"><span class="ln">172  </span></a>            <span class="s1">(</span><span class="s3">r&quot;'(\\\\|\\[^\\]|[^'\\])*'&quot;</span><span class="s2">, </span><span class="s1">String.Single)</span><span class="s2">,</span>
+<a name="l173"><span class="ln">173  </span></a>            <span class="s1">(</span><span class="s3">r'[~^*!%&amp;&lt;&gt;|+=:;,/?\\{}\[\]().-]+'</span><span class="s2">, </span><span class="s1">Operator)</span><span class="s2">,</span>
+<a name="l174"><span class="ln">174  </span></a>        <span class="s1">]</span><span class="s2">,</span>
+<a name="l175"><span class="ln">175  </span></a>        <span class="s3">'funcparams'</span><span class="s1">: [</span>
+<a name="l176"><span class="ln">176  </span></a>            <span class="s1">(</span><span class="s3">r'\s+'</span><span class="s2">, </span><span class="s1">Text)</span><span class="s2">,</span>
+<a name="l177"><span class="ln">177  </span></a>            <span class="s1">(</span><span class="s3">r'(\s*)(\.\.\.)?(' </span><span class="s1">+ identifier + </span><span class="s3">r')(\s*)(:)(\s*)(' </span><span class="s1">+</span>
+<a name="l178"><span class="ln">178  </span></a>             <span class="s1">typeidentifier + </span><span class="s3">r'|\*)(\s*)'</span><span class="s2">,</span>
+<a name="l179"><span class="ln">179  </span></a>             <span class="s1">bygroups(Text</span><span class="s2">, </span><span class="s1">Punctuation</span><span class="s2">, </span><span class="s1">Name</span><span class="s2">, </span><span class="s1">Text</span><span class="s2">, </span><span class="s1">Operator</span><span class="s2">, </span><span class="s1">Text</span><span class="s2">,</span>
+<a name="l180"><span class="ln">180  </span></a>                      <span class="s1">Keyword.Type</span><span class="s2">, </span><span class="s1">Text)</span><span class="s2">, </span><span class="s3">'defval'</span><span class="s1">)</span><span class="s2">,</span>
+<a name="l181"><span class="ln">181  </span></a>            <span class="s1">(</span><span class="s3">r'\)'</span><span class="s2">, </span><span class="s1">Operator</span><span class="s2">, </span><span class="s3">'type'</span><span class="s1">)</span>
+<a name="l182"><span class="ln">182  </span></a>        <span class="s1">]</span><span class="s2">,</span>
+<a name="l183"><span class="ln">183  </span></a>        <span class="s3">'type'</span><span class="s1">: [</span>
+<a name="l184"><span class="ln">184  </span></a>            <span class="s1">(</span><span class="s3">r'(\s*)(:)(\s*)(' </span><span class="s1">+ typeidentifier + </span><span class="s3">r'|\*)'</span><span class="s2">,</span>
+<a name="l185"><span class="ln">185  </span></a>             <span class="s1">bygroups(Text</span><span class="s2">, </span><span class="s1">Operator</span><span class="s2">, </span><span class="s1">Text</span><span class="s2">, </span><span class="s1">Keyword.Type)</span><span class="s2">, </span><span class="s3">'#pop:2'</span><span class="s1">)</span><span class="s2">,</span>
+<a name="l186"><span class="ln">186  </span></a>            <span class="s1">(</span><span class="s3">r'\s+'</span><span class="s2">, </span><span class="s1">Text</span><span class="s2">, </span><span class="s3">'#pop:2'</span><span class="s1">)</span><span class="s2">,</span>
+<a name="l187"><span class="ln">187  </span></a>            <span class="s1">default(</span><span class="s3">'#pop:2'</span><span class="s1">)</span>
+<a name="l188"><span class="ln">188  </span></a>        <span class="s1">]</span><span class="s2">,</span>
+<a name="l189"><span class="ln">189  </span></a>        <span class="s3">'defval'</span><span class="s1">: [</span>
+<a name="l190"><span class="ln">190  </span></a>            <span class="s1">(</span><span class="s3">r'(=)(\s*)([^(),]+)(\s*)(,?)'</span><span class="s2">,</span>
+<a name="l191"><span class="ln">191  </span></a>             <span class="s1">bygroups(Operator</span><span class="s2">, </span><span class="s1">Text</span><span class="s2">, </span><span class="s1">using(this)</span><span class="s2">, </span><span class="s1">Text</span><span class="s2">, </span><span class="s1">Operator)</span><span class="s2">, </span><span class="s3">'#pop'</span><span class="s1">)</span><span class="s2">,</span>
+<a name="l192"><span class="ln">192  </span></a>            <span class="s1">(</span><span class="s3">r','</span><span class="s2">, </span><span class="s1">Operator</span><span class="s2">, </span><span class="s3">'#pop'</span><span class="s1">)</span><span class="s2">,</span>
+<a name="l193"><span class="ln">193  </span></a>            <span class="s1">default(</span><span class="s3">'#pop'</span><span class="s1">)</span>
+<a name="l194"><span class="ln">194  </span></a>        <span class="s1">]</span>
+<a name="l195"><span class="ln">195  </span></a>    <span class="s1">}</span>
+<a name="l196"><span class="ln">196  </span></a>
+<a name="l197"><span class="ln">197  </span></a>    <span class="s2">def </span><span class="s1">analyse_text(text):</span>
+<a name="l198"><span class="ln">198  </span></a>        <span class="s2">if </span><span class="s1">re.match(</span><span class="s3">r'\w+\s*:\s*\w'</span><span class="s2">, </span><span class="s1">text):</span>
+<a name="l199"><span class="ln">199  </span></a>            <span class="s2">return </span><span class="s4">0.3</span>
+<a name="l200"><span class="ln">200  </span></a>        <span class="s2">return </span><span class="s4">0</span>
+<a name="l201"><span class="ln">201  </span></a>
+<a name="l202"><span class="ln">202  </span></a>
+<a name="l203"><span class="ln">203  </span></a><span class="s2">class </span><span class="s1">MxmlLexer(RegexLexer):</span>
+<a name="l204"><span class="ln">204  </span></a>    <span class="s0">&quot;&quot;&quot; 
+<a name="l205"><span class="ln">205  </span></a>    For MXML markup. 
+<a name="l206"><span class="ln">206  </span></a>    Nested AS3 in &lt;script&gt; tags is highlighted by the appropriate lexer. 
+<a name="l207"><span class="ln">207  </span></a> 
+<a name="l208"><span class="ln">208  </span></a>    .. versionadded:: 1.1 
+<a name="l209"><span class="ln">209  </span></a>    &quot;&quot;&quot;</span>
+<a name="l210"><span class="ln">210  </span></a>    <span class="s1">flags = re.MULTILINE | re.DOTALL</span>
+<a name="l211"><span class="ln">211  </span></a>    <span class="s1">name = </span><span class="s3">'MXML'</span>
+<a name="l212"><span class="ln">212  </span></a>    <span class="s1">aliases = [</span><span class="s3">'mxml'</span><span class="s1">]</span>
+<a name="l213"><span class="ln">213  </span></a>    <span class="s1">filenames = [</span><span class="s3">'*.mxml'</span><span class="s1">]</span>
+<a name="l214"><span class="ln">214  </span></a>    <span class="s1">mimetimes = [</span><span class="s3">'text/xml'</span><span class="s2">, </span><span class="s3">'application/xml'</span><span class="s1">]</span>
+<a name="l215"><span class="ln">215  </span></a>
+<a name="l216"><span class="ln">216  </span></a>    <span class="s1">tokens = {</span>
+<a name="l217"><span class="ln">217  </span></a>        <span class="s3">'root'</span><span class="s1">: [</span>
+<a name="l218"><span class="ln">218  </span></a>            <span class="s1">(</span><span class="s3">'[^&lt;&amp;]+'</span><span class="s2">, </span><span class="s1">Text)</span><span class="s2">,</span>
+<a name="l219"><span class="ln">219  </span></a>            <span class="s1">(</span><span class="s3">r'&amp;\S*?;'</span><span class="s2">, </span><span class="s1">Name.Entity)</span><span class="s2">,</span>
+<a name="l220"><span class="ln">220  </span></a>            <span class="s1">(</span><span class="s3">r'(\&lt;\!\[CDATA\[)(.*?)(\]\]\&gt;)'</span><span class="s2">,</span>
+<a name="l221"><span class="ln">221  </span></a>             <span class="s1">bygroups(String</span><span class="s2">, </span><span class="s1">using(ActionScript3Lexer)</span><span class="s2">, </span><span class="s1">String))</span><span class="s2">,</span>
+<a name="l222"><span class="ln">222  </span></a>            <span class="s1">(</span><span class="s3">'&lt;!--'</span><span class="s2">, </span><span class="s1">Comment</span><span class="s2">, </span><span class="s3">'comment'</span><span class="s1">)</span><span class="s2">,</span>
+<a name="l223"><span class="ln">223  </span></a>            <span class="s1">(</span><span class="s3">r'&lt;\?.*?\?&gt;'</span><span class="s2">, </span><span class="s1">Comment.Preproc)</span><span class="s2">,</span>
+<a name="l224"><span class="ln">224  </span></a>            <span class="s1">(</span><span class="s3">'&lt;![^&gt;]*&gt;'</span><span class="s2">, </span><span class="s1">Comment.Preproc)</span><span class="s2">,</span>
+<a name="l225"><span class="ln">225  </span></a>            <span class="s1">(</span><span class="s3">r'&lt;\s*[\w:.-]+'</span><span class="s2">, </span><span class="s1">Name.Tag</span><span class="s2">, </span><span class="s3">'tag'</span><span class="s1">)</span><span class="s2">,</span>
+<a name="l226"><span class="ln">226  </span></a>            <span class="s1">(</span><span class="s3">r'&lt;\s*/\s*[\w:.-]+\s*&gt;'</span><span class="s2">, </span><span class="s1">Name.Tag)</span><span class="s2">,</span>
+<a name="l227"><span class="ln">227  </span></a>        <span class="s1">]</span><span class="s2">,</span>
+<a name="l228"><span class="ln">228  </span></a>        <span class="s3">'comment'</span><span class="s1">: [</span>
+<a name="l229"><span class="ln">229  </span></a>            <span class="s1">(</span><span class="s3">'[^-]+'</span><span class="s2">, </span><span class="s1">Comment)</span><span class="s2">,</span>
+<a name="l230"><span class="ln">230  </span></a>            <span class="s1">(</span><span class="s3">'--&gt;'</span><span class="s2">, </span><span class="s1">Comment</span><span class="s2">, </span><span class="s3">'#pop'</span><span class="s1">)</span><span class="s2">,</span>
+<a name="l231"><span class="ln">231  </span></a>            <span class="s1">(</span><span class="s3">'-'</span><span class="s2">, </span><span class="s1">Comment)</span><span class="s2">,</span>
+<a name="l232"><span class="ln">232  </span></a>        <span class="s1">]</span><span class="s2">,</span>
+<a name="l233"><span class="ln">233  </span></a>        <span class="s3">'tag'</span><span class="s1">: [</span>
+<a name="l234"><span class="ln">234  </span></a>            <span class="s1">(</span><span class="s3">r'\s+'</span><span class="s2">, </span><span class="s1">Text)</span><span class="s2">,</span>
+<a name="l235"><span class="ln">235  </span></a>            <span class="s1">(</span><span class="s3">r'[\w.:-]+\s*='</span><span class="s2">, </span><span class="s1">Name.Attribute</span><span class="s2">, </span><span class="s3">'attr'</span><span class="s1">)</span><span class="s2">,</span>
+<a name="l236"><span class="ln">236  </span></a>            <span class="s1">(</span><span class="s3">r'/?\s*&gt;'</span><span class="s2">, </span><span class="s1">Name.Tag</span><span class="s2">, </span><span class="s3">'#pop'</span><span class="s1">)</span><span class="s2">,</span>
+<a name="l237"><span class="ln">237  </span></a>        <span class="s1">]</span><span class="s2">,</span>
+<a name="l238"><span class="ln">238  </span></a>        <span class="s3">'attr'</span><span class="s1">: [</span>
+<a name="l239"><span class="ln">239  </span></a>            <span class="s1">(</span><span class="s3">r'\s+'</span><span class="s2">, </span><span class="s1">Text)</span><span class="s2">,</span>
+<a name="l240"><span class="ln">240  </span></a>            <span class="s1">(</span><span class="s3">'&quot;.*?&quot;'</span><span class="s2">, </span><span class="s1">String</span><span class="s2">, </span><span class="s3">'#pop'</span><span class="s1">)</span><span class="s2">,</span>
+<a name="l241"><span class="ln">241  </span></a>            <span class="s1">(</span><span class="s3">&quot;'.*?'&quot;</span><span class="s2">, </span><span class="s1">String</span><span class="s2">, </span><span class="s3">'#pop'</span><span class="s1">)</span><span class="s2">,</span>
+<a name="l242"><span class="ln">242  </span></a>            <span class="s1">(</span><span class="s3">r'[^\s&gt;]+'</span><span class="s2">, </span><span class="s1">String</span><span class="s2">, </span><span class="s3">'#pop'</span><span class="s1">)</span><span class="s2">,</span>
+<a name="l243"><span class="ln">243  </span></a>        <span class="s1">]</span><span class="s2">,</span>
+<a name="l244"><span class="ln">244  </span></a>    <span class="s1">}</span>
+<a name="l245"><span class="ln">245  </span></a></pre>
+</body>
+</html>

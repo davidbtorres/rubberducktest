@@ -1,0 +1,613 @@
+<html>
+<head>
+<title>knspace.py</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type="text/css">
+.s0 { color: #629755; font-style: italic;}
+.s1 { color: #a9b7c6;}
+.s2 { color: #6a8759;}
+.s3 { color: #cc7832;}
+.s4 { color: #808080;}
+.s5 { color: #6897bb;}
+.ln { color: #606366; font-weight: normal; font-style: normal; }
+</style>
+</head>
+<body bgcolor="#2b2b2b">
+<table CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#606060" >
+<tr><td><center>
+<font face="Arial, Helvetica" color="#000000">
+knspace.py</font>
+</center></td></tr></table>
+<pre><a name="l1"><span class="ln">1    </span></a><span class="s0">''' 
+<a name="l2"><span class="ln">2    </span></a>Kivy Namespaces 
+<a name="l3"><span class="ln">3    </span></a>=============== 
+<a name="l4"><span class="ln">4    </span></a> 
+<a name="l5"><span class="ln">5    </span></a>.. versionadded:: 1.9.1 
+<a name="l6"><span class="ln">6    </span></a> 
+<a name="l7"><span class="ln">7    </span></a>.. warning:: 
+<a name="l8"><span class="ln">8    </span></a>    This code is still experimental, and its API is subject to change in a 
+<a name="l9"><span class="ln">9    </span></a>    future version. 
+<a name="l10"><span class="ln">10   </span></a> 
+<a name="l11"><span class="ln">11   </span></a>The :class:`KNSpaceBehavior` `mixin &lt;https://en.wikipedia.org/wiki/Mixin&gt;`_ 
+<a name="l12"><span class="ln">12   </span></a>class provides namespace functionality for Kivy objects. It allows kivy objects 
+<a name="l13"><span class="ln">13   </span></a>to be named and then accessed using namespaces. 
+<a name="l14"><span class="ln">14   </span></a> 
+<a name="l15"><span class="ln">15   </span></a>:class:`KNSpace` instances are the namespaces that store the named objects 
+<a name="l16"><span class="ln">16   </span></a>in Kivy :class:`~kivy.properties.ObjectProperty` instances. 
+<a name="l17"><span class="ln">17   </span></a>In addition, when inheriting from :class:`KNSpaceBehavior`, if the derived 
+<a name="l18"><span class="ln">18   </span></a>object is named, the name will automatically be added to the associated 
+<a name="l19"><span class="ln">19   </span></a>namespace and will point to a :attr:`~kivy.uix.widget.proxy_ref` of the 
+<a name="l20"><span class="ln">20   </span></a>derived object. 
+<a name="l21"><span class="ln">21   </span></a> 
+<a name="l22"><span class="ln">22   </span></a>Basic examples 
+<a name="l23"><span class="ln">23   </span></a>-------------- 
+<a name="l24"><span class="ln">24   </span></a> 
+<a name="l25"><span class="ln">25   </span></a>By default, there's only a single namespace: the :attr:`knspace` namespace. The 
+<a name="l26"><span class="ln">26   </span></a>simplest example is adding a widget to the namespace: 
+<a name="l27"><span class="ln">27   </span></a> 
+<a name="l28"><span class="ln">28   </span></a>.. code-block:: python 
+<a name="l29"><span class="ln">29   </span></a> 
+<a name="l30"><span class="ln">30   </span></a>    from kivy.uix.behaviors.knspace import knspace 
+<a name="l31"><span class="ln">31   </span></a>    widget = Widget() 
+<a name="l32"><span class="ln">32   </span></a>    knspace.my_widget = widget 
+<a name="l33"><span class="ln">33   </span></a> 
+<a name="l34"><span class="ln">34   </span></a>This adds a kivy :class:`~kivy.properties.ObjectProperty` with `rebind=True` 
+<a name="l35"><span class="ln">35   </span></a>and `allownone=True` to the :attr:`knspace` namespace with a property name 
+<a name="l36"><span class="ln">36   </span></a>`my_widget`. And the property now also points to this widget. 
+<a name="l37"><span class="ln">37   </span></a> 
+<a name="l38"><span class="ln">38   </span></a>This can be done automatically with: 
+<a name="l39"><span class="ln">39   </span></a> 
+<a name="l40"><span class="ln">40   </span></a>.. code-block:: python 
+<a name="l41"><span class="ln">41   </span></a> 
+<a name="l42"><span class="ln">42   </span></a>    class MyWidget(KNSpaceBehavior, Widget): 
+<a name="l43"><span class="ln">43   </span></a>        pass 
+<a name="l44"><span class="ln">44   </span></a> 
+<a name="l45"><span class="ln">45   </span></a>    widget = MyWidget(knsname='my_widget') 
+<a name="l46"><span class="ln">46   </span></a> 
+<a name="l47"><span class="ln">47   </span></a>Or in kv: 
+<a name="l48"><span class="ln">48   </span></a> 
+<a name="l49"><span class="ln">49   </span></a>.. code-block:: kv 
+<a name="l50"><span class="ln">50   </span></a> 
+<a name="l51"><span class="ln">51   </span></a>    &lt;MyWidget@KNSpaceBehavior+Widget&gt; 
+<a name="l52"><span class="ln">52   </span></a> 
+<a name="l53"><span class="ln">53   </span></a>    MyWidget: 
+<a name="l54"><span class="ln">54   </span></a>        knsname: 'my_widget' 
+<a name="l55"><span class="ln">55   </span></a> 
+<a name="l56"><span class="ln">56   </span></a>Now, `knspace.my_widget` will point to that widget. 
+<a name="l57"><span class="ln">57   </span></a> 
+<a name="l58"><span class="ln">58   </span></a>When one creates a second widget with the same name, the namespace will 
+<a name="l59"><span class="ln">59   </span></a>also change to point to the new widget. E.g.: 
+<a name="l60"><span class="ln">60   </span></a> 
+<a name="l61"><span class="ln">61   </span></a>.. code-block:: python 
+<a name="l62"><span class="ln">62   </span></a> 
+<a name="l63"><span class="ln">63   </span></a>    widget = MyWidget(knsname='my_widget') 
+<a name="l64"><span class="ln">64   </span></a>    # knspace.my_widget now points to widget 
+<a name="l65"><span class="ln">65   </span></a>    widget2 = MyWidget(knsname='my_widget') 
+<a name="l66"><span class="ln">66   </span></a>    # knspace.my_widget now points to widget2 
+<a name="l67"><span class="ln">67   </span></a> 
+<a name="l68"><span class="ln">68   </span></a>Setting the namespace 
+<a name="l69"><span class="ln">69   </span></a>--------------------- 
+<a name="l70"><span class="ln">70   </span></a> 
+<a name="l71"><span class="ln">71   </span></a>One can also create ones own namespace rather than using the default 
+<a name="l72"><span class="ln">72   </span></a>:attr:`knspace` by directly setting :attr:`KNSpaceBehavior.knspace`: 
+<a name="l73"><span class="ln">73   </span></a> 
+<a name="l74"><span class="ln">74   </span></a>.. code-block:: python 
+<a name="l75"><span class="ln">75   </span></a> 
+<a name="l76"><span class="ln">76   </span></a>    class MyWidget(KNSpaceBehavior, Widget): 
+<a name="l77"><span class="ln">77   </span></a>        pass 
+<a name="l78"><span class="ln">78   </span></a> 
+<a name="l79"><span class="ln">79   </span></a>    widget = MyWidget(knsname='my_widget') 
+<a name="l80"><span class="ln">80   </span></a>    my_new_namespace = KNSpace() 
+<a name="l81"><span class="ln">81   </span></a>    widget.knspace = my_new_namespace 
+<a name="l82"><span class="ln">82   </span></a> 
+<a name="l83"><span class="ln">83   </span></a>Initially, `my_widget` is added to the default namespace, but when the widget's 
+<a name="l84"><span class="ln">84   </span></a>namespace is changed to `my_new_namespace`, the reference to `my_widget` is 
+<a name="l85"><span class="ln">85   </span></a>moved to that namespace. We could have also of course first set the namespace 
+<a name="l86"><span class="ln">86   </span></a>to `my_new_namespace` and then have named the widget `my_widget`, thereby 
+<a name="l87"><span class="ln">87   </span></a>avoiding the initial assignment to the default namespace. 
+<a name="l88"><span class="ln">88   </span></a> 
+<a name="l89"><span class="ln">89   </span></a>Similarly, in kv: 
+<a name="l90"><span class="ln">90   </span></a> 
+<a name="l91"><span class="ln">91   </span></a>.. code-block:: kv 
+<a name="l92"><span class="ln">92   </span></a> 
+<a name="l93"><span class="ln">93   </span></a>    &lt;MyWidget@KNSpaceBehavior+Widget&gt; 
+<a name="l94"><span class="ln">94   </span></a> 
+<a name="l95"><span class="ln">95   </span></a>    MyWidget: 
+<a name="l96"><span class="ln">96   </span></a>        knspace: KNSpace() 
+<a name="l97"><span class="ln">97   </span></a>        knsname: 'my_widget' 
+<a name="l98"><span class="ln">98   </span></a> 
+<a name="l99"><span class="ln">99   </span></a>Inheriting the namespace 
+<a name="l100"><span class="ln">100  </span></a>------------------------ 
+<a name="l101"><span class="ln">101  </span></a> 
+<a name="l102"><span class="ln">102  </span></a>In the previous example, we directly set the namespace we wished to use. 
+<a name="l103"><span class="ln">103  </span></a>In the following example, we inherit it from the parent, so we only have to set 
+<a name="l104"><span class="ln">104  </span></a>it once: 
+<a name="l105"><span class="ln">105  </span></a> 
+<a name="l106"><span class="ln">106  </span></a>.. code-block:: kv 
+<a name="l107"><span class="ln">107  </span></a> 
+<a name="l108"><span class="ln">108  </span></a>    &lt;MyWidget@KNSpaceBehavior+Widget&gt; 
+<a name="l109"><span class="ln">109  </span></a>    &lt;MyLabel@KNSpaceBehavior+Label&gt; 
+<a name="l110"><span class="ln">110  </span></a> 
+<a name="l111"><span class="ln">111  </span></a>    &lt;MyComplexWidget@MyWidget&gt;: 
+<a name="l112"><span class="ln">112  </span></a>        knsname: 'my_complex' 
+<a name="l113"><span class="ln">113  </span></a>        MyLabel: 
+<a name="l114"><span class="ln">114  </span></a>            knsname: 'label1' 
+<a name="l115"><span class="ln">115  </span></a>        MyLabel: 
+<a name="l116"><span class="ln">116  </span></a>            knsname: 'label2' 
+<a name="l117"><span class="ln">117  </span></a> 
+<a name="l118"><span class="ln">118  </span></a>Then, we do: 
+<a name="l119"><span class="ln">119  </span></a> 
+<a name="l120"><span class="ln">120  </span></a>.. code-block:: python 
+<a name="l121"><span class="ln">121  </span></a> 
+<a name="l122"><span class="ln">122  </span></a>    widget = MyComplexWidget() 
+<a name="l123"><span class="ln">123  </span></a>    new_knspace = KNSpace() 
+<a name="l124"><span class="ln">124  </span></a>    widget.knspace = new_knspace 
+<a name="l125"><span class="ln">125  </span></a> 
+<a name="l126"><span class="ln">126  </span></a>The rule is that if no knspace has been assigned to a widget, it looks for a 
+<a name="l127"><span class="ln">127  </span></a>namespace in its parent and parent's parent and so on until it find one to 
+<a name="l128"><span class="ln">128  </span></a>use. If none are found, it uses the default :attr:`knspace`. 
+<a name="l129"><span class="ln">129  </span></a> 
+<a name="l130"><span class="ln">130  </span></a>When `MyComplexWidget` is created, it still used the default namespace. 
+<a name="l131"><span class="ln">131  </span></a>However, when we assigned the root widget its new namespace, all its 
+<a name="l132"><span class="ln">132  </span></a>children switched to using that new namespace as well. So `new_knspace` now 
+<a name="l133"><span class="ln">133  </span></a>contains `label1` and `label2` as well as `my_complex`. 
+<a name="l134"><span class="ln">134  </span></a> 
+<a name="l135"><span class="ln">135  </span></a>If we had first done: 
+<a name="l136"><span class="ln">136  </span></a> 
+<a name="l137"><span class="ln">137  </span></a>.. code-block:: python 
+<a name="l138"><span class="ln">138  </span></a> 
+<a name="l139"><span class="ln">139  </span></a>    widget = MyComplexWidget() 
+<a name="l140"><span class="ln">140  </span></a>    new_knspace = KNSpace() 
+<a name="l141"><span class="ln">141  </span></a>    knspace.label1.knspace = knspace 
+<a name="l142"><span class="ln">142  </span></a>    widget.knspace = new_knspace 
+<a name="l143"><span class="ln">143  </span></a> 
+<a name="l144"><span class="ln">144  </span></a>Then `label1` would remain stored in the default :attr:`knspace` since it was 
+<a name="l145"><span class="ln">145  </span></a>directly set, but `label2` and `my_complex` would still be added to the new 
+<a name="l146"><span class="ln">146  </span></a>namespace. 
+<a name="l147"><span class="ln">147  </span></a> 
+<a name="l148"><span class="ln">148  </span></a>One can customize the attribute used to search the parent tree by changing 
+<a name="l149"><span class="ln">149  </span></a>:attr:`KNSpaceBehavior.knspace_key`. If the desired knspace is not reachable 
+<a name="l150"><span class="ln">150  </span></a>through a widgets parent tree, e.g. in a popup that is not a widget's child, 
+<a name="l151"><span class="ln">151  </span></a>:attr:`KNSpaceBehavior.knspace_key` can be used to establish a different 
+<a name="l152"><span class="ln">152  </span></a>search order. 
+<a name="l153"><span class="ln">153  </span></a> 
+<a name="l154"><span class="ln">154  </span></a>Accessing the namespace 
+<a name="l155"><span class="ln">155  </span></a>----------------------- 
+<a name="l156"><span class="ln">156  </span></a> 
+<a name="l157"><span class="ln">157  </span></a>As seen in the previous example, if not directly assigned, the namespace is 
+<a name="l158"><span class="ln">158  </span></a>found by searching the parent tree. Consequently, if a namespace was assigned 
+<a name="l159"><span class="ln">159  </span></a>further up the parent tree, all its children and below could access that 
+<a name="l160"><span class="ln">160  </span></a>namespace through their :attr:`KNSpaceBehavior.knspace` property. 
+<a name="l161"><span class="ln">161  </span></a> 
+<a name="l162"><span class="ln">162  </span></a>This allows the creation of multiple widgets with identically given names 
+<a name="l163"><span class="ln">163  </span></a>if each root widget instance is assigned a new namespace. For example: 
+<a name="l164"><span class="ln">164  </span></a> 
+<a name="l165"><span class="ln">165  </span></a>.. code-block:: kv 
+<a name="l166"><span class="ln">166  </span></a> 
+<a name="l167"><span class="ln">167  </span></a>    &lt;MyComplexWidget@KNSpaceBehavior+Widget&gt;: 
+<a name="l168"><span class="ln">168  </span></a>        Label: 
+<a name="l169"><span class="ln">169  </span></a>            text: root.knspace.pretty.text if root.knspace.pretty else '' 
+<a name="l170"><span class="ln">170  </span></a> 
+<a name="l171"><span class="ln">171  </span></a>    &lt;MyPrettyWidget@KNSpaceBehavior+TextInput&gt;: 
+<a name="l172"><span class="ln">172  </span></a>        knsname: 'pretty' 
+<a name="l173"><span class="ln">173  </span></a>        text: 'Hello' 
+<a name="l174"><span class="ln">174  </span></a> 
+<a name="l175"><span class="ln">175  </span></a>    &lt;MyCompositeWidget@KNSpaceBehavior+BoxLayout&gt;: 
+<a name="l176"><span class="ln">176  </span></a>        MyComplexWidget 
+<a name="l177"><span class="ln">177  </span></a>        MyPrettyWidget 
+<a name="l178"><span class="ln">178  </span></a> 
+<a name="l179"><span class="ln">179  </span></a>Now, when we do: 
+<a name="l180"><span class="ln">180  </span></a> 
+<a name="l181"><span class="ln">181  </span></a>.. code-block:: python 
+<a name="l182"><span class="ln">182  </span></a> 
+<a name="l183"><span class="ln">183  </span></a>    knspace1, knspace2 = KNSpace(), KNSpace() 
+<a name="l184"><span class="ln">184  </span></a>    composite1 = MyCompositeWidget() 
+<a name="l185"><span class="ln">185  </span></a>    composite1.knspace = knspace1 
+<a name="l186"><span class="ln">186  </span></a> 
+<a name="l187"><span class="ln">187  </span></a>    composite2 = MyCompositeWidget() 
+<a name="l188"><span class="ln">188  </span></a>    composite2.knspace = knspace2 
+<a name="l189"><span class="ln">189  </span></a> 
+<a name="l190"><span class="ln">190  </span></a>    knspace1.pretty = &quot;Here's the ladder, now fix the roof!&quot; 
+<a name="l191"><span class="ln">191  </span></a>    knspace2.pretty = &quot;Get that raccoon off me!&quot; 
+<a name="l192"><span class="ln">192  </span></a> 
+<a name="l193"><span class="ln">193  </span></a>Because each of the `MyCompositeWidget` instances have a different namespace 
+<a name="l194"><span class="ln">194  </span></a>their children also use different namespaces. Consequently, the 
+<a name="l195"><span class="ln">195  </span></a>pretty and complex widgets of each instance will have different text. 
+<a name="l196"><span class="ln">196  </span></a> 
+<a name="l197"><span class="ln">197  </span></a>Further, because both the namespace :class:`~kivy.properties.ObjectProperty` 
+<a name="l198"><span class="ln">198  </span></a>references, and :attr:`KNSpaceBehavior.knspace` have `rebind=True`, the 
+<a name="l199"><span class="ln">199  </span></a>text of the `MyComplexWidget` label is rebound to match the text of 
+<a name="l200"><span class="ln">200  </span></a>`MyPrettyWidget` when either the root's namespace changes or when the 
+<a name="l201"><span class="ln">201  </span></a>`root.knspace.pretty` property changes, as expected. 
+<a name="l202"><span class="ln">202  </span></a> 
+<a name="l203"><span class="ln">203  </span></a>Forking a namespace 
+<a name="l204"><span class="ln">204  </span></a>------------------- 
+<a name="l205"><span class="ln">205  </span></a> 
+<a name="l206"><span class="ln">206  </span></a>Forking a namespace provides the opportunity to create a new namespace 
+<a name="l207"><span class="ln">207  </span></a>from a parent namespace so that the forked namespace will contain everything 
+<a name="l208"><span class="ln">208  </span></a>in the origin namespace, but the origin namespace will not have access to 
+<a name="l209"><span class="ln">209  </span></a>anything added to the forked namespace. 
+<a name="l210"><span class="ln">210  </span></a> 
+<a name="l211"><span class="ln">211  </span></a>For example: 
+<a name="l212"><span class="ln">212  </span></a> 
+<a name="l213"><span class="ln">213  </span></a>.. code-block:: python 
+<a name="l214"><span class="ln">214  </span></a> 
+<a name="l215"><span class="ln">215  </span></a>    child = knspace.fork() 
+<a name="l216"><span class="ln">216  </span></a>    grandchild = child.fork() 
+<a name="l217"><span class="ln">217  </span></a> 
+<a name="l218"><span class="ln">218  </span></a>    child.label = Label() 
+<a name="l219"><span class="ln">219  </span></a>    grandchild.button = Button() 
+<a name="l220"><span class="ln">220  </span></a> 
+<a name="l221"><span class="ln">221  </span></a>Now label is accessible by both child and grandchild, but not by knspace. And 
+<a name="l222"><span class="ln">222  </span></a>button is only accessible by the grandchild but not by the child or by knspace. 
+<a name="l223"><span class="ln">223  </span></a>Finally, doing `grandchild.label = Label()` will leave `grandchild.label` 
+<a name="l224"><span class="ln">224  </span></a>and `child.label` pointing to different labels. 
+<a name="l225"><span class="ln">225  </span></a> 
+<a name="l226"><span class="ln">226  </span></a>A motivating example is the example from above: 
+<a name="l227"><span class="ln">227  </span></a> 
+<a name="l228"><span class="ln">228  </span></a>.. code-block:: kv 
+<a name="l229"><span class="ln">229  </span></a> 
+<a name="l230"><span class="ln">230  </span></a>    &lt;MyComplexWidget@KNSpaceBehavior+Widget&gt;: 
+<a name="l231"><span class="ln">231  </span></a>        Label: 
+<a name="l232"><span class="ln">232  </span></a>            text: root.knspace.pretty.text if root.knspace.pretty else '' 
+<a name="l233"><span class="ln">233  </span></a> 
+<a name="l234"><span class="ln">234  </span></a>    &lt;MyPrettyWidget@KNSpaceBehavior+TextInput&gt;: 
+<a name="l235"><span class="ln">235  </span></a>        knsname: 'pretty' 
+<a name="l236"><span class="ln">236  </span></a>        text: 'Hello' 
+<a name="l237"><span class="ln">237  </span></a> 
+<a name="l238"><span class="ln">238  </span></a>    &lt;MyCompositeWidget@KNSpaceBehavior+BoxLayout&gt;: 
+<a name="l239"><span class="ln">239  </span></a>        knspace: 'fork' 
+<a name="l240"><span class="ln">240  </span></a>        MyComplexWidget 
+<a name="l241"><span class="ln">241  </span></a>        MyPrettyWidget 
+<a name="l242"><span class="ln">242  </span></a> 
+<a name="l243"><span class="ln">243  </span></a>Notice the addition of `knspace: 'fork'`. This is identical to doing 
+<a name="l244"><span class="ln">244  </span></a>`knspace: self.knspace.fork()`. However, doing that would lead to infinite 
+<a name="l245"><span class="ln">245  </span></a>recursion as that kv rule would be executed recursively because `self.knspace` 
+<a name="l246"><span class="ln">246  </span></a>will keep on changing. However, allowing `knspace: 'fork'` cirumvents that. 
+<a name="l247"><span class="ln">247  </span></a>See :attr:`KNSpaceBehavior.knspace`. 
+<a name="l248"><span class="ln">248  </span></a> 
+<a name="l249"><span class="ln">249  </span></a>Now, having forked, we just need to do: 
+<a name="l250"><span class="ln">250  </span></a> 
+<a name="l251"><span class="ln">251  </span></a>.. code-block:: python 
+<a name="l252"><span class="ln">252  </span></a> 
+<a name="l253"><span class="ln">253  </span></a>    composite1 = MyCompositeWidget() 
+<a name="l254"><span class="ln">254  </span></a>    composite2 = MyCompositeWidget() 
+<a name="l255"><span class="ln">255  </span></a> 
+<a name="l256"><span class="ln">256  </span></a>    composite1.knspace.pretty = &quot;Here's the ladder, now fix the roof!&quot; 
+<a name="l257"><span class="ln">257  </span></a>    composite2.knspace.pretty = &quot;Get that raccoon off me!&quot; 
+<a name="l258"><span class="ln">258  </span></a> 
+<a name="l259"><span class="ln">259  </span></a>Since by forking we automatically created a unique namespace for each 
+<a name="l260"><span class="ln">260  </span></a>`MyCompositeWidget` instance. 
+<a name="l261"><span class="ln">261  </span></a>'''</span>
+<a name="l262"><span class="ln">262  </span></a>
+<a name="l263"><span class="ln">263  </span></a><span class="s1">__all__ = (</span><span class="s2">'KNSpace'</span><span class="s3">, </span><span class="s2">'KNSpaceBehavior'</span><span class="s3">, </span><span class="s2">'knspace'</span><span class="s1">)</span>
+<a name="l264"><span class="ln">264  </span></a>
+<a name="l265"><span class="ln">265  </span></a><span class="s3">from </span><span class="s1">kivy.event </span><span class="s3">import </span><span class="s1">EventDispatcher</span>
+<a name="l266"><span class="ln">266  </span></a><span class="s3">from </span><span class="s1">kivy.properties </span><span class="s3">import </span><span class="s1">StringProperty</span><span class="s3">, </span><span class="s1">ObjectProperty</span><span class="s3">, </span><span class="s1">AliasProperty</span>
+<a name="l267"><span class="ln">267  </span></a><span class="s3">from </span><span class="s1">kivy.context </span><span class="s3">import </span><span class="s1">register_context</span>
+<a name="l268"><span class="ln">268  </span></a>
+<a name="l269"><span class="ln">269  </span></a>
+<a name="l270"><span class="ln">270  </span></a><span class="s3">class </span><span class="s1">KNSpace(EventDispatcher):</span>
+<a name="l271"><span class="ln">271  </span></a>    <span class="s0">'''Each :class:`KNSpace` instance is a namespace that stores the named Kivy 
+<a name="l272"><span class="ln">272  </span></a>    objects associated with this namespace. Each named object is 
+<a name="l273"><span class="ln">273  </span></a>    stored as the value of a Kivy :class:`~kivy.properties.ObjectProperty` of 
+<a name="l274"><span class="ln">274  </span></a>    this instance whose property name is the object's given name. Both `rebind` 
+<a name="l275"><span class="ln">275  </span></a>    and `allownone` are set to `True` for the property. 
+<a name="l276"><span class="ln">276  </span></a> 
+<a name="l277"><span class="ln">277  </span></a>    See :attr:`KNSpaceBehavior.knspace` for details on how a namespace is 
+<a name="l278"><span class="ln">278  </span></a>    associated with a named object. 
+<a name="l279"><span class="ln">279  </span></a> 
+<a name="l280"><span class="ln">280  </span></a>    When storing an object in the namespace, the object's `proxy_ref` is 
+<a name="l281"><span class="ln">281  </span></a>    stored if the object has such an attribute. 
+<a name="l282"><span class="ln">282  </span></a> 
+<a name="l283"><span class="ln">283  </span></a>    :Parameters: 
+<a name="l284"><span class="ln">284  </span></a> 
+<a name="l285"><span class="ln">285  </span></a>        `parent`: (internal) A :class:`KNSpace` instance or None. 
+<a name="l286"><span class="ln">286  </span></a>            If specified, it's a parent namespace, in which case, the current 
+<a name="l287"><span class="ln">287  </span></a>            namespace will have in its namespace all its named objects 
+<a name="l288"><span class="ln">288  </span></a>            as well as the named objects of its parent and parent's parent 
+<a name="l289"><span class="ln">289  </span></a>            etc. See :meth:`fork` for more details. 
+<a name="l290"><span class="ln">290  </span></a>    '''</span>
+<a name="l291"><span class="ln">291  </span></a>
+<a name="l292"><span class="ln">292  </span></a>    <span class="s1">parent = </span><span class="s3">None</span>
+<a name="l293"><span class="ln">293  </span></a>    <span class="s2">'''(internal) The parent namespace instance, :class:`KNSpace`, or None. See 
+<a name="l294"><span class="ln">294  </span></a>    :meth:`fork`. 
+<a name="l295"><span class="ln">295  </span></a>    '''</span>
+<a name="l296"><span class="ln">296  </span></a>    <span class="s1">__has_applied = </span><span class="s3">None</span>
+<a name="l297"><span class="ln">297  </span></a>
+<a name="l298"><span class="ln">298  </span></a>    <span class="s1">keep_ref = </span><span class="s3">False</span>
+<a name="l299"><span class="ln">299  </span></a>    <span class="s2">'''Whether a direct reference should be kept to the stored objects. 
+<a name="l300"><span class="ln">300  </span></a>    If ``True``, we use the direct object, otherwise we use 
+<a name="l301"><span class="ln">301  </span></a>    :attr:`~kivy.uix.widget.proxy_ref` when present. 
+<a name="l302"><span class="ln">302  </span></a> 
+<a name="l303"><span class="ln">303  </span></a>    Defaults to False. 
+<a name="l304"><span class="ln">304  </span></a>    '''</span>
+<a name="l305"><span class="ln">305  </span></a>
+<a name="l306"><span class="ln">306  </span></a>    <span class="s3">def </span><span class="s1">__init__(self</span><span class="s3">, </span><span class="s1">parent=</span><span class="s3">None, </span><span class="s1">keep_ref=</span><span class="s3">False, </span><span class="s1">**kwargs):</span>
+<a name="l307"><span class="ln">307  </span></a>        <span class="s1">self.keep_ref = keep_ref</span>
+<a name="l308"><span class="ln">308  </span></a>        <span class="s1">super(KNSpace</span><span class="s3">, </span><span class="s1">self).__init__(**kwargs)</span>
+<a name="l309"><span class="ln">309  </span></a>        <span class="s1">self.parent = parent</span>
+<a name="l310"><span class="ln">310  </span></a>        <span class="s1">self.__has_applied = set(self.properties().keys())</span>
+<a name="l311"><span class="ln">311  </span></a>
+<a name="l312"><span class="ln">312  </span></a>    <span class="s3">def </span><span class="s1">__setattr__(self</span><span class="s3">, </span><span class="s1">name</span><span class="s3">, </span><span class="s1">value):</span>
+<a name="l313"><span class="ln">313  </span></a>        <span class="s1">prop = super(KNSpace</span><span class="s3">, </span><span class="s1">self).property(name</span><span class="s3">, </span><span class="s1">quiet=</span><span class="s3">True</span><span class="s1">)</span>
+<a name="l314"><span class="ln">314  </span></a>        <span class="s1">has_applied = self.__has_applied</span>
+<a name="l315"><span class="ln">315  </span></a>        <span class="s3">if </span><span class="s1">prop </span><span class="s3">is None</span><span class="s1">:</span>
+<a name="l316"><span class="ln">316  </span></a>            <span class="s3">if </span><span class="s1">hasattr(self</span><span class="s3">, </span><span class="s1">name):</span>
+<a name="l317"><span class="ln">317  </span></a>                <span class="s1">super(KNSpace</span><span class="s3">, </span><span class="s1">self).__setattr__(name</span><span class="s3">, </span><span class="s1">value)</span>
+<a name="l318"><span class="ln">318  </span></a>            <span class="s3">else</span><span class="s1">:</span>
+<a name="l319"><span class="ln">319  </span></a>                <span class="s1">self.apply_property(</span>
+<a name="l320"><span class="ln">320  </span></a>                    <span class="s1">**{name:</span>
+<a name="l321"><span class="ln">321  </span></a>                       <span class="s1">ObjectProperty(</span><span class="s3">None, </span><span class="s1">rebind=</span><span class="s3">True, </span><span class="s1">allownone=</span><span class="s3">True</span><span class="s1">)}</span>
+<a name="l322"><span class="ln">322  </span></a>                <span class="s1">)</span>
+<a name="l323"><span class="ln">323  </span></a>                <span class="s3">if not </span><span class="s1">self.keep_ref:</span>
+<a name="l324"><span class="ln">324  </span></a>                    <span class="s1">value = getattr(value</span><span class="s3">, </span><span class="s2">'proxy_ref'</span><span class="s3">, </span><span class="s1">value)</span>
+<a name="l325"><span class="ln">325  </span></a>                <span class="s1">has_applied.add(name)</span>
+<a name="l326"><span class="ln">326  </span></a>                <span class="s1">super(KNSpace</span><span class="s3">, </span><span class="s1">self).__setattr__(name</span><span class="s3">, </span><span class="s1">value)</span>
+<a name="l327"><span class="ln">327  </span></a>        <span class="s3">elif </span><span class="s1">name </span><span class="s3">not in </span><span class="s1">has_applied:</span>
+<a name="l328"><span class="ln">328  </span></a>            <span class="s1">self.apply_property(**{name: prop})</span>
+<a name="l329"><span class="ln">329  </span></a>            <span class="s1">has_applied.add(name)</span>
+<a name="l330"><span class="ln">330  </span></a>            <span class="s3">if not </span><span class="s1">self.keep_ref:</span>
+<a name="l331"><span class="ln">331  </span></a>                <span class="s1">value = getattr(value</span><span class="s3">, </span><span class="s2">'proxy_ref'</span><span class="s3">, </span><span class="s1">value)</span>
+<a name="l332"><span class="ln">332  </span></a>            <span class="s1">super(KNSpace</span><span class="s3">, </span><span class="s1">self).__setattr__(name</span><span class="s3">, </span><span class="s1">value)</span>
+<a name="l333"><span class="ln">333  </span></a>        <span class="s3">else</span><span class="s1">:</span>
+<a name="l334"><span class="ln">334  </span></a>            <span class="s3">if not </span><span class="s1">self.keep_ref:</span>
+<a name="l335"><span class="ln">335  </span></a>                <span class="s1">value = getattr(value</span><span class="s3">, </span><span class="s2">'proxy_ref'</span><span class="s3">, </span><span class="s1">value)</span>
+<a name="l336"><span class="ln">336  </span></a>            <span class="s1">super(KNSpace</span><span class="s3">, </span><span class="s1">self).__setattr__(name</span><span class="s3">, </span><span class="s1">value)</span>
+<a name="l337"><span class="ln">337  </span></a>
+<a name="l338"><span class="ln">338  </span></a>    <span class="s3">def </span><span class="s1">__getattribute__(self</span><span class="s3">, </span><span class="s1">name):</span>
+<a name="l339"><span class="ln">339  </span></a>        <span class="s3">if </span><span class="s1">name </span><span class="s3">in </span><span class="s1">super(KNSpace</span><span class="s3">, </span><span class="s1">self).__getattribute__(</span><span class="s2">'__dict__'</span><span class="s1">):</span>
+<a name="l340"><span class="ln">340  </span></a>            <span class="s3">return </span><span class="s1">super(KNSpace</span><span class="s3">, </span><span class="s1">self).__getattribute__(name)</span>
+<a name="l341"><span class="ln">341  </span></a>
+<a name="l342"><span class="ln">342  </span></a>        <span class="s3">try</span><span class="s1">:</span>
+<a name="l343"><span class="ln">343  </span></a>            <span class="s1">value = super(KNSpace</span><span class="s3">, </span><span class="s1">self).__getattribute__(name)</span>
+<a name="l344"><span class="ln">344  </span></a>        <span class="s3">except </span><span class="s1">AttributeError:</span>
+<a name="l345"><span class="ln">345  </span></a>            <span class="s1">parent = super(KNSpace</span><span class="s3">, </span><span class="s1">self).__getattribute__(</span><span class="s2">'parent'</span><span class="s1">)</span>
+<a name="l346"><span class="ln">346  </span></a>            <span class="s3">if </span><span class="s1">parent </span><span class="s3">is None</span><span class="s1">:</span>
+<a name="l347"><span class="ln">347  </span></a>                <span class="s3">raise </span><span class="s1">AttributeError(name)</span>
+<a name="l348"><span class="ln">348  </span></a>            <span class="s3">return </span><span class="s1">getattr(parent</span><span class="s3">, </span><span class="s1">name)</span>
+<a name="l349"><span class="ln">349  </span></a>
+<a name="l350"><span class="ln">350  </span></a>        <span class="s3">if </span><span class="s1">value </span><span class="s3">is not None</span><span class="s1">:</span>
+<a name="l351"><span class="ln">351  </span></a>            <span class="s3">return </span><span class="s1">value</span>
+<a name="l352"><span class="ln">352  </span></a>
+<a name="l353"><span class="ln">353  </span></a>        <span class="s1">parent = super(KNSpace</span><span class="s3">, </span><span class="s1">self).__getattribute__(</span><span class="s2">'parent'</span><span class="s1">)</span>
+<a name="l354"><span class="ln">354  </span></a>        <span class="s3">if </span><span class="s1">parent </span><span class="s3">is None</span><span class="s1">:</span>
+<a name="l355"><span class="ln">355  </span></a>            <span class="s3">return None</span>
+<a name="l356"><span class="ln">356  </span></a>
+<a name="l357"><span class="ln">357  </span></a>        <span class="s3">try</span><span class="s1">:</span>
+<a name="l358"><span class="ln">358  </span></a>            <span class="s3">return </span><span class="s1">getattr(parent</span><span class="s3">, </span><span class="s1">name)  </span><span class="s4"># if parent doesn't have it</span>
+<a name="l359"><span class="ln">359  </span></a>        <span class="s3">except </span><span class="s1">AttributeError:</span>
+<a name="l360"><span class="ln">360  </span></a>            <span class="s3">return None</span>
+<a name="l361"><span class="ln">361  </span></a>
+<a name="l362"><span class="ln">362  </span></a>    <span class="s3">def </span><span class="s1">property(self</span><span class="s3">, </span><span class="s1">name</span><span class="s3">, </span><span class="s1">quiet=</span><span class="s3">False</span><span class="s1">):</span>
+<a name="l363"><span class="ln">363  </span></a>        <span class="s4"># needs to overwrite EventDispatcher.property so kv lang will work</span>
+<a name="l364"><span class="ln">364  </span></a>        <span class="s1">prop = super(KNSpace</span><span class="s3">, </span><span class="s1">self).property(name</span><span class="s3">, </span><span class="s1">quiet=</span><span class="s3">True</span><span class="s1">)</span>
+<a name="l365"><span class="ln">365  </span></a>        <span class="s3">if </span><span class="s1">prop </span><span class="s3">is not None</span><span class="s1">:</span>
+<a name="l366"><span class="ln">366  </span></a>            <span class="s3">return </span><span class="s1">prop</span>
+<a name="l367"><span class="ln">367  </span></a>
+<a name="l368"><span class="ln">368  </span></a>        <span class="s1">prop = ObjectProperty(</span><span class="s3">None, </span><span class="s1">rebind=</span><span class="s3">True, </span><span class="s1">allownone=</span><span class="s3">True</span><span class="s1">)</span>
+<a name="l369"><span class="ln">369  </span></a>        <span class="s1">self.apply_property(**{name: prop})</span>
+<a name="l370"><span class="ln">370  </span></a>        <span class="s1">self.__has_applied.add(name)</span>
+<a name="l371"><span class="ln">371  </span></a>        <span class="s3">return </span><span class="s1">prop</span>
+<a name="l372"><span class="ln">372  </span></a>
+<a name="l373"><span class="ln">373  </span></a>    <span class="s3">def </span><span class="s1">fork(self):</span>
+<a name="l374"><span class="ln">374  </span></a>        <span class="s0">'''Returns a new :class:`KNSpace` instance which will have access to 
+<a name="l375"><span class="ln">375  </span></a>        all the named objects in the current namespace but will also have a 
+<a name="l376"><span class="ln">376  </span></a>        namespace of its own that is unique to it. 
+<a name="l377"><span class="ln">377  </span></a> 
+<a name="l378"><span class="ln">378  </span></a>        For example: 
+<a name="l379"><span class="ln">379  </span></a> 
+<a name="l380"><span class="ln">380  </span></a>        .. code-block:: python 
+<a name="l381"><span class="ln">381  </span></a> 
+<a name="l382"><span class="ln">382  </span></a>            forked_knspace1 = knspace.fork() 
+<a name="l383"><span class="ln">383  </span></a>            forked_knspace2 = knspace.fork() 
+<a name="l384"><span class="ln">384  </span></a> 
+<a name="l385"><span class="ln">385  </span></a>        Now, any names added to `knspace` will be accessible by the 
+<a name="l386"><span class="ln">386  </span></a>        `forked_knspace1` and `forked_knspace2` namespaces by the normal means. 
+<a name="l387"><span class="ln">387  </span></a>        However, any names added to `forked_knspace1` will not be accessible 
+<a name="l388"><span class="ln">388  </span></a>        from `knspace` or `forked_knspace2`. Similar for `forked_knspace2`. 
+<a name="l389"><span class="ln">389  </span></a>        '''</span>
+<a name="l390"><span class="ln">390  </span></a>        <span class="s3">return </span><span class="s1">KNSpace(parent=self)</span>
+<a name="l391"><span class="ln">391  </span></a>
+<a name="l392"><span class="ln">392  </span></a>
+<a name="l393"><span class="ln">393  </span></a><span class="s3">class </span><span class="s1">KNSpaceBehavior(object):</span>
+<a name="l394"><span class="ln">394  </span></a>    <span class="s0">'''Inheriting from this class allows naming of the inherited objects, which 
+<a name="l395"><span class="ln">395  </span></a>    are then added to the associated namespace :attr:`knspace` and accessible 
+<a name="l396"><span class="ln">396  </span></a>    through it. 
+<a name="l397"><span class="ln">397  </span></a> 
+<a name="l398"><span class="ln">398  </span></a>    Please see the :mod:`knspace behaviors module &lt;kivy.uix.behaviors.knspace&gt;` 
+<a name="l399"><span class="ln">399  </span></a>    documentation for more information. 
+<a name="l400"><span class="ln">400  </span></a>    '''</span>
+<a name="l401"><span class="ln">401  </span></a>
+<a name="l402"><span class="ln">402  </span></a>    <span class="s1">_knspace = ObjectProperty(</span><span class="s3">None, </span><span class="s1">allownone=</span><span class="s3">True</span><span class="s1">)</span>
+<a name="l403"><span class="ln">403  </span></a>    <span class="s1">_knsname = StringProperty(</span><span class="s2">''</span><span class="s1">)</span>
+<a name="l404"><span class="ln">404  </span></a>    <span class="s1">__last_knspace = </span><span class="s3">None</span>
+<a name="l405"><span class="ln">405  </span></a>    <span class="s1">__callbacks = </span><span class="s3">None</span>
+<a name="l406"><span class="ln">406  </span></a>
+<a name="l407"><span class="ln">407  </span></a>    <span class="s3">def </span><span class="s1">__init__(self</span><span class="s3">, </span><span class="s1">knspace=</span><span class="s3">None, </span><span class="s1">**kwargs):</span>
+<a name="l408"><span class="ln">408  </span></a>        <span class="s1">self.knspace = knspace</span>
+<a name="l409"><span class="ln">409  </span></a>        <span class="s1">super(KNSpaceBehavior</span><span class="s3">, </span><span class="s1">self).__init__(**kwargs)</span>
+<a name="l410"><span class="ln">410  </span></a>
+<a name="l411"><span class="ln">411  </span></a>    <span class="s3">def </span><span class="s1">__knspace_clear_callbacks(self</span><span class="s3">, </span><span class="s1">*largs):</span>
+<a name="l412"><span class="ln">412  </span></a>        <span class="s3">for </span><span class="s1">obj</span><span class="s3">, </span><span class="s1">name</span><span class="s3">, </span><span class="s1">uid </span><span class="s3">in </span><span class="s1">self.__callbacks:</span>
+<a name="l413"><span class="ln">413  </span></a>            <span class="s1">obj.unbind_uid(name</span><span class="s3">, </span><span class="s1">uid)</span>
+<a name="l414"><span class="ln">414  </span></a>        <span class="s1">last = self.__last_knspace</span>
+<a name="l415"><span class="ln">415  </span></a>        <span class="s1">self.__last_knspace = self.__callbacks = </span><span class="s3">None</span>
+<a name="l416"><span class="ln">416  </span></a>
+<a name="l417"><span class="ln">417  </span></a>        <span class="s3">assert </span><span class="s1">self._knspace </span><span class="s3">is None</span>
+<a name="l418"><span class="ln">418  </span></a>        <span class="s3">assert </span><span class="s1">last</span>
+<a name="l419"><span class="ln">419  </span></a>
+<a name="l420"><span class="ln">420  </span></a>        <span class="s1">new = self.__set_parent_knspace()</span>
+<a name="l421"><span class="ln">421  </span></a>        <span class="s3">if </span><span class="s1">new </span><span class="s3">is </span><span class="s1">last:</span>
+<a name="l422"><span class="ln">422  </span></a>            <span class="s3">return</span>
+<a name="l423"><span class="ln">423  </span></a>        <span class="s1">self.property(</span><span class="s2">'_knspace'</span><span class="s1">).dispatch(self)</span>
+<a name="l424"><span class="ln">424  </span></a>
+<a name="l425"><span class="ln">425  </span></a>        <span class="s1">name = self.knsname</span>
+<a name="l426"><span class="ln">426  </span></a>        <span class="s3">if not </span><span class="s1">name:</span>
+<a name="l427"><span class="ln">427  </span></a>            <span class="s3">return</span>
+<a name="l428"><span class="ln">428  </span></a>
+<a name="l429"><span class="ln">429  </span></a>        <span class="s3">if </span><span class="s1">getattr(last</span><span class="s3">, </span><span class="s1">name) == self:</span>
+<a name="l430"><span class="ln">430  </span></a>            <span class="s1">setattr(last</span><span class="s3">, </span><span class="s1">name</span><span class="s3">, None</span><span class="s1">)</span>
+<a name="l431"><span class="ln">431  </span></a>
+<a name="l432"><span class="ln">432  </span></a>        <span class="s3">if </span><span class="s1">new:</span>
+<a name="l433"><span class="ln">433  </span></a>            <span class="s1">setattr(new</span><span class="s3">, </span><span class="s1">name</span><span class="s3">, </span><span class="s1">self)</span>
+<a name="l434"><span class="ln">434  </span></a>        <span class="s3">else</span><span class="s1">:</span>
+<a name="l435"><span class="ln">435  </span></a>            <span class="s3">raise </span><span class="s1">ValueError(</span><span class="s2">'Object has name &quot;{}&quot;, but no namespace'</span><span class="s1">.</span>
+<a name="l436"><span class="ln">436  </span></a>                             <span class="s1">format(name))</span>
+<a name="l437"><span class="ln">437  </span></a>
+<a name="l438"><span class="ln">438  </span></a>    <span class="s3">def </span><span class="s1">__set_parent_knspace(self):</span>
+<a name="l439"><span class="ln">439  </span></a>        <span class="s1">callbacks = self.__callbacks = []</span>
+<a name="l440"><span class="ln">440  </span></a>        <span class="s1">fbind = self.fbind</span>
+<a name="l441"><span class="ln">441  </span></a>        <span class="s1">append = callbacks.append</span>
+<a name="l442"><span class="ln">442  </span></a>        <span class="s1">parent_key = self.knspace_key</span>
+<a name="l443"><span class="ln">443  </span></a>        <span class="s1">clear = self.__knspace_clear_callbacks</span>
+<a name="l444"><span class="ln">444  </span></a>
+<a name="l445"><span class="ln">445  </span></a>        <span class="s1">append((self</span><span class="s3">, </span><span class="s2">'knspace_key'</span><span class="s3">, </span><span class="s1">fbind(</span><span class="s2">'knspace_key'</span><span class="s3">, </span><span class="s1">clear)))</span>
+<a name="l446"><span class="ln">446  </span></a>        <span class="s3">if not </span><span class="s1">parent_key:</span>
+<a name="l447"><span class="ln">447  </span></a>            <span class="s1">self.__last_knspace = knspace</span>
+<a name="l448"><span class="ln">448  </span></a>            <span class="s3">return </span><span class="s1">knspace</span>
+<a name="l449"><span class="ln">449  </span></a>
+<a name="l450"><span class="ln">450  </span></a>        <span class="s1">append((self</span><span class="s3">, </span><span class="s1">parent_key</span><span class="s3">, </span><span class="s1">fbind(parent_key</span><span class="s3">, </span><span class="s1">clear)))</span>
+<a name="l451"><span class="ln">451  </span></a>        <span class="s1">parent = getattr(self</span><span class="s3">, </span><span class="s1">parent_key</span><span class="s3">, None</span><span class="s1">)</span>
+<a name="l452"><span class="ln">452  </span></a>        <span class="s3">while </span><span class="s1">parent </span><span class="s3">is not None</span><span class="s1">:</span>
+<a name="l453"><span class="ln">453  </span></a>            <span class="s1">fbind = parent.fbind</span>
+<a name="l454"><span class="ln">454  </span></a>
+<a name="l455"><span class="ln">455  </span></a>            <span class="s1">parent_knspace = getattr(parent</span><span class="s3">, </span><span class="s2">'knspace'</span><span class="s3">, </span><span class="s5">0</span><span class="s1">)</span>
+<a name="l456"><span class="ln">456  </span></a>            <span class="s3">if </span><span class="s1">parent_knspace != </span><span class="s5">0</span><span class="s1">:</span>
+<a name="l457"><span class="ln">457  </span></a>                <span class="s1">append((parent</span><span class="s3">, </span><span class="s2">'knspace'</span><span class="s3">, </span><span class="s1">fbind(</span><span class="s2">'knspace'</span><span class="s3">, </span><span class="s1">clear)))</span>
+<a name="l458"><span class="ln">458  </span></a>                <span class="s1">self.__last_knspace = parent_knspace</span>
+<a name="l459"><span class="ln">459  </span></a>                <span class="s3">return </span><span class="s1">parent_knspace</span>
+<a name="l460"><span class="ln">460  </span></a>
+<a name="l461"><span class="ln">461  </span></a>            <span class="s1">append((parent</span><span class="s3">, </span><span class="s1">parent_key</span><span class="s3">, </span><span class="s1">fbind(parent_key</span><span class="s3">, </span><span class="s1">clear)))</span>
+<a name="l462"><span class="ln">462  </span></a>            <span class="s1">new_parent = getattr(parent</span><span class="s3">, </span><span class="s1">parent_key</span><span class="s3">, None</span><span class="s1">)</span>
+<a name="l463"><span class="ln">463  </span></a>            <span class="s3">if </span><span class="s1">new_parent </span><span class="s3">is </span><span class="s1">parent:</span>
+<a name="l464"><span class="ln">464  </span></a>                <span class="s3">break</span>
+<a name="l465"><span class="ln">465  </span></a>            <span class="s1">parent = new_parent</span>
+<a name="l466"><span class="ln">466  </span></a>        <span class="s1">self.__last_knspace = knspace</span>
+<a name="l467"><span class="ln">467  </span></a>        <span class="s3">return </span><span class="s1">knspace</span>
+<a name="l468"><span class="ln">468  </span></a>
+<a name="l469"><span class="ln">469  </span></a>    <span class="s3">def </span><span class="s1">_get_knspace(self):</span>
+<a name="l470"><span class="ln">470  </span></a>        <span class="s1">_knspace = self._knspace</span>
+<a name="l471"><span class="ln">471  </span></a>        <span class="s3">if </span><span class="s1">_knspace </span><span class="s3">is not None</span><span class="s1">:</span>
+<a name="l472"><span class="ln">472  </span></a>            <span class="s3">return </span><span class="s1">_knspace</span>
+<a name="l473"><span class="ln">473  </span></a>
+<a name="l474"><span class="ln">474  </span></a>        <span class="s3">if </span><span class="s1">self.__callbacks </span><span class="s3">is not None</span><span class="s1">:</span>
+<a name="l475"><span class="ln">475  </span></a>            <span class="s3">return </span><span class="s1">self.__last_knspace</span>
+<a name="l476"><span class="ln">476  </span></a>
+<a name="l477"><span class="ln">477  </span></a>        <span class="s4"># we only get here if we never accessed our knspace</span>
+<a name="l478"><span class="ln">478  </span></a>        <span class="s3">return </span><span class="s1">self.__set_parent_knspace()</span>
+<a name="l479"><span class="ln">479  </span></a>
+<a name="l480"><span class="ln">480  </span></a>    <span class="s3">def </span><span class="s1">_set_knspace(self</span><span class="s3">, </span><span class="s1">value):</span>
+<a name="l481"><span class="ln">481  </span></a>        <span class="s3">if </span><span class="s1">value </span><span class="s3">is </span><span class="s1">self._knspace:</span>
+<a name="l482"><span class="ln">482  </span></a>            <span class="s3">return</span>
+<a name="l483"><span class="ln">483  </span></a>
+<a name="l484"><span class="ln">484  </span></a>        <span class="s1">knspace = self._knspace </span><span class="s3">or </span><span class="s1">self.__last_knspace</span>
+<a name="l485"><span class="ln">485  </span></a>        <span class="s1">name = self.knsname</span>
+<a name="l486"><span class="ln">486  </span></a>        <span class="s3">if </span><span class="s1">name </span><span class="s3">and </span><span class="s1">knspace </span><span class="s3">and </span><span class="s1">getattr(knspace</span><span class="s3">, </span><span class="s1">name) == self:</span>
+<a name="l487"><span class="ln">487  </span></a>            <span class="s1">setattr(knspace</span><span class="s3">, </span><span class="s1">name</span><span class="s3">, None</span><span class="s1">)  </span><span class="s4"># reset old namespace</span>
+<a name="l488"><span class="ln">488  </span></a>
+<a name="l489"><span class="ln">489  </span></a>        <span class="s3">if </span><span class="s1">value == </span><span class="s2">'fork'</span><span class="s1">:</span>
+<a name="l490"><span class="ln">490  </span></a>            <span class="s3">if not </span><span class="s1">knspace:</span>
+<a name="l491"><span class="ln">491  </span></a>                <span class="s1">knspace = self.knspace  </span><span class="s4"># get parents in case we haven't before</span>
+<a name="l492"><span class="ln">492  </span></a>            <span class="s3">if </span><span class="s1">knspace:</span>
+<a name="l493"><span class="ln">493  </span></a>                <span class="s1">value = knspace.fork()</span>
+<a name="l494"><span class="ln">494  </span></a>            <span class="s3">else</span><span class="s1">:</span>
+<a name="l495"><span class="ln">495  </span></a>                <span class="s3">raise </span><span class="s1">ValueError(</span><span class="s2">'Cannot fork with no namespace'</span><span class="s1">)</span>
+<a name="l496"><span class="ln">496  </span></a>
+<a name="l497"><span class="ln">497  </span></a>        <span class="s3">for </span><span class="s1">obj</span><span class="s3">, </span><span class="s1">prop_name</span><span class="s3">, </span><span class="s1">uid </span><span class="s3">in </span><span class="s1">self.__callbacks </span><span class="s3">or </span><span class="s1">[]:</span>
+<a name="l498"><span class="ln">498  </span></a>            <span class="s1">obj.unbind_uid(prop_name</span><span class="s3">, </span><span class="s1">uid)</span>
+<a name="l499"><span class="ln">499  </span></a>        <span class="s1">self.__last_knspace = self.__callbacks = </span><span class="s3">None</span>
+<a name="l500"><span class="ln">500  </span></a>
+<a name="l501"><span class="ln">501  </span></a>        <span class="s3">if </span><span class="s1">name:</span>
+<a name="l502"><span class="ln">502  </span></a>            <span class="s3">if </span><span class="s1">value </span><span class="s3">is None</span><span class="s1">:  </span><span class="s4"># if None, first update the recursive knspace</span>
+<a name="l503"><span class="ln">503  </span></a>                <span class="s1">knspace = self.__set_parent_knspace()</span>
+<a name="l504"><span class="ln">504  </span></a>                <span class="s3">if </span><span class="s1">knspace:</span>
+<a name="l505"><span class="ln">505  </span></a>                    <span class="s1">setattr(knspace</span><span class="s3">, </span><span class="s1">name</span><span class="s3">, </span><span class="s1">self)</span>
+<a name="l506"><span class="ln">506  </span></a>                <span class="s1">self._knspace = </span><span class="s3">None  </span><span class="s4"># cause a kv trigger</span>
+<a name="l507"><span class="ln">507  </span></a>            <span class="s3">else</span><span class="s1">:</span>
+<a name="l508"><span class="ln">508  </span></a>                <span class="s1">setattr(value</span><span class="s3">, </span><span class="s1">name</span><span class="s3">, </span><span class="s1">self)</span>
+<a name="l509"><span class="ln">509  </span></a>                <span class="s1">knspace = self._knspace = value</span>
+<a name="l510"><span class="ln">510  </span></a>
+<a name="l511"><span class="ln">511  </span></a>            <span class="s3">if not </span><span class="s1">knspace:</span>
+<a name="l512"><span class="ln">512  </span></a>                <span class="s3">raise </span><span class="s1">ValueError(</span><span class="s2">'Object has name &quot;{}&quot;, but no namespace'</span><span class="s1">.</span>
+<a name="l513"><span class="ln">513  </span></a>                                 <span class="s1">format(name))</span>
+<a name="l514"><span class="ln">514  </span></a>        <span class="s3">else</span><span class="s1">:</span>
+<a name="l515"><span class="ln">515  </span></a>            <span class="s3">if </span><span class="s1">value </span><span class="s3">is None</span><span class="s1">:</span>
+<a name="l516"><span class="ln">516  </span></a>                <span class="s1">self.__set_parent_knspace()  </span><span class="s4"># update before trigger below</span>
+<a name="l517"><span class="ln">517  </span></a>            <span class="s1">self._knspace = value</span>
+<a name="l518"><span class="ln">518  </span></a>
+<a name="l519"><span class="ln">519  </span></a>    <span class="s1">knspace = AliasProperty(</span>
+<a name="l520"><span class="ln">520  </span></a>        <span class="s1">_get_knspace</span><span class="s3">, </span><span class="s1">_set_knspace</span><span class="s3">, </span><span class="s1">bind=(</span><span class="s2">'_knspace'</span><span class="s3">, </span><span class="s1">)</span><span class="s3">, </span><span class="s1">cache=</span><span class="s3">False,</span>
+<a name="l521"><span class="ln">521  </span></a>        <span class="s1">rebind=</span><span class="s3">True, </span><span class="s1">allownone=</span><span class="s3">True</span><span class="s1">)</span>
+<a name="l522"><span class="ln">522  </span></a>    <span class="s2">'''The namespace instance, :class:`KNSpace`, associated with this widget. 
+<a name="l523"><span class="ln">523  </span></a>    The :attr:`knspace` namespace stores this widget when naming this widget 
+<a name="l524"><span class="ln">524  </span></a>    with :attr:`knsname`. 
+<a name="l525"><span class="ln">525  </span></a> 
+<a name="l526"><span class="ln">526  </span></a>    If the namespace has been set with a :class:`KNSpace` instance, e.g. with 
+<a name="l527"><span class="ln">527  </span></a>    `self.knspace = KNSpace()`, then that instance is returned (setting with 
+<a name="l528"><span class="ln">528  </span></a>    `None` doesn't count). Otherwise, if :attr:`knspace_key` is not None, we 
+<a name="l529"><span class="ln">529  </span></a>    look for a namespace to use in the object that is stored in the property 
+<a name="l530"><span class="ln">530  </span></a>    named :attr:`knspace_key`, of this instance. I.e. 
+<a name="l531"><span class="ln">531  </span></a>    `object = getattr(self, self.knspace_key)`. 
+<a name="l532"><span class="ln">532  </span></a> 
+<a name="l533"><span class="ln">533  </span></a>    If that object has a knspace property, then we return its value. Otherwise, 
+<a name="l534"><span class="ln">534  </span></a>    we go further up, e.g. with `getattr(object, self.knspace_key)` and look 
+<a name="l535"><span class="ln">535  </span></a>    for its `knspace` property. 
+<a name="l536"><span class="ln">536  </span></a> 
+<a name="l537"><span class="ln">537  </span></a>    Finally, if we reach a value of `None`, or :attr:`knspace_key` was `None`, 
+<a name="l538"><span class="ln">538  </span></a>    the default :attr:`~kivy.uix.behaviors.knspace.knspace` namespace is 
+<a name="l539"><span class="ln">539  </span></a>    returned. 
+<a name="l540"><span class="ln">540  </span></a> 
+<a name="l541"><span class="ln">541  </span></a>    If :attr:`knspace` is set to the string `'fork'`, the current namespace 
+<a name="l542"><span class="ln">542  </span></a>    in :attr:`knspace` will be forked with :meth:`KNSpace.fork` and the 
+<a name="l543"><span class="ln">543  </span></a>    resulting namespace will be assigned to this instance's :attr:`knspace`. 
+<a name="l544"><span class="ln">544  </span></a>    See the module examples for a motivating example. 
+<a name="l545"><span class="ln">545  </span></a> 
+<a name="l546"><span class="ln">546  </span></a>    Both `rebind` and `allownone` are `True`. 
+<a name="l547"><span class="ln">547  </span></a>    '''</span>
+<a name="l548"><span class="ln">548  </span></a>
+<a name="l549"><span class="ln">549  </span></a>    <span class="s1">knspace_key = StringProperty(</span><span class="s2">'parent'</span><span class="s3">, </span><span class="s1">allownone=</span><span class="s3">True</span><span class="s1">)</span>
+<a name="l550"><span class="ln">550  </span></a>    <span class="s2">'''The name of the property of this instance, to use to search upwards for 
+<a name="l551"><span class="ln">551  </span></a>    a namespace to use by this instance. Defaults to `'parent'` so that we'll 
+<a name="l552"><span class="ln">552  </span></a>    search the parent tree. See :attr:`knspace`. 
+<a name="l553"><span class="ln">553  </span></a> 
+<a name="l554"><span class="ln">554  </span></a>    When `None`, we won't search the parent tree for the namespace. 
+<a name="l555"><span class="ln">555  </span></a>    `allownone` is `True`. 
+<a name="l556"><span class="ln">556  </span></a>    '''</span>
+<a name="l557"><span class="ln">557  </span></a>
+<a name="l558"><span class="ln">558  </span></a>    <span class="s3">def </span><span class="s1">_get_knsname(self):</span>
+<a name="l559"><span class="ln">559  </span></a>        <span class="s3">return </span><span class="s1">self._knsname</span>
+<a name="l560"><span class="ln">560  </span></a>
+<a name="l561"><span class="ln">561  </span></a>    <span class="s3">def </span><span class="s1">_set_knsname(self</span><span class="s3">, </span><span class="s1">value):</span>
+<a name="l562"><span class="ln">562  </span></a>        <span class="s1">old_name = self._knsname</span>
+<a name="l563"><span class="ln">563  </span></a>        <span class="s1">knspace = self.knspace</span>
+<a name="l564"><span class="ln">564  </span></a>        <span class="s3">if </span><span class="s1">old_name </span><span class="s3">and </span><span class="s1">knspace </span><span class="s3">and </span><span class="s1">getattr(knspace</span><span class="s3">, </span><span class="s1">old_name) == self:</span>
+<a name="l565"><span class="ln">565  </span></a>            <span class="s1">setattr(knspace</span><span class="s3">, </span><span class="s1">old_name</span><span class="s3">, None</span><span class="s1">)</span>
+<a name="l566"><span class="ln">566  </span></a>
+<a name="l567"><span class="ln">567  </span></a>        <span class="s1">self._knsname = value</span>
+<a name="l568"><span class="ln">568  </span></a>        <span class="s3">if </span><span class="s1">value:</span>
+<a name="l569"><span class="ln">569  </span></a>            <span class="s3">if </span><span class="s1">knspace:</span>
+<a name="l570"><span class="ln">570  </span></a>                <span class="s1">setattr(knspace</span><span class="s3">, </span><span class="s1">value</span><span class="s3">, </span><span class="s1">self)</span>
+<a name="l571"><span class="ln">571  </span></a>            <span class="s3">else</span><span class="s1">:</span>
+<a name="l572"><span class="ln">572  </span></a>                <span class="s3">raise </span><span class="s1">ValueError(</span><span class="s2">'Object has name &quot;{}&quot;, but no namespace'</span><span class="s1">.</span>
+<a name="l573"><span class="ln">573  </span></a>                                 <span class="s1">format(value))</span>
+<a name="l574"><span class="ln">574  </span></a>
+<a name="l575"><span class="ln">575  </span></a>    <span class="s1">knsname = AliasProperty(</span>
+<a name="l576"><span class="ln">576  </span></a>        <span class="s1">_get_knsname</span><span class="s3">, </span><span class="s1">_set_knsname</span><span class="s3">, </span><span class="s1">bind=(</span><span class="s2">'_knsname'</span><span class="s3">, </span><span class="s1">)</span><span class="s3">, </span><span class="s1">cache=</span><span class="s3">False</span><span class="s1">)</span>
+<a name="l577"><span class="ln">577  </span></a>    <span class="s2">'''The name given to this instance. If named, the name will be added to the 
+<a name="l578"><span class="ln">578  </span></a>    associated :attr:`knspace` namespace, which will then point to the 
+<a name="l579"><span class="ln">579  </span></a>    `proxy_ref` of this instance. 
+<a name="l580"><span class="ln">580  </span></a> 
+<a name="l581"><span class="ln">581  </span></a>    When named, one can access this object by e.g. self.knspace.name, where 
+<a name="l582"><span class="ln">582  </span></a>    `name` is the given name of this instance. See :attr:`knspace` and the 
+<a name="l583"><span class="ln">583  </span></a>    module description for more details. 
+<a name="l584"><span class="ln">584  </span></a>    '''</span>
+<a name="l585"><span class="ln">585  </span></a>
+<a name="l586"><span class="ln">586  </span></a>
+<a name="l587"><span class="ln">587  </span></a><span class="s1">knspace = register_context(</span><span class="s2">'knspace'</span><span class="s3">, </span><span class="s1">KNSpace)</span>
+<a name="l588"><span class="ln">588  </span></a><span class="s2">'''The default :class:`KNSpace` namespace. See :attr:`KNSpaceBehavior.knspace` 
+<a name="l589"><span class="ln">589  </span></a>for more details. 
+<a name="l590"><span class="ln">590  </span></a>'''</span>
+<a name="l591"><span class="ln">591  </span></a></pre>
+</body>
+</html>

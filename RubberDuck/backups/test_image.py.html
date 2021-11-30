@@ -1,0 +1,96 @@
+<html>
+<head>
+<title>test_image.py</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type="text/css">
+.s0 { color: #cc7832;}
+.s1 { color: #a9b7c6;}
+.s2 { color: #6a8759;}
+.s3 { color: #6897bb;}
+.s4 { color: #808080;}
+.ln { color: #606366; font-weight: normal; font-style: normal; }
+</style>
+</head>
+<body bgcolor="#2b2b2b">
+<table CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#606060" >
+<tr><td><center>
+<font face="Arial, Helvetica" color="#000000">
+test_image.py</font>
+</center></td></tr></table>
+<pre><a name="l1"><span class="ln">1    </span></a><span class="s0">import </span><span class="s1">unittest</span>
+<a name="l2"><span class="ln">2    </span></a><span class="s0">import </span><span class="s1">io</span>
+<a name="l3"><span class="ln">3    </span></a><span class="s0">import </span><span class="s1">os</span>
+<a name="l4"><span class="ln">4    </span></a><span class="s0">import </span><span class="s1">tempfile</span>
+<a name="l5"><span class="ln">5    </span></a><span class="s0">from </span><span class="s1">kivy </span><span class="s0">import </span><span class="s1">setupconfig</span>
+<a name="l6"><span class="ln">6    </span></a>
+<a name="l7"><span class="ln">7    </span></a>
+<a name="l8"><span class="ln">8    </span></a><span class="s0">class </span><span class="s1">ImageTestCase(unittest.TestCase):</span>
+<a name="l9"><span class="ln">9    </span></a>
+<a name="l10"><span class="ln">10   </span></a>    <span class="s0">def </span><span class="s1">setUp(self):</span>
+<a name="l11"><span class="ln">11   </span></a>        <span class="s0">from </span><span class="s1">kivy.core.window </span><span class="s0">import </span><span class="s1">Window</span>
+<a name="l12"><span class="ln">12   </span></a>        <span class="s0">from </span><span class="s1">kivy.core.image </span><span class="s0">import </span><span class="s1">Image</span>
+<a name="l13"><span class="ln">13   </span></a>        <span class="s0">import </span><span class="s1">os</span>
+<a name="l14"><span class="ln">14   </span></a>        <span class="s1">self.cls = Image</span>
+<a name="l15"><span class="ln">15   </span></a>        <span class="s1">self.image = os.path.join(os.path.dirname(__file__)</span><span class="s0">, </span><span class="s2">'test_button.png'</span><span class="s1">)</span>
+<a name="l16"><span class="ln">16   </span></a>        <span class="s1">print(self.image)</span>
+<a name="l17"><span class="ln">17   </span></a>        <span class="s1">self.root = Image(self.image)</span>
+<a name="l18"><span class="ln">18   </span></a>
+<a name="l19"><span class="ln">19   </span></a>    <span class="s0">def </span><span class="s1">test_keep_data(self):</span>
+<a name="l20"><span class="ln">20   </span></a>        <span class="s1">root = self.root</span>
+<a name="l21"><span class="ln">21   </span></a>        <span class="s1">texture = root.texture</span>
+<a name="l22"><span class="ln">22   </span></a>        <span class="s1">self.assertEqual(root._image._data[</span><span class="s3">0</span><span class="s1">].data</span><span class="s0">, None</span><span class="s1">)</span>
+<a name="l23"><span class="ln">23   </span></a>        <span class="s1">i1 = self.cls(self.image</span><span class="s0">, </span><span class="s1">keep_data=</span><span class="s0">True</span><span class="s1">)</span>
+<a name="l24"><span class="ln">24   </span></a>        <span class="s0">if not </span><span class="s1">i1._image._data[</span><span class="s3">0</span><span class="s1">].data:</span>
+<a name="l25"><span class="ln">25   </span></a>            <span class="s1">self.fail(</span><span class="s2">'Image has no data even with keep_data = True'</span><span class="s1">)</span>
+<a name="l26"><span class="ln">26   </span></a>
+<a name="l27"><span class="ln">27   </span></a>    <span class="s1">@unittest.skip(</span><span class="s2">&quot;Travis on Xenial don't have SDL_image &gt;= 2.0.5&quot;</span><span class="s1">)</span>
+<a name="l28"><span class="ln">28   </span></a>    <span class="s0">def </span><span class="s1">test_save_into_bytesio(self):</span>
+<a name="l29"><span class="ln">29   </span></a>        <span class="s1">Image = self.cls</span>
+<a name="l30"><span class="ln">30   </span></a>
+<a name="l31"><span class="ln">31   </span></a>        <span class="s0">if </span><span class="s1">setupconfig.PLATFORM == </span><span class="s2">&quot;darwin&quot;</span><span class="s1">:</span>
+<a name="l32"><span class="ln">32   </span></a>            <span class="s4"># XXX on OSX CI Builder, img_sdl2 is not used</span>
+<a name="l33"><span class="ln">33   </span></a>            <span class="s4"># therefore the test below wont work yet with imageio only.</span>
+<a name="l34"><span class="ln">34   </span></a>            <span class="s0">return</span>
+<a name="l35"><span class="ln">35   </span></a>
+<a name="l36"><span class="ln">36   </span></a>        <span class="s4"># load kivy logo</span>
+<a name="l37"><span class="ln">37   </span></a>        <span class="s1">img = Image.load(</span><span class="s2">&quot;data/logo/kivy-icon-512.png&quot;</span><span class="s1">)</span>
+<a name="l38"><span class="ln">38   </span></a>        <span class="s1">self.assertIsNotNone(img)</span>
+<a name="l39"><span class="ln">39   </span></a>
+<a name="l40"><span class="ln">40   </span></a>        <span class="s4"># try to save without any format</span>
+<a name="l41"><span class="ln">41   </span></a>        <span class="s0">with </span><span class="s1">self.assertRaises(Exception) </span><span class="s0">as </span><span class="s1">context:</span>
+<a name="l42"><span class="ln">42   </span></a>            <span class="s1">bio = io.BytesIO()</span>
+<a name="l43"><span class="ln">43   </span></a>            <span class="s1">img.save(bio)</span>
+<a name="l44"><span class="ln">44   </span></a>
+<a name="l45"><span class="ln">45   </span></a>        <span class="s4"># save it in png</span>
+<a name="l46"><span class="ln">46   </span></a>        <span class="s1">bio = io.BytesIO()</span>
+<a name="l47"><span class="ln">47   </span></a>        <span class="s4"># if False, then there is no provider</span>
+<a name="l48"><span class="ln">48   </span></a>        <span class="s1">self.assertTrue(img.save(bio</span><span class="s0">, </span><span class="s1">fmt=</span><span class="s2">&quot;png&quot;</span><span class="s1">))</span>
+<a name="l49"><span class="ln">49   </span></a>        <span class="s1">pngdata = bio.read()</span>
+<a name="l50"><span class="ln">50   </span></a>        <span class="s1">self.assertTrue(len(pngdata) &gt; </span><span class="s3">0</span><span class="s1">)</span>
+<a name="l51"><span class="ln">51   </span></a>
+<a name="l52"><span class="ln">52   </span></a>        <span class="s4"># try to save in a filename</span>
+<a name="l53"><span class="ln">53   </span></a>        <span class="s0">try</span><span class="s1">:</span>
+<a name="l54"><span class="ln">54   </span></a>            <span class="s1">_</span><span class="s0">, </span><span class="s1">filename = tempfile.mkstemp(suffix=</span><span class="s2">&quot;.png&quot;</span><span class="s1">)</span>
+<a name="l55"><span class="ln">55   </span></a>            <span class="s1">self.assertTrue(img.save(filename</span><span class="s0">, </span><span class="s1">fmt=</span><span class="s2">&quot;png&quot;</span><span class="s1">))</span>
+<a name="l56"><span class="ln">56   </span></a>        <span class="s0">finally</span><span class="s1">:</span>
+<a name="l57"><span class="ln">57   </span></a>            <span class="s1">os.unlink(filename)</span>
+<a name="l58"><span class="ln">58   </span></a>
+<a name="l59"><span class="ln">59   </span></a>        <span class="s4"># XXX Test wrote but temporary commented</span>
+<a name="l60"><span class="ln">60   </span></a>        <span class="s4"># XXX because of the issue #6123 on OSX</span>
+<a name="l61"><span class="ln">61   </span></a>        <span class="s4"># XXX https://github.com/kivy/kivy/issues/6123</span>
+<a name="l62"><span class="ln">62   </span></a>        <span class="s4"># with open(filename, &quot;rb&quot;) as fd2:</span>
+<a name="l63"><span class="ln">63   </span></a>        <span class="s4">#     pngdatafile = fd2.read()</span>
+<a name="l64"><span class="ln">64   </span></a>        <span class="s4"># # check the png file data is the same as bytesio</span>
+<a name="l65"><span class="ln">65   </span></a>        <span class="s4"># self.assertTrue(pngdata == pngdatafile)</span>
+<a name="l66"><span class="ln">66   </span></a>
+<a name="l67"><span class="ln">67   </span></a>        <span class="s4"># save it in jpeg</span>
+<a name="l68"><span class="ln">68   </span></a>        <span class="s1">bio = io.BytesIO()</span>
+<a name="l69"><span class="ln">69   </span></a>        <span class="s4"># if False, then there is no provider</span>
+<a name="l70"><span class="ln">70   </span></a>        <span class="s1">self.assertTrue(img.save(bio</span><span class="s0">, </span><span class="s1">fmt=</span><span class="s2">&quot;jpg&quot;</span><span class="s1">))</span>
+<a name="l71"><span class="ln">71   </span></a>        <span class="s1">self.assertTrue(len(bio.read()) &gt; </span><span class="s3">0</span><span class="s1">)</span>
+<a name="l72"><span class="ln">72   </span></a>
+<a name="l73"><span class="ln">73   </span></a>        <span class="s0">with </span><span class="s1">tempfile.NamedTemporaryFile(suffix=</span><span class="s2">&quot;.jpg&quot;</span><span class="s1">) </span><span class="s0">as </span><span class="s1">fd:</span>
+<a name="l74"><span class="ln">74   </span></a>            <span class="s1">self.assertTrue(img.save(fd.name))</span>
+<a name="l75"><span class="ln">75   </span></a></pre>
+</body>
+</html>

@@ -1,0 +1,158 @@
+<html>
+<head>
+<title>urischemes.py</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type="text/css">
+.s0 { color: #808080;}
+.s1 { color: #a9b7c6;}
+.s2 { color: #629755; font-style: italic;}
+.s3 { color: #6a8759;}
+.s4 { color: #cc7832;}
+.ln { color: #606366; font-weight: normal; font-style: normal; }
+</style>
+</head>
+<body bgcolor="#2b2b2b">
+<table CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#606060" >
+<tr><td><center>
+<font face="Arial, Helvetica" color="#000000">
+urischemes.py</font>
+</center></td></tr></table>
+<pre><a name="l1"><span class="ln">1    </span></a><span class="s0"># $Id: urischemes.py 8376 2019-08-27 19:49:29Z milde $</span>
+<a name="l2"><span class="ln">2    </span></a><span class="s0"># Author: David Goodger &lt;goodger@python.org&gt;</span>
+<a name="l3"><span class="ln">3    </span></a><span class="s0"># Copyright: This module has been placed in the public domain.</span>
+<a name="l4"><span class="ln">4    </span></a>
+<a name="l5"><span class="ln">5    </span></a><span class="s2">&quot;&quot;&quot; 
+<a name="l6"><span class="ln">6    </span></a>`schemes` is a dictionary with lowercase URI addressing schemes as 
+<a name="l7"><span class="ln">7    </span></a>keys and descriptions as values. It was compiled from the index at 
+<a name="l8"><span class="ln">8    </span></a>http://www.iana.org/assignments/uri-schemes (revised 2005-11-28) 
+<a name="l9"><span class="ln">9    </span></a>and an older list at http://www.w3.org/Addressing/schemes.html. 
+<a name="l10"><span class="ln">10   </span></a>&quot;&quot;&quot;</span>
+<a name="l11"><span class="ln">11   </span></a>
+<a name="l12"><span class="ln">12   </span></a><span class="s0"># Many values are blank and should be filled in with useful descriptions.</span>
+<a name="l13"><span class="ln">13   </span></a>
+<a name="l14"><span class="ln">14   </span></a><span class="s1">schemes = {</span>
+<a name="l15"><span class="ln">15   </span></a>      <span class="s3">'about'</span><span class="s1">: </span><span class="s3">'provides information on Navigator'</span><span class="s4">,</span>
+<a name="l16"><span class="ln">16   </span></a>      <span class="s3">'acap'</span><span class="s1">: </span><span class="s3">'Application Configuration Access Protocol; RFC 2244'</span><span class="s4">,</span>
+<a name="l17"><span class="ln">17   </span></a>      <span class="s3">'addbook'</span><span class="s1">: </span><span class="s3">&quot;To add vCard entries to Communicator's Address Book&quot;</span><span class="s4">,</span>
+<a name="l18"><span class="ln">18   </span></a>      <span class="s3">'afp'</span><span class="s1">: </span><span class="s3">'Apple Filing Protocol'</span><span class="s4">,</span>
+<a name="l19"><span class="ln">19   </span></a>      <span class="s3">'afs'</span><span class="s1">: </span><span class="s3">'Andrew File System global file names'</span><span class="s4">,</span>
+<a name="l20"><span class="ln">20   </span></a>      <span class="s3">'aim'</span><span class="s1">: </span><span class="s3">'AOL Instant Messenger'</span><span class="s4">,</span>
+<a name="l21"><span class="ln">21   </span></a>      <span class="s3">'callto'</span><span class="s1">: </span><span class="s3">'for NetMeeting links'</span><span class="s4">,</span>
+<a name="l22"><span class="ln">22   </span></a>      <span class="s3">'castanet'</span><span class="s1">: </span><span class="s3">'Castanet Tuner URLs for Netcaster'</span><span class="s4">,</span>
+<a name="l23"><span class="ln">23   </span></a>      <span class="s3">'chttp'</span><span class="s1">: </span><span class="s3">'cached HTTP supported by RealPlayer'</span><span class="s4">,</span>
+<a name="l24"><span class="ln">24   </span></a>      <span class="s3">'cid'</span><span class="s1">: </span><span class="s3">'content identifier; RFC 2392'</span><span class="s4">,</span>
+<a name="l25"><span class="ln">25   </span></a>      <span class="s3">'crid'</span><span class="s1">: </span><span class="s3">'TV-Anytime Content Reference Identifier; RFC 4078'</span><span class="s4">,</span>
+<a name="l26"><span class="ln">26   </span></a>      <span class="s3">'data'</span><span class="s1">: (</span><span class="s3">'allows inclusion of small data items as &quot;immediate&quot; data; '</span>
+<a name="l27"><span class="ln">27   </span></a>               <span class="s3">'RFC 2397'</span><span class="s1">)</span><span class="s4">,</span>
+<a name="l28"><span class="ln">28   </span></a>      <span class="s3">'dav'</span><span class="s1">: </span><span class="s3">'Distributed Authoring and Versioning Protocol; RFC 2518'</span><span class="s4">,</span>
+<a name="l29"><span class="ln">29   </span></a>      <span class="s3">'dict'</span><span class="s1">: </span><span class="s3">'dictionary service protocol; RFC 2229'</span><span class="s4">,</span>
+<a name="l30"><span class="ln">30   </span></a>      <span class="s3">'dns'</span><span class="s1">: </span><span class="s3">'Domain Name System resources'</span><span class="s4">,</span>
+<a name="l31"><span class="ln">31   </span></a>      <span class="s3">'eid'</span><span class="s1">: (</span><span class="s3">'External ID; non-URL data; general escape mechanism to allow '</span>
+<a name="l32"><span class="ln">32   </span></a>              <span class="s3">'access to information for applications that are too '</span>
+<a name="l33"><span class="ln">33   </span></a>              <span class="s3">'specialized to justify their own schemes'</span><span class="s1">)</span><span class="s4">,</span>
+<a name="l34"><span class="ln">34   </span></a>      <span class="s3">'fax'</span><span class="s1">: (</span><span class="s3">'a connection to a terminal that can handle telefaxes '</span>
+<a name="l35"><span class="ln">35   </span></a>              <span class="s3">'(facsimiles); RFC 2806'</span><span class="s1">)</span><span class="s4">,</span>
+<a name="l36"><span class="ln">36   </span></a>      <span class="s3">'feed'</span><span class="s1">: </span><span class="s3">'NetNewsWire feed'</span><span class="s4">,</span>
+<a name="l37"><span class="ln">37   </span></a>      <span class="s3">'file'</span><span class="s1">: </span><span class="s3">'Host-specific file names; RFC 1738'</span><span class="s4">,</span>
+<a name="l38"><span class="ln">38   </span></a>      <span class="s3">'finger'</span><span class="s1">: </span><span class="s3">''</span><span class="s4">,</span>
+<a name="l39"><span class="ln">39   </span></a>      <span class="s3">'freenet'</span><span class="s1">: </span><span class="s3">''</span><span class="s4">,</span>
+<a name="l40"><span class="ln">40   </span></a>      <span class="s3">'ftp'</span><span class="s1">: </span><span class="s3">'File Transfer Protocol; RFC 1738'</span><span class="s4">,</span>
+<a name="l41"><span class="ln">41   </span></a>      <span class="s3">'go'</span><span class="s1">: </span><span class="s3">'go; RFC 3368'</span><span class="s4">,</span>
+<a name="l42"><span class="ln">42   </span></a>      <span class="s3">'gopher'</span><span class="s1">: </span><span class="s3">'The Gopher Protocol'</span><span class="s4">,</span>
+<a name="l43"><span class="ln">43   </span></a>      <span class="s3">'gsm-sms'</span><span class="s1">: (</span><span class="s3">'Global System for Mobile Communications Short Message '</span>
+<a name="l44"><span class="ln">44   </span></a>                  <span class="s3">'Service'</span><span class="s1">)</span><span class="s4">,</span>
+<a name="l45"><span class="ln">45   </span></a>      <span class="s3">'h323'</span><span class="s1">: (</span><span class="s3">'video (audiovisual) communication on local area networks; '</span>
+<a name="l46"><span class="ln">46   </span></a>               <span class="s3">'RFC 3508'</span><span class="s1">)</span><span class="s4">,</span>
+<a name="l47"><span class="ln">47   </span></a>      <span class="s3">'h324'</span><span class="s1">: (</span><span class="s3">'video and audio communications over low bitrate connections '</span>
+<a name="l48"><span class="ln">48   </span></a>               <span class="s3">'such as POTS modem connections'</span><span class="s1">)</span><span class="s4">,</span>
+<a name="l49"><span class="ln">49   </span></a>      <span class="s3">'hdl'</span><span class="s1">: </span><span class="s3">'CNRI handle system'</span><span class="s4">,</span>
+<a name="l50"><span class="ln">50   </span></a>      <span class="s3">'hnews'</span><span class="s1">: </span><span class="s3">'an HTTP-tunneling variant of the NNTP news protocol'</span><span class="s4">,</span>
+<a name="l51"><span class="ln">51   </span></a>      <span class="s3">'http'</span><span class="s1">: </span><span class="s3">'Hypertext Transfer Protocol; RFC 2616'</span><span class="s4">,</span>
+<a name="l52"><span class="ln">52   </span></a>      <span class="s3">'https'</span><span class="s1">: </span><span class="s3">'HTTP over SSL; RFC 2818'</span><span class="s4">,</span>
+<a name="l53"><span class="ln">53   </span></a>      <span class="s3">'hydra'</span><span class="s1">: </span><span class="s3">'SubEthaEdit URI.  See http://www.codingmonkeys.de/subethaedit.'</span><span class="s4">,</span>
+<a name="l54"><span class="ln">54   </span></a>      <span class="s3">'iioploc'</span><span class="s1">: </span><span class="s3">'Internet Inter-ORB Protocol Location?'</span><span class="s4">,</span>
+<a name="l55"><span class="ln">55   </span></a>      <span class="s3">'ilu'</span><span class="s1">: </span><span class="s3">'Inter-Language Unification'</span><span class="s4">,</span>
+<a name="l56"><span class="ln">56   </span></a>      <span class="s3">'im'</span><span class="s1">: </span><span class="s3">'Instant Messaging; RFC 3860'</span><span class="s4">,</span>
+<a name="l57"><span class="ln">57   </span></a>      <span class="s3">'imap'</span><span class="s1">: </span><span class="s3">'Internet Message Access Protocol; RFC 2192'</span><span class="s4">,</span>
+<a name="l58"><span class="ln">58   </span></a>      <span class="s3">'info'</span><span class="s1">: </span><span class="s3">'Information Assets with Identifiers in Public Namespaces'</span><span class="s4">,</span>
+<a name="l59"><span class="ln">59   </span></a>      <span class="s3">'ior'</span><span class="s1">: </span><span class="s3">'CORBA interoperable object reference'</span><span class="s4">,</span>
+<a name="l60"><span class="ln">60   </span></a>      <span class="s3">'ipp'</span><span class="s1">: </span><span class="s3">'Internet Printing Protocol; RFC 3510'</span><span class="s4">,</span>
+<a name="l61"><span class="ln">61   </span></a>      <span class="s3">'irc'</span><span class="s1">: </span><span class="s3">'Internet Relay Chat'</span><span class="s4">,</span>
+<a name="l62"><span class="ln">62   </span></a>      <span class="s3">'iris.beep'</span><span class="s1">: </span><span class="s3">'iris.beep; RFC 3983'</span><span class="s4">,</span>
+<a name="l63"><span class="ln">63   </span></a>      <span class="s3">'iseek'</span><span class="s1">: </span><span class="s3">'See www.ambrosiasw.com;  a little util for OS X.'</span><span class="s4">,</span>
+<a name="l64"><span class="ln">64   </span></a>      <span class="s3">'jar'</span><span class="s1">: </span><span class="s3">'Java archive'</span><span class="s4">,</span>
+<a name="l65"><span class="ln">65   </span></a>      <span class="s3">'javascript'</span><span class="s1">: (</span><span class="s3">'JavaScript code; evaluates the expression after the '</span>
+<a name="l66"><span class="ln">66   </span></a>                     <span class="s3">'colon'</span><span class="s1">)</span><span class="s4">,</span>
+<a name="l67"><span class="ln">67   </span></a>      <span class="s3">'jdbc'</span><span class="s1">: </span><span class="s3">'JDBC connection URI.'</span><span class="s4">,</span>
+<a name="l68"><span class="ln">68   </span></a>      <span class="s3">'ldap'</span><span class="s1">: </span><span class="s3">'Lightweight Directory Access Protocol'</span><span class="s4">,</span>
+<a name="l69"><span class="ln">69   </span></a>      <span class="s3">'lifn'</span><span class="s1">: </span><span class="s3">''</span><span class="s4">,</span>
+<a name="l70"><span class="ln">70   </span></a>      <span class="s3">'livescript'</span><span class="s1">: </span><span class="s3">''</span><span class="s4">,</span>
+<a name="l71"><span class="ln">71   </span></a>      <span class="s3">'lrq'</span><span class="s1">: </span><span class="s3">''</span><span class="s4">,</span>
+<a name="l72"><span class="ln">72   </span></a>      <span class="s3">'mailbox'</span><span class="s1">: </span><span class="s3">'Mail folder access'</span><span class="s4">,</span>
+<a name="l73"><span class="ln">73   </span></a>      <span class="s3">'mailserver'</span><span class="s1">: </span><span class="s3">'Access to data available from mail servers'</span><span class="s4">,</span>
+<a name="l74"><span class="ln">74   </span></a>      <span class="s3">'mailto'</span><span class="s1">: </span><span class="s3">'Electronic mail address; RFC 2368'</span><span class="s4">,</span>
+<a name="l75"><span class="ln">75   </span></a>      <span class="s3">'md5'</span><span class="s1">: </span><span class="s3">''</span><span class="s4">,</span>
+<a name="l76"><span class="ln">76   </span></a>      <span class="s3">'mid'</span><span class="s1">: </span><span class="s3">'message identifier; RFC 2392'</span><span class="s4">,</span>
+<a name="l77"><span class="ln">77   </span></a>      <span class="s3">'mocha'</span><span class="s1">: </span><span class="s3">''</span><span class="s4">,</span>
+<a name="l78"><span class="ln">78   </span></a>      <span class="s3">'modem'</span><span class="s1">: (</span><span class="s3">'a connection to a terminal that can handle incoming data '</span>
+<a name="l79"><span class="ln">79   </span></a>                <span class="s3">'calls; RFC 2806'</span><span class="s1">)</span><span class="s4">,</span>
+<a name="l80"><span class="ln">80   </span></a>      <span class="s3">'mtqp'</span><span class="s1">: </span><span class="s3">'Message Tracking Query Protocol; RFC 3887'</span><span class="s4">,</span>
+<a name="l81"><span class="ln">81   </span></a>      <span class="s3">'mupdate'</span><span class="s1">: </span><span class="s3">'Mailbox Update (MUPDATE) Protocol; RFC 3656'</span><span class="s4">,</span>
+<a name="l82"><span class="ln">82   </span></a>      <span class="s3">'news'</span><span class="s1">: </span><span class="s3">'USENET news; RFC 1738'</span><span class="s4">,</span>
+<a name="l83"><span class="ln">83   </span></a>      <span class="s3">'nfs'</span><span class="s1">: </span><span class="s3">'Network File System protocol; RFC 2224'</span><span class="s4">,</span>
+<a name="l84"><span class="ln">84   </span></a>      <span class="s3">'nntp'</span><span class="s1">: </span><span class="s3">'USENET news using NNTP access; RFC 1738'</span><span class="s4">,</span>
+<a name="l85"><span class="ln">85   </span></a>      <span class="s3">'opaquelocktoken'</span><span class="s1">: </span><span class="s3">'RFC 2518'</span><span class="s4">,</span>
+<a name="l86"><span class="ln">86   </span></a>      <span class="s3">'phone'</span><span class="s1">: </span><span class="s3">''</span><span class="s4">,</span>
+<a name="l87"><span class="ln">87   </span></a>      <span class="s3">'pop'</span><span class="s1">: </span><span class="s3">'Post Office Protocol; RFC 2384'</span><span class="s4">,</span>
+<a name="l88"><span class="ln">88   </span></a>      <span class="s3">'pop3'</span><span class="s1">: </span><span class="s3">'Post Office Protocol v3'</span><span class="s4">,</span>
+<a name="l89"><span class="ln">89   </span></a>      <span class="s3">'pres'</span><span class="s1">: </span><span class="s3">'Presence; RFC 3859'</span><span class="s4">,</span>
+<a name="l90"><span class="ln">90   </span></a>      <span class="s3">'printer'</span><span class="s1">: </span><span class="s3">''</span><span class="s4">,</span>
+<a name="l91"><span class="ln">91   </span></a>      <span class="s3">'prospero'</span><span class="s1">: </span><span class="s3">'Prospero Directory Service; RFC 4157'</span><span class="s4">,</span>
+<a name="l92"><span class="ln">92   </span></a>      <span class="s3">'rdar'</span><span class="s1">: (</span><span class="s3">'URLs found in Darwin source '</span>
+<a name="l93"><span class="ln">93   </span></a>                <span class="s3">'(http://www.opensource.apple.com/darwinsource/).'</span><span class="s1">)</span><span class="s4">,</span>
+<a name="l94"><span class="ln">94   </span></a>      <span class="s3">'res'</span><span class="s1">: </span><span class="s3">''</span><span class="s4">,</span>
+<a name="l95"><span class="ln">95   </span></a>      <span class="s3">'rtsp'</span><span class="s1">: </span><span class="s3">'real time streaming protocol; RFC 2326'</span><span class="s4">,</span>
+<a name="l96"><span class="ln">96   </span></a>      <span class="s3">'rvp'</span><span class="s1">: </span><span class="s3">''</span><span class="s4">,</span>
+<a name="l97"><span class="ln">97   </span></a>      <span class="s3">'rwhois'</span><span class="s1">: </span><span class="s3">''</span><span class="s4">,</span>
+<a name="l98"><span class="ln">98   </span></a>      <span class="s3">'rx'</span><span class="s1">: </span><span class="s3">'Remote Execution'</span><span class="s4">,</span>
+<a name="l99"><span class="ln">99   </span></a>      <span class="s3">'sdp'</span><span class="s1">: </span><span class="s3">''</span><span class="s4">,</span>
+<a name="l100"><span class="ln">100  </span></a>      <span class="s3">'service'</span><span class="s1">: </span><span class="s3">'service location; RFC 2609'</span><span class="s4">,</span>
+<a name="l101"><span class="ln">101  </span></a>      <span class="s3">'shttp'</span><span class="s1">: </span><span class="s3">'secure hypertext transfer protocol'</span><span class="s4">,</span>
+<a name="l102"><span class="ln">102  </span></a>      <span class="s3">'sip'</span><span class="s1">: </span><span class="s3">'Session Initiation Protocol; RFC 3261'</span><span class="s4">,</span>
+<a name="l103"><span class="ln">103  </span></a>      <span class="s3">'sips'</span><span class="s1">: </span><span class="s3">'secure session intitiaion protocol; RFC 3261'</span><span class="s4">,</span>
+<a name="l104"><span class="ln">104  </span></a>      <span class="s3">'smb'</span><span class="s1">: </span><span class="s3">'SAMBA filesystems.'</span><span class="s4">,</span>
+<a name="l105"><span class="ln">105  </span></a>      <span class="s3">'snews'</span><span class="s1">: </span><span class="s3">'For NNTP postings via SSL'</span><span class="s4">,</span>
+<a name="l106"><span class="ln">106  </span></a>      <span class="s3">'snmp'</span><span class="s1">: </span><span class="s3">'Simple Network Management Protocol; RFC 4088'</span><span class="s4">,</span>
+<a name="l107"><span class="ln">107  </span></a>      <span class="s3">'soap.beep'</span><span class="s1">: </span><span class="s3">'RFC 3288'</span><span class="s4">,</span>
+<a name="l108"><span class="ln">108  </span></a>      <span class="s3">'soap.beeps'</span><span class="s1">: </span><span class="s3">'RFC 3288'</span><span class="s4">,</span>
+<a name="l109"><span class="ln">109  </span></a>      <span class="s3">'ssh'</span><span class="s1">: </span><span class="s3">'Reference to interactive sessions via ssh.'</span><span class="s4">,</span>
+<a name="l110"><span class="ln">110  </span></a>      <span class="s3">'t120'</span><span class="s1">: </span><span class="s3">'real time data conferencing (audiographics)'</span><span class="s4">,</span>
+<a name="l111"><span class="ln">111  </span></a>      <span class="s3">'tag'</span><span class="s1">: </span><span class="s3">'RFC 4151'</span><span class="s4">,</span>
+<a name="l112"><span class="ln">112  </span></a>      <span class="s3">'tcp'</span><span class="s1">: </span><span class="s3">''</span><span class="s4">,</span>
+<a name="l113"><span class="ln">113  </span></a>      <span class="s3">'tel'</span><span class="s1">: (</span><span class="s3">'a connection to a terminal that handles normal voice '</span>
+<a name="l114"><span class="ln">114  </span></a>              <span class="s3">'telephone calls, a voice mailbox or another voice messaging '</span>
+<a name="l115"><span class="ln">115  </span></a>              <span class="s3">'system or a service that can be operated using DTMF tones; '</span>
+<a name="l116"><span class="ln">116  </span></a>              <span class="s3">'RFC 3966.'</span><span class="s1">)</span><span class="s4">,</span>
+<a name="l117"><span class="ln">117  </span></a>      <span class="s3">'telephone'</span><span class="s1">: </span><span class="s3">'telephone'</span><span class="s4">,</span>
+<a name="l118"><span class="ln">118  </span></a>      <span class="s3">'telnet'</span><span class="s1">: </span><span class="s3">'Reference to interactive sessions; RFC 4248'</span><span class="s4">,</span>
+<a name="l119"><span class="ln">119  </span></a>      <span class="s3">'tftp'</span><span class="s1">: </span><span class="s3">'Trivial File Transfer Protocol; RFC 3617'</span><span class="s4">,</span>
+<a name="l120"><span class="ln">120  </span></a>      <span class="s3">'tip'</span><span class="s1">: </span><span class="s3">'Transaction Internet Protocol; RFC 2371'</span><span class="s4">,</span>
+<a name="l121"><span class="ln">121  </span></a>      <span class="s3">'tn3270'</span><span class="s1">: </span><span class="s3">'Interactive 3270 emulation sessions'</span><span class="s4">,</span>
+<a name="l122"><span class="ln">122  </span></a>      <span class="s3">'tv'</span><span class="s1">: </span><span class="s3">''</span><span class="s4">,</span>
+<a name="l123"><span class="ln">123  </span></a>      <span class="s3">'urn'</span><span class="s1">: </span><span class="s3">'Uniform Resource Name; RFC 2141'</span><span class="s4">,</span>
+<a name="l124"><span class="ln">124  </span></a>      <span class="s3">'uuid'</span><span class="s1">: </span><span class="s3">''</span><span class="s4">,</span>
+<a name="l125"><span class="ln">125  </span></a>      <span class="s3">'vemmi'</span><span class="s1">: </span><span class="s3">'versatile multimedia interface; RFC 2122'</span><span class="s4">,</span>
+<a name="l126"><span class="ln">126  </span></a>      <span class="s3">'videotex'</span><span class="s1">: </span><span class="s3">''</span><span class="s4">,</span>
+<a name="l127"><span class="ln">127  </span></a>      <span class="s3">'view-source'</span><span class="s1">: </span><span class="s3">'displays HTML code that was generated with JavaScript'</span><span class="s4">,</span>
+<a name="l128"><span class="ln">128  </span></a>      <span class="s3">'wais'</span><span class="s1">: </span><span class="s3">'Wide Area Information Servers; RFC 4156'</span><span class="s4">,</span>
+<a name="l129"><span class="ln">129  </span></a>      <span class="s3">'whodp'</span><span class="s1">: </span><span class="s3">''</span><span class="s4">,</span>
+<a name="l130"><span class="ln">130  </span></a>      <span class="s3">'whois++'</span><span class="s1">: </span><span class="s3">'Distributed directory service.'</span><span class="s4">,</span>
+<a name="l131"><span class="ln">131  </span></a>      <span class="s3">'x-man-page'</span><span class="s1">: (</span><span class="s3">'Opens man page in Terminal.app on OS X '</span>
+<a name="l132"><span class="ln">132  </span></a>                     <span class="s3">'(see macosxhints.com)'</span><span class="s1">)</span><span class="s4">,</span>
+<a name="l133"><span class="ln">133  </span></a>      <span class="s3">'xmlrpc.beep'</span><span class="s1">: </span><span class="s3">'RFC 3529'</span><span class="s4">,</span>
+<a name="l134"><span class="ln">134  </span></a>      <span class="s3">'xmlrpc.beeps'</span><span class="s1">: </span><span class="s3">'RFC 3529'</span><span class="s4">,</span>
+<a name="l135"><span class="ln">135  </span></a>      <span class="s3">'z39.50r'</span><span class="s1">: </span><span class="s3">'Z39.50 Retrieval; RFC 2056'</span><span class="s4">,</span>
+<a name="l136"><span class="ln">136  </span></a>      <span class="s3">'z39.50s'</span><span class="s1">: </span><span class="s3">'Z39.50 Session; RFC 2056'</span><span class="s4">,</span><span class="s1">}</span>
+<a name="l137"><span class="ln">137  </span></a></pre>
+</body>
+</html>

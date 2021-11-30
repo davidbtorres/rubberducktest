@@ -1,0 +1,902 @@
+<html>
+<head>
+<title>vkeyboard.py</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type="text/css">
+.s0 { color: #629755; font-style: italic;}
+.s1 { color: #a9b7c6;}
+.s2 { color: #6a8759;}
+.s3 { color: #cc7832;}
+.s4 { color: #6897bb;}
+.s5 { color: #808080;}
+.ln { color: #606366; font-weight: normal; font-style: normal; }
+</style>
+</head>
+<body bgcolor="#2b2b2b">
+<table CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#606060" >
+<tr><td><center>
+<font face="Arial, Helvetica" color="#000000">
+vkeyboard.py</font>
+</center></td></tr></table>
+<pre><a name="l1"><span class="ln">1    </span></a><span class="s0">''' 
+<a name="l2"><span class="ln">2    </span></a>VKeyboard 
+<a name="l3"><span class="ln">3    </span></a>========= 
+<a name="l4"><span class="ln">4    </span></a> 
+<a name="l5"><span class="ln">5    </span></a>.. image:: images/vkeyboard.jpg 
+<a name="l6"><span class="ln">6    </span></a>    :align: right 
+<a name="l7"><span class="ln">7    </span></a> 
+<a name="l8"><span class="ln">8    </span></a>.. versionadded:: 1.0.8 
+<a name="l9"><span class="ln">9    </span></a> 
+<a name="l10"><span class="ln">10   </span></a> 
+<a name="l11"><span class="ln">11   </span></a>VKeyboard is an onscreen keyboard for Kivy. Its operation is intended to be 
+<a name="l12"><span class="ln">12   </span></a>transparent to the user. Using the widget directly is NOT recommended. Read the 
+<a name="l13"><span class="ln">13   </span></a>section `Request keyboard`_ first. 
+<a name="l14"><span class="ln">14   </span></a> 
+<a name="l15"><span class="ln">15   </span></a>Modes 
+<a name="l16"><span class="ln">16   </span></a>----- 
+<a name="l17"><span class="ln">17   </span></a> 
+<a name="l18"><span class="ln">18   </span></a>This virtual keyboard has a docked and free mode: 
+<a name="l19"><span class="ln">19   </span></a> 
+<a name="l20"><span class="ln">20   </span></a>* docked mode (:attr:`VKeyboard.docked` = True) 
+<a name="l21"><span class="ln">21   </span></a>  Generally used when only one person is using the computer, like a tablet or 
+<a name="l22"><span class="ln">22   </span></a>  personal computer etc. 
+<a name="l23"><span class="ln">23   </span></a>* free mode: (:attr:`VKeyboard.docked` = False) 
+<a name="l24"><span class="ln">24   </span></a>  Mostly for multitouch surfaces. This mode allows multiple virtual 
+<a name="l25"><span class="ln">25   </span></a>  keyboards to be used on the screen. 
+<a name="l26"><span class="ln">26   </span></a> 
+<a name="l27"><span class="ln">27   </span></a>If the docked mode changes, you need to manually call 
+<a name="l28"><span class="ln">28   </span></a>:meth:`VKeyboard.setup_mode` otherwise the change will have no impact. 
+<a name="l29"><span class="ln">29   </span></a>During that call, the VKeyboard, implemented on top of a 
+<a name="l30"><span class="ln">30   </span></a>:class:`~kivy.uix.scatter.Scatter`, will change the 
+<a name="l31"><span class="ln">31   </span></a>behavior of the scatter and position the keyboard near the target (if target 
+<a name="l32"><span class="ln">32   </span></a>and docked mode is set). 
+<a name="l33"><span class="ln">33   </span></a> 
+<a name="l34"><span class="ln">34   </span></a> 
+<a name="l35"><span class="ln">35   </span></a>Layouts 
+<a name="l36"><span class="ln">36   </span></a>------- 
+<a name="l37"><span class="ln">37   </span></a> 
+<a name="l38"><span class="ln">38   </span></a>The virtual keyboard is able to load a custom layout. If you create a new 
+<a name="l39"><span class="ln">39   </span></a>layout and put the JSON in :file:`&lt;kivy_data_dir&gt;/keyboards/&lt;layoutid&gt;.json`, 
+<a name="l40"><span class="ln">40   </span></a>you can load it by setting :attr:`VKeyboard.layout` to your layoutid. 
+<a name="l41"><span class="ln">41   </span></a> 
+<a name="l42"><span class="ln">42   </span></a>The JSON must be structured like this:: 
+<a name="l43"><span class="ln">43   </span></a> 
+<a name="l44"><span class="ln">44   </span></a>    { 
+<a name="l45"><span class="ln">45   </span></a>        &quot;title&quot;: &quot;Title of your layout&quot;, 
+<a name="l46"><span class="ln">46   </span></a>        &quot;description&quot;: &quot;Description of your layout&quot;, 
+<a name="l47"><span class="ln">47   </span></a>        &quot;cols&quot;: 15, 
+<a name="l48"><span class="ln">48   </span></a>        &quot;rows&quot;: 5, 
+<a name="l49"><span class="ln">49   </span></a> 
+<a name="l50"><span class="ln">50   </span></a>        ... 
+<a name="l51"><span class="ln">51   </span></a>    } 
+<a name="l52"><span class="ln">52   </span></a> 
+<a name="l53"><span class="ln">53   </span></a>Then, you need to describe the keys in each row, for either a &quot;normal&quot;, 
+<a name="l54"><span class="ln">54   </span></a>&quot;shift&quot; or a &quot;special&quot; (added in version 1.9.0) mode. Keys for this row 
+<a name="l55"><span class="ln">55   </span></a>data must be named `normal_&lt;row&gt;`, `shift_&lt;row&gt;` and `special_&lt;row&gt;`. 
+<a name="l56"><span class="ln">56   </span></a>Replace `row` with the row number. 
+<a name="l57"><span class="ln">57   </span></a>Inside each row, you will describe the key. A key is a 4 element list in 
+<a name="l58"><span class="ln">58   </span></a>the format:: 
+<a name="l59"><span class="ln">59   </span></a> 
+<a name="l60"><span class="ln">60   </span></a>    [ &lt;text displayed on the keyboard&gt;, &lt;text to put when the key is pressed&gt;, 
+<a name="l61"><span class="ln">61   </span></a>      &lt;text that represents the keycode&gt;, &lt;size of cols&gt; ] 
+<a name="l62"><span class="ln">62   </span></a> 
+<a name="l63"><span class="ln">63   </span></a>Here are example keys:: 
+<a name="l64"><span class="ln">64   </span></a> 
+<a name="l65"><span class="ln">65   </span></a>    # f key 
+<a name="l66"><span class="ln">66   </span></a>    [&quot;f&quot;, &quot;f&quot;, &quot;f&quot;, 1] 
+<a name="l67"><span class="ln">67   </span></a>    # capslock 
+<a name="l68"><span class="ln">68   </span></a>    [&quot;\u21B9&quot;, &quot;\t&quot;, &quot;tab&quot;, 1.5] 
+<a name="l69"><span class="ln">69   </span></a> 
+<a name="l70"><span class="ln">70   </span></a>Finally, complete the JSON:: 
+<a name="l71"><span class="ln">71   </span></a> 
+<a name="l72"><span class="ln">72   </span></a>    { 
+<a name="l73"><span class="ln">73   </span></a>        ... 
+<a name="l74"><span class="ln">74   </span></a>        &quot;normal_1&quot;: [ 
+<a name="l75"><span class="ln">75   </span></a>            [&quot;`&quot;, &quot;`&quot;, &quot;`&quot;, 1],    [&quot;1&quot;, &quot;1&quot;, &quot;1&quot;, 1],    [&quot;2&quot;, &quot;2&quot;, &quot;2&quot;, 1], 
+<a name="l76"><span class="ln">76   </span></a>            [&quot;3&quot;, &quot;3&quot;, &quot;3&quot;, 1],    [&quot;4&quot;, &quot;4&quot;, &quot;4&quot;, 1],    [&quot;5&quot;, &quot;5&quot;, &quot;5&quot;, 1], 
+<a name="l77"><span class="ln">77   </span></a>            [&quot;6&quot;, &quot;6&quot;, &quot;6&quot;, 1],    [&quot;7&quot;, &quot;7&quot;, &quot;7&quot;, 1],    [&quot;8&quot;, &quot;8&quot;, &quot;8&quot;, 1], 
+<a name="l78"><span class="ln">78   </span></a>            [&quot;9&quot;, &quot;9&quot;, &quot;9&quot;, 1],    [&quot;0&quot;, &quot;0&quot;, &quot;0&quot;, 1],    [&quot;+&quot;, &quot;+&quot;, &quot;+&quot;, 1], 
+<a name="l79"><span class="ln">79   </span></a>            [&quot;=&quot;, &quot;=&quot;, &quot;=&quot;, 1],    [&quot;\u232b&quot;, null, &quot;backspace&quot;, 2] 
+<a name="l80"><span class="ln">80   </span></a>        ], 
+<a name="l81"><span class="ln">81   </span></a> 
+<a name="l82"><span class="ln">82   </span></a>        &quot;shift_1&quot;: [ ... ], 
+<a name="l83"><span class="ln">83   </span></a>        &quot;normal_2&quot;: [ ... ], 
+<a name="l84"><span class="ln">84   </span></a>        &quot;special_2&quot;: [ ... ], 
+<a name="l85"><span class="ln">85   </span></a>        ... 
+<a name="l86"><span class="ln">86   </span></a>    } 
+<a name="l87"><span class="ln">87   </span></a> 
+<a name="l88"><span class="ln">88   </span></a> 
+<a name="l89"><span class="ln">89   </span></a>Request Keyboard 
+<a name="l90"><span class="ln">90   </span></a>---------------- 
+<a name="l91"><span class="ln">91   </span></a> 
+<a name="l92"><span class="ln">92   </span></a>The instantiation of the virtual keyboard is controlled by the configuration. 
+<a name="l93"><span class="ln">93   </span></a>Check `keyboard_mode` and `keyboard_layout` in the :doc:`api-kivy.config`. 
+<a name="l94"><span class="ln">94   </span></a> 
+<a name="l95"><span class="ln">95   </span></a>If you intend to create a widget that requires a keyboard, do not use the 
+<a name="l96"><span class="ln">96   </span></a>virtual keyboard directly, but prefer to use the best method available on 
+<a name="l97"><span class="ln">97   </span></a>the platform. Check the :meth:`~kivy.core.window.WindowBase.request_keyboard` 
+<a name="l98"><span class="ln">98   </span></a>method in the :doc:`api-kivy.core.window`. 
+<a name="l99"><span class="ln">99   </span></a> 
+<a name="l100"><span class="ln">100  </span></a>If you want a specific layout when you request the keyboard, you should write 
+<a name="l101"><span class="ln">101  </span></a>something like this (from 1.8.0, numeric.json can be in the same directory as 
+<a name="l102"><span class="ln">102  </span></a>your main.py):: 
+<a name="l103"><span class="ln">103  </span></a> 
+<a name="l104"><span class="ln">104  </span></a>    keyboard = Window.request_keyboard( 
+<a name="l105"><span class="ln">105  </span></a>        self._keyboard_close, self) 
+<a name="l106"><span class="ln">106  </span></a>    if keyboard.widget: 
+<a name="l107"><span class="ln">107  </span></a>        vkeyboard = self._keyboard.widget 
+<a name="l108"><span class="ln">108  </span></a>        vkeyboard.layout = 'numeric.json' 
+<a name="l109"><span class="ln">109  </span></a> 
+<a name="l110"><span class="ln">110  </span></a>'''</span>
+<a name="l111"><span class="ln">111  </span></a>
+<a name="l112"><span class="ln">112  </span></a><span class="s1">__all__ = (</span><span class="s2">'VKeyboard'</span><span class="s3">, </span><span class="s1">)</span>
+<a name="l113"><span class="ln">113  </span></a>
+<a name="l114"><span class="ln">114  </span></a><span class="s3">from </span><span class="s1">kivy </span><span class="s3">import </span><span class="s1">kivy_data_dir</span>
+<a name="l115"><span class="ln">115  </span></a><span class="s3">from </span><span class="s1">kivy.vector </span><span class="s3">import </span><span class="s1">Vector</span>
+<a name="l116"><span class="ln">116  </span></a><span class="s3">from </span><span class="s1">kivy.config </span><span class="s3">import </span><span class="s1">Config</span>
+<a name="l117"><span class="ln">117  </span></a><span class="s3">from </span><span class="s1">kivy.uix.scatter </span><span class="s3">import </span><span class="s1">Scatter</span>
+<a name="l118"><span class="ln">118  </span></a><span class="s3">from </span><span class="s1">kivy.uix.label </span><span class="s3">import </span><span class="s1">Label</span>
+<a name="l119"><span class="ln">119  </span></a><span class="s3">from </span><span class="s1">kivy.properties </span><span class="s3">import </span><span class="s1">ObjectProperty</span><span class="s3">, </span><span class="s1">NumericProperty</span><span class="s3">, </span><span class="s1">StringProperty</span><span class="s3">, </span><span class="s1">\</span>
+<a name="l120"><span class="ln">120  </span></a>    <span class="s1">BooleanProperty</span><span class="s3">, </span><span class="s1">DictProperty</span><span class="s3">, </span><span class="s1">OptionProperty</span><span class="s3">, </span><span class="s1">ListProperty</span><span class="s3">, </span><span class="s1">ColorProperty</span>
+<a name="l121"><span class="ln">121  </span></a><span class="s3">from </span><span class="s1">kivy.logger </span><span class="s3">import </span><span class="s1">Logger</span>
+<a name="l122"><span class="ln">122  </span></a><span class="s3">from </span><span class="s1">kivy.graphics </span><span class="s3">import </span><span class="s1">Color</span><span class="s3">, </span><span class="s1">BorderImage</span><span class="s3">, </span><span class="s1">Canvas</span>
+<a name="l123"><span class="ln">123  </span></a><span class="s3">from </span><span class="s1">kivy.core.image </span><span class="s3">import </span><span class="s1">Image</span>
+<a name="l124"><span class="ln">124  </span></a><span class="s3">from </span><span class="s1">kivy.resources </span><span class="s3">import </span><span class="s1">resource_find</span>
+<a name="l125"><span class="ln">125  </span></a><span class="s3">from </span><span class="s1">kivy.clock </span><span class="s3">import </span><span class="s1">Clock</span>
+<a name="l126"><span class="ln">126  </span></a>
+<a name="l127"><span class="ln">127  </span></a><span class="s3">from </span><span class="s1">io </span><span class="s3">import </span><span class="s1">open</span>
+<a name="l128"><span class="ln">128  </span></a><span class="s3">from </span><span class="s1">os.path </span><span class="s3">import </span><span class="s1">join</span><span class="s3">, </span><span class="s1">splitext</span><span class="s3">, </span><span class="s1">basename</span>
+<a name="l129"><span class="ln">129  </span></a><span class="s3">from </span><span class="s1">os </span><span class="s3">import </span><span class="s1">listdir</span>
+<a name="l130"><span class="ln">130  </span></a><span class="s3">from </span><span class="s1">json </span><span class="s3">import </span><span class="s1">loads</span>
+<a name="l131"><span class="ln">131  </span></a>
+<a name="l132"><span class="ln">132  </span></a>
+<a name="l133"><span class="ln">133  </span></a><span class="s1">default_layout_path = join(kivy_data_dir</span><span class="s3">, </span><span class="s2">'keyboards'</span><span class="s1">)</span>
+<a name="l134"><span class="ln">134  </span></a>
+<a name="l135"><span class="ln">135  </span></a>
+<a name="l136"><span class="ln">136  </span></a><span class="s3">class </span><span class="s1">VKeyboard(Scatter):</span>
+<a name="l137"><span class="ln">137  </span></a>    <span class="s0">''' 
+<a name="l138"><span class="ln">138  </span></a>    VKeyboard is an onscreen keyboard with multitouch support. 
+<a name="l139"><span class="ln">139  </span></a>    Its layout is entirely customizable and you can switch between available 
+<a name="l140"><span class="ln">140  </span></a>    layouts using a button in the bottom right of the widget. 
+<a name="l141"><span class="ln">141  </span></a> 
+<a name="l142"><span class="ln">142  </span></a>    :Events: 
+<a name="l143"><span class="ln">143  </span></a>        `on_key_down`: keycode, internal, modifiers 
+<a name="l144"><span class="ln">144  </span></a>            Fired when the keyboard received a key down event (key press). 
+<a name="l145"><span class="ln">145  </span></a>        `on_key_up`: keycode, internal, modifiers 
+<a name="l146"><span class="ln">146  </span></a>            Fired when the keyboard received a key up event (key release). 
+<a name="l147"><span class="ln">147  </span></a>    '''</span>
+<a name="l148"><span class="ln">148  </span></a>
+<a name="l149"><span class="ln">149  </span></a>    <span class="s1">target = ObjectProperty(</span><span class="s3">None, </span><span class="s1">allownone=</span><span class="s3">True</span><span class="s1">)</span>
+<a name="l150"><span class="ln">150  </span></a>    <span class="s2">'''Target widget associated with the VKeyboard. If set, it will be used to 
+<a name="l151"><span class="ln">151  </span></a>    send keyboard events. If the VKeyboard mode is &quot;free&quot;, it will also be used 
+<a name="l152"><span class="ln">152  </span></a>    to set the initial position. 
+<a name="l153"><span class="ln">153  </span></a> 
+<a name="l154"><span class="ln">154  </span></a>    :attr:`target` is an :class:`~kivy.properties.ObjectProperty` instance and 
+<a name="l155"><span class="ln">155  </span></a>    defaults to None. 
+<a name="l156"><span class="ln">156  </span></a>    '''</span>
+<a name="l157"><span class="ln">157  </span></a>
+<a name="l158"><span class="ln">158  </span></a>    <span class="s1">callback = ObjectProperty(</span><span class="s3">None, </span><span class="s1">allownone=</span><span class="s3">True</span><span class="s1">)</span>
+<a name="l159"><span class="ln">159  </span></a>    <span class="s2">'''Callback can be set to a function that will be called if the 
+<a name="l160"><span class="ln">160  </span></a>    VKeyboard is closed by the user. 
+<a name="l161"><span class="ln">161  </span></a> 
+<a name="l162"><span class="ln">162  </span></a>    :attr:`target` is an :class:`~kivy.properties.ObjectProperty` instance and 
+<a name="l163"><span class="ln">163  </span></a>    defaults to None. 
+<a name="l164"><span class="ln">164  </span></a>    '''</span>
+<a name="l165"><span class="ln">165  </span></a>
+<a name="l166"><span class="ln">166  </span></a>    <span class="s1">layout = StringProperty(</span><span class="s3">None</span><span class="s1">)</span>
+<a name="l167"><span class="ln">167  </span></a>    <span class="s2">'''Layout to use for the VKeyboard. By default, it will be the 
+<a name="l168"><span class="ln">168  </span></a>    layout set in the configuration, according to the `keyboard_layout` 
+<a name="l169"><span class="ln">169  </span></a>    in `[kivy]` section. 
+<a name="l170"><span class="ln">170  </span></a> 
+<a name="l171"><span class="ln">171  </span></a>    .. versionchanged:: 1.8.0 
+<a name="l172"><span class="ln">172  </span></a>        If layout is a .json filename, it will loaded and added to the 
+<a name="l173"><span class="ln">173  </span></a>        available_layouts. 
+<a name="l174"><span class="ln">174  </span></a> 
+<a name="l175"><span class="ln">175  </span></a>    :attr:`layout` is a :class:`~kivy.properties.StringProperty` and defaults 
+<a name="l176"><span class="ln">176  </span></a>    to None. 
+<a name="l177"><span class="ln">177  </span></a>    '''</span>
+<a name="l178"><span class="ln">178  </span></a>
+<a name="l179"><span class="ln">179  </span></a>    <span class="s1">layout_path = StringProperty(default_layout_path)</span>
+<a name="l180"><span class="ln">180  </span></a>    <span class="s2">'''Path from which layouts are read. 
+<a name="l181"><span class="ln">181  </span></a> 
+<a name="l182"><span class="ln">182  </span></a>    :attr:`layout` is a :class:`~kivy.properties.StringProperty` and 
+<a name="l183"><span class="ln">183  </span></a>    defaults to :file:`&lt;kivy_data_dir&gt;/keyboards/` 
+<a name="l184"><span class="ln">184  </span></a>    '''</span>
+<a name="l185"><span class="ln">185  </span></a>
+<a name="l186"><span class="ln">186  </span></a>    <span class="s1">available_layouts = DictProperty({})</span>
+<a name="l187"><span class="ln">187  </span></a>    <span class="s2">'''Dictionary of all available layouts. Keys are the layout ID, and the 
+<a name="l188"><span class="ln">188  </span></a>    value is the JSON (translated into a Python object). 
+<a name="l189"><span class="ln">189  </span></a> 
+<a name="l190"><span class="ln">190  </span></a>    :attr:`available_layouts` is a :class:`~kivy.properties.DictProperty` and 
+<a name="l191"><span class="ln">191  </span></a>    defaults to {}. 
+<a name="l192"><span class="ln">192  </span></a>    '''</span>
+<a name="l193"><span class="ln">193  </span></a>
+<a name="l194"><span class="ln">194  </span></a>    <span class="s1">docked = BooleanProperty(</span><span class="s3">False</span><span class="s1">)</span>
+<a name="l195"><span class="ln">195  </span></a>    <span class="s2">'''Indicate whether the VKeyboard is docked on the screen or not. If you 
+<a name="l196"><span class="ln">196  </span></a>    change it, you must manually call :meth:`setup_mode` otherwise it will have 
+<a name="l197"><span class="ln">197  </span></a>    no impact. If the VKeyboard is created by the Window, the docked mode will 
+<a name="l198"><span class="ln">198  </span></a>    be automatically set by the configuration, using the `keyboard_mode` token 
+<a name="l199"><span class="ln">199  </span></a>    in `[kivy]` section. 
+<a name="l200"><span class="ln">200  </span></a> 
+<a name="l201"><span class="ln">201  </span></a>    :attr:`docked` is a :class:`~kivy.properties.BooleanProperty` and defaults 
+<a name="l202"><span class="ln">202  </span></a>    to False. 
+<a name="l203"><span class="ln">203  </span></a>    '''</span>
+<a name="l204"><span class="ln">204  </span></a>
+<a name="l205"><span class="ln">205  </span></a>    <span class="s1">margin_hint = ListProperty([</span><span class="s4">.05</span><span class="s3">, </span><span class="s4">.06</span><span class="s3">, </span><span class="s4">.05</span><span class="s3">, </span><span class="s4">.06</span><span class="s1">])</span>
+<a name="l206"><span class="ln">206  </span></a>    <span class="s2">'''Margin hint, used as spacing between keyboard background and keys 
+<a name="l207"><span class="ln">207  </span></a>    content. The margin is composed of four values, between 0 and 1:: 
+<a name="l208"><span class="ln">208  </span></a> 
+<a name="l209"><span class="ln">209  </span></a>        margin_hint = [top, right, bottom, left] 
+<a name="l210"><span class="ln">210  </span></a> 
+<a name="l211"><span class="ln">211  </span></a>    The margin hints will be multiplied by width and height, according to their 
+<a name="l212"><span class="ln">212  </span></a>    position. 
+<a name="l213"><span class="ln">213  </span></a> 
+<a name="l214"><span class="ln">214  </span></a>    :attr:`margin_hint` is a :class:`~kivy.properties.ListProperty` and 
+<a name="l215"><span class="ln">215  </span></a>    defaults to [.05, .06, .05, .06] 
+<a name="l216"><span class="ln">216  </span></a>    '''</span>
+<a name="l217"><span class="ln">217  </span></a>
+<a name="l218"><span class="ln">218  </span></a>    <span class="s1">key_margin = ListProperty([</span><span class="s4">2</span><span class="s3">, </span><span class="s4">2</span><span class="s3">, </span><span class="s4">2</span><span class="s3">, </span><span class="s4">2</span><span class="s1">])</span>
+<a name="l219"><span class="ln">219  </span></a>    <span class="s2">'''Key margin, used to create space between keys. The margin is composed of 
+<a name="l220"><span class="ln">220  </span></a>    four values, in pixels:: 
+<a name="l221"><span class="ln">221  </span></a> 
+<a name="l222"><span class="ln">222  </span></a>        key_margin = [top, right, bottom, left] 
+<a name="l223"><span class="ln">223  </span></a> 
+<a name="l224"><span class="ln">224  </span></a>    :attr:`key_margin` is a :class:`~kivy.properties.ListProperty` and defaults 
+<a name="l225"><span class="ln">225  </span></a>    to [2, 2, 2, 2] 
+<a name="l226"><span class="ln">226  </span></a>    '''</span>
+<a name="l227"><span class="ln">227  </span></a>
+<a name="l228"><span class="ln">228  </span></a>    <span class="s1">font_size = NumericProperty(</span><span class="s4">20.</span><span class="s1">)</span>
+<a name="l229"><span class="ln">229  </span></a>    <span class="s2">'''font_size, specifies the size of the text on the virtual keyboard keys. 
+<a name="l230"><span class="ln">230  </span></a>    It should be kept within limits to ensure the text does not extend beyond 
+<a name="l231"><span class="ln">231  </span></a>    the bounds of the key or become too small to read. 
+<a name="l232"><span class="ln">232  </span></a> 
+<a name="l233"><span class="ln">233  </span></a>    .. versionadded:: 1.10.0 
+<a name="l234"><span class="ln">234  </span></a> 
+<a name="l235"><span class="ln">235  </span></a>    :attr:`font_size` is a :class:`~kivy.properties.NumericProperty` and 
+<a name="l236"><span class="ln">236  </span></a>    defaults to 20. 
+<a name="l237"><span class="ln">237  </span></a>    '''</span>
+<a name="l238"><span class="ln">238  </span></a>
+<a name="l239"><span class="ln">239  </span></a>    <span class="s1">background_color = ColorProperty([</span><span class="s4">1</span><span class="s3">, </span><span class="s4">1</span><span class="s3">, </span><span class="s4">1</span><span class="s3">, </span><span class="s4">1</span><span class="s1">])</span>
+<a name="l240"><span class="ln">240  </span></a>    <span class="s2">'''Background color, in the format (r, g, b, a). If a background is 
+<a name="l241"><span class="ln">241  </span></a>    set, the color will be combined with the background texture. 
+<a name="l242"><span class="ln">242  </span></a> 
+<a name="l243"><span class="ln">243  </span></a>    :attr:`background_color` is a :class:`~kivy.properties.ColorProperty` and 
+<a name="l244"><span class="ln">244  </span></a>    defaults to [1, 1, 1, 1]. 
+<a name="l245"><span class="ln">245  </span></a> 
+<a name="l246"><span class="ln">246  </span></a>    .. versionchanged:: 2.0.0 
+<a name="l247"><span class="ln">247  </span></a>        Changed from :class:`~kivy.properties.ListProperty` to 
+<a name="l248"><span class="ln">248  </span></a>        :class:`~kivy.properties.ColorProperty`. 
+<a name="l249"><span class="ln">249  </span></a>    '''</span>
+<a name="l250"><span class="ln">250  </span></a>
+<a name="l251"><span class="ln">251  </span></a>    <span class="s1">background = StringProperty(</span>
+<a name="l252"><span class="ln">252  </span></a>        <span class="s2">'atlas://data/images/defaulttheme/vkeyboard_background'</span><span class="s1">)</span>
+<a name="l253"><span class="ln">253  </span></a>    <span class="s2">'''Filename of the background image. 
+<a name="l254"><span class="ln">254  </span></a> 
+<a name="l255"><span class="ln">255  </span></a>    :attr:`background` is a :class:`~kivy.properties.StringProperty` and 
+<a name="l256"><span class="ln">256  </span></a>    defaults to :file:`atlas://data/images/defaulttheme/vkeyboard_background`. 
+<a name="l257"><span class="ln">257  </span></a>    '''</span>
+<a name="l258"><span class="ln">258  </span></a>
+<a name="l259"><span class="ln">259  </span></a>    <span class="s1">background_disabled = StringProperty(</span>
+<a name="l260"><span class="ln">260  </span></a>        <span class="s2">'atlas://data/images/defaulttheme/vkeyboard_disabled_background'</span><span class="s1">)</span>
+<a name="l261"><span class="ln">261  </span></a>    <span class="s2">'''Filename of the background image when the vkeyboard is disabled. 
+<a name="l262"><span class="ln">262  </span></a> 
+<a name="l263"><span class="ln">263  </span></a>    .. versionadded:: 1.8.0 
+<a name="l264"><span class="ln">264  </span></a> 
+<a name="l265"><span class="ln">265  </span></a>    :attr:`background_disabled` is a 
+<a name="l266"><span class="ln">266  </span></a>    :class:`~kivy.properties.StringProperty` and defaults to 
+<a name="l267"><span class="ln">267  </span></a>    :file:`atlas://data/images/defaulttheme/vkeyboard__disabled_background`. 
+<a name="l268"><span class="ln">268  </span></a> 
+<a name="l269"><span class="ln">269  </span></a>    '''</span>
+<a name="l270"><span class="ln">270  </span></a>
+<a name="l271"><span class="ln">271  </span></a>    <span class="s1">key_background_color = ColorProperty([</span><span class="s4">1</span><span class="s3">, </span><span class="s4">1</span><span class="s3">, </span><span class="s4">1</span><span class="s3">, </span><span class="s4">1</span><span class="s1">])</span>
+<a name="l272"><span class="ln">272  </span></a>    <span class="s2">'''Key background color, in the format (r, g, b, a). If a key background is 
+<a name="l273"><span class="ln">273  </span></a>    set, the color will be combined with the key background texture. 
+<a name="l274"><span class="ln">274  </span></a> 
+<a name="l275"><span class="ln">275  </span></a>    :attr:`key_background_color` is a :class:`~kivy.properties.ColorProperty` 
+<a name="l276"><span class="ln">276  </span></a>    and defaults to [1, 1, 1, 1]. 
+<a name="l277"><span class="ln">277  </span></a> 
+<a name="l278"><span class="ln">278  </span></a>    .. versionchanged:: 2.0.0 
+<a name="l279"><span class="ln">279  </span></a>        Changed from :class:`~kivy.properties.ListProperty` to 
+<a name="l280"><span class="ln">280  </span></a>        :class:`~kivy.properties.ColorProperty`. 
+<a name="l281"><span class="ln">281  </span></a>    '''</span>
+<a name="l282"><span class="ln">282  </span></a>
+<a name="l283"><span class="ln">283  </span></a>    <span class="s1">key_background_normal = StringProperty(</span>
+<a name="l284"><span class="ln">284  </span></a>        <span class="s2">'atlas://data/images/defaulttheme/vkeyboard_key_normal'</span><span class="s1">)</span>
+<a name="l285"><span class="ln">285  </span></a>    <span class="s2">'''Filename of the key background image for use when no touches are active 
+<a name="l286"><span class="ln">286  </span></a>    on the widget. 
+<a name="l287"><span class="ln">287  </span></a> 
+<a name="l288"><span class="ln">288  </span></a>    :attr:`key_background_normal` is a :class:`~kivy.properties.StringProperty` 
+<a name="l289"><span class="ln">289  </span></a>    and defaults to 
+<a name="l290"><span class="ln">290  </span></a>    :file:`atlas://data/images/defaulttheme/vkeyboard_key_normal`. 
+<a name="l291"><span class="ln">291  </span></a>    '''</span>
+<a name="l292"><span class="ln">292  </span></a>
+<a name="l293"><span class="ln">293  </span></a>    <span class="s1">key_disabled_background_normal = StringProperty(</span>
+<a name="l294"><span class="ln">294  </span></a>        <span class="s2">'atlas://data/images/defaulttheme/vkeyboard_key_normal'</span><span class="s1">)</span>
+<a name="l295"><span class="ln">295  </span></a>    <span class="s2">'''Filename of the key background image for use when no touches are active 
+<a name="l296"><span class="ln">296  </span></a>    on the widget and vkeyboard is disabled. 
+<a name="l297"><span class="ln">297  </span></a> 
+<a name="l298"><span class="ln">298  </span></a>    .. versionadded:: 1.8.0 
+<a name="l299"><span class="ln">299  </span></a> 
+<a name="l300"><span class="ln">300  </span></a>    :attr:`key_disabled_background_normal` is a 
+<a name="l301"><span class="ln">301  </span></a>    :class:`~kivy.properties.StringProperty` and defaults to 
+<a name="l302"><span class="ln">302  </span></a>    :file:`atlas://data/images/defaulttheme/vkeyboard_disabled_key_normal`. 
+<a name="l303"><span class="ln">303  </span></a> 
+<a name="l304"><span class="ln">304  </span></a>    '''</span>
+<a name="l305"><span class="ln">305  </span></a>
+<a name="l306"><span class="ln">306  </span></a>    <span class="s1">key_background_down = StringProperty(</span>
+<a name="l307"><span class="ln">307  </span></a>        <span class="s2">'atlas://data/images/defaulttheme/vkeyboard_key_down'</span><span class="s1">)</span>
+<a name="l308"><span class="ln">308  </span></a>    <span class="s2">'''Filename of the key background image for use when a touch is active 
+<a name="l309"><span class="ln">309  </span></a>    on the widget. 
+<a name="l310"><span class="ln">310  </span></a> 
+<a name="l311"><span class="ln">311  </span></a>    :attr:`key_background_down` is a :class:`~kivy.properties.StringProperty` 
+<a name="l312"><span class="ln">312  </span></a>    and defaults to 
+<a name="l313"><span class="ln">313  </span></a>    :file:`atlas://data/images/defaulttheme/vkeyboard_key_down`. 
+<a name="l314"><span class="ln">314  </span></a>    '''</span>
+<a name="l315"><span class="ln">315  </span></a>
+<a name="l316"><span class="ln">316  </span></a>    <span class="s1">background_border = ListProperty([</span><span class="s4">16</span><span class="s3">, </span><span class="s4">16</span><span class="s3">, </span><span class="s4">16</span><span class="s3">, </span><span class="s4">16</span><span class="s1">])</span>
+<a name="l317"><span class="ln">317  </span></a>    <span class="s2">'''Background image border. Used for controlling the 
+<a name="l318"><span class="ln">318  </span></a>    :attr:`~kivy.graphics.vertex_instructions.BorderImage.border` property of 
+<a name="l319"><span class="ln">319  </span></a>    the background. 
+<a name="l320"><span class="ln">320  </span></a> 
+<a name="l321"><span class="ln">321  </span></a>    :attr:`background_border` is a :class:`~kivy.properties.ListProperty` and 
+<a name="l322"><span class="ln">322  </span></a>    defaults to [16, 16, 16, 16] 
+<a name="l323"><span class="ln">323  </span></a>    '''</span>
+<a name="l324"><span class="ln">324  </span></a>
+<a name="l325"><span class="ln">325  </span></a>    <span class="s1">key_border = ListProperty([</span><span class="s4">8</span><span class="s3">, </span><span class="s4">8</span><span class="s3">, </span><span class="s4">8</span><span class="s3">, </span><span class="s4">8</span><span class="s1">])</span>
+<a name="l326"><span class="ln">326  </span></a>    <span class="s2">'''Key image border. Used for controlling the 
+<a name="l327"><span class="ln">327  </span></a>    :attr:`~kivy.graphics.vertex_instructions.BorderImage.border` property of 
+<a name="l328"><span class="ln">328  </span></a>    the key. 
+<a name="l329"><span class="ln">329  </span></a> 
+<a name="l330"><span class="ln">330  </span></a>    :attr:`key_border` is a :class:`~kivy.properties.ListProperty` and 
+<a name="l331"><span class="ln">331  </span></a>    defaults to [16, 16, 16, 16] 
+<a name="l332"><span class="ln">332  </span></a>    '''</span>
+<a name="l333"><span class="ln">333  </span></a>
+<a name="l334"><span class="ln">334  </span></a>    <span class="s5"># XXX internal variables</span>
+<a name="l335"><span class="ln">335  </span></a>    <span class="s1">layout_mode = OptionProperty(</span><span class="s2">'normal'</span><span class="s3">,</span>
+<a name="l336"><span class="ln">336  </span></a>        <span class="s1">options=(</span><span class="s2">'normal'</span><span class="s3">, </span><span class="s2">'shift'</span><span class="s3">, </span><span class="s2">'special'</span><span class="s1">))</span>
+<a name="l337"><span class="ln">337  </span></a>    <span class="s1">layout_geometry = DictProperty({})</span>
+<a name="l338"><span class="ln">338  </span></a>    <span class="s1">have_capslock = BooleanProperty(</span><span class="s3">False</span><span class="s1">)</span>
+<a name="l339"><span class="ln">339  </span></a>    <span class="s1">have_shift = BooleanProperty(</span><span class="s3">False</span><span class="s1">)</span>
+<a name="l340"><span class="ln">340  </span></a>    <span class="s1">have_special = BooleanProperty(</span><span class="s3">False</span><span class="s1">)</span>
+<a name="l341"><span class="ln">341  </span></a>    <span class="s1">active_keys = DictProperty({})</span>
+<a name="l342"><span class="ln">342  </span></a>    <span class="s1">font_name = StringProperty(</span><span class="s2">'data/fonts/DejaVuSans.ttf'</span><span class="s1">)</span>
+<a name="l343"><span class="ln">343  </span></a>    <span class="s1">repeat_touch = ObjectProperty(allownone=</span><span class="s3">True</span><span class="s1">)</span>
+<a name="l344"><span class="ln">344  </span></a>
+<a name="l345"><span class="ln">345  </span></a>    <span class="s1">_start_repeat_key_ev = </span><span class="s3">None</span>
+<a name="l346"><span class="ln">346  </span></a>    <span class="s1">_repeat_key_ev = </span><span class="s3">None</span>
+<a name="l347"><span class="ln">347  </span></a>
+<a name="l348"><span class="ln">348  </span></a>    <span class="s1">__events__ = (</span><span class="s2">'on_key_down'</span><span class="s3">, </span><span class="s2">'on_key_up'</span><span class="s3">, </span><span class="s2">'on_textinput'</span><span class="s1">)</span>
+<a name="l349"><span class="ln">349  </span></a>
+<a name="l350"><span class="ln">350  </span></a>    <span class="s3">def </span><span class="s1">__init__(self</span><span class="s3">, </span><span class="s1">**kwargs):</span>
+<a name="l351"><span class="ln">351  </span></a>        <span class="s5"># XXX move to style.kv</span>
+<a name="l352"><span class="ln">352  </span></a>        <span class="s3">if </span><span class="s2">'size_hint' </span><span class="s3">not in </span><span class="s1">kwargs:</span>
+<a name="l353"><span class="ln">353  </span></a>            <span class="s3">if </span><span class="s2">'size_hint_x' </span><span class="s3">not in </span><span class="s1">kwargs:</span>
+<a name="l354"><span class="ln">354  </span></a>                <span class="s1">self.size_hint_x = </span><span class="s3">None</span>
+<a name="l355"><span class="ln">355  </span></a>            <span class="s3">if </span><span class="s2">'size_hint_y' </span><span class="s3">not in </span><span class="s1">kwargs:</span>
+<a name="l356"><span class="ln">356  </span></a>                <span class="s1">self.size_hint_y = </span><span class="s3">None</span>
+<a name="l357"><span class="ln">357  </span></a>        <span class="s3">if </span><span class="s2">'size' </span><span class="s3">not in </span><span class="s1">kwargs:</span>
+<a name="l358"><span class="ln">358  </span></a>            <span class="s3">if </span><span class="s2">'width' </span><span class="s3">not in </span><span class="s1">kwargs:</span>
+<a name="l359"><span class="ln">359  </span></a>                <span class="s1">self.width = </span><span class="s4">700</span>
+<a name="l360"><span class="ln">360  </span></a>            <span class="s3">if </span><span class="s2">'height' </span><span class="s3">not in </span><span class="s1">kwargs:</span>
+<a name="l361"><span class="ln">361  </span></a>                <span class="s1">self.height = </span><span class="s4">200</span>
+<a name="l362"><span class="ln">362  </span></a>        <span class="s3">if </span><span class="s2">'scale_min' </span><span class="s3">not in </span><span class="s1">kwargs:</span>
+<a name="l363"><span class="ln">363  </span></a>            <span class="s1">self.scale_min = </span><span class="s4">.4</span>
+<a name="l364"><span class="ln">364  </span></a>        <span class="s3">if </span><span class="s2">'scale_max' </span><span class="s3">not in </span><span class="s1">kwargs:</span>
+<a name="l365"><span class="ln">365  </span></a>            <span class="s1">self.scale_max = </span><span class="s4">1.6</span>
+<a name="l366"><span class="ln">366  </span></a>        <span class="s3">if </span><span class="s2">'docked' </span><span class="s3">not in </span><span class="s1">kwargs:</span>
+<a name="l367"><span class="ln">367  </span></a>            <span class="s1">self.docked = </span><span class="s3">False</span>
+<a name="l368"><span class="ln">368  </span></a>
+<a name="l369"><span class="ln">369  </span></a>        <span class="s1">layout_mode = self._trigger_update_layout_mode = Clock.create_trigger(</span>
+<a name="l370"><span class="ln">370  </span></a>            <span class="s1">self._update_layout_mode)</span>
+<a name="l371"><span class="ln">371  </span></a>        <span class="s1">layouts = self._trigger_load_layouts = Clock.create_trigger(</span>
+<a name="l372"><span class="ln">372  </span></a>            <span class="s1">self._load_layouts)</span>
+<a name="l373"><span class="ln">373  </span></a>        <span class="s1">layout = self._trigger_load_layout = Clock.create_trigger(</span>
+<a name="l374"><span class="ln">374  </span></a>            <span class="s1">self._load_layout)</span>
+<a name="l375"><span class="ln">375  </span></a>        <span class="s1">fbind = self.fbind</span>
+<a name="l376"><span class="ln">376  </span></a>
+<a name="l377"><span class="ln">377  </span></a>        <span class="s1">fbind(</span><span class="s2">'docked'</span><span class="s3">, </span><span class="s1">self.setup_mode)</span>
+<a name="l378"><span class="ln">378  </span></a>        <span class="s1">fbind(</span><span class="s2">'have_shift'</span><span class="s3">, </span><span class="s1">layout_mode)</span>
+<a name="l379"><span class="ln">379  </span></a>        <span class="s1">fbind(</span><span class="s2">'have_capslock'</span><span class="s3">, </span><span class="s1">layout_mode)</span>
+<a name="l380"><span class="ln">380  </span></a>        <span class="s1">fbind(</span><span class="s2">'have_special'</span><span class="s3">, </span><span class="s1">layout_mode)</span>
+<a name="l381"><span class="ln">381  </span></a>        <span class="s1">fbind(</span><span class="s2">'layout_path'</span><span class="s3">, </span><span class="s1">layouts)</span>
+<a name="l382"><span class="ln">382  </span></a>        <span class="s1">fbind(</span><span class="s2">'layout'</span><span class="s3">, </span><span class="s1">layout)</span>
+<a name="l383"><span class="ln">383  </span></a>        <span class="s1">super(VKeyboard</span><span class="s3">, </span><span class="s1">self).__init__(**kwargs)</span>
+<a name="l384"><span class="ln">384  </span></a>
+<a name="l385"><span class="ln">385  </span></a>        <span class="s5"># load all the layouts found in the layout_path directory</span>
+<a name="l386"><span class="ln">386  </span></a>        <span class="s1">self._load_layouts()</span>
+<a name="l387"><span class="ln">387  </span></a>
+<a name="l388"><span class="ln">388  </span></a>        <span class="s5"># ensure we have default layouts</span>
+<a name="l389"><span class="ln">389  </span></a>        <span class="s1">available_layouts = self.available_layouts</span>
+<a name="l390"><span class="ln">390  </span></a>        <span class="s3">if not </span><span class="s1">available_layouts:</span>
+<a name="l391"><span class="ln">391  </span></a>            <span class="s1">Logger.critical(</span><span class="s2">'VKeyboard: unable to load default layouts'</span><span class="s1">)</span>
+<a name="l392"><span class="ln">392  </span></a>
+<a name="l393"><span class="ln">393  </span></a>        <span class="s5"># load the default layout from configuration</span>
+<a name="l394"><span class="ln">394  </span></a>        <span class="s3">if </span><span class="s1">self.layout </span><span class="s3">is None</span><span class="s1">:</span>
+<a name="l395"><span class="ln">395  </span></a>            <span class="s1">self.layout = Config.get(</span><span class="s2">'kivy'</span><span class="s3">, </span><span class="s2">'keyboard_layout'</span><span class="s1">)</span>
+<a name="l396"><span class="ln">396  </span></a>        <span class="s3">else</span><span class="s1">:</span>
+<a name="l397"><span class="ln">397  </span></a>            <span class="s5"># ensure the current layout is found on the available layout</span>
+<a name="l398"><span class="ln">398  </span></a>            <span class="s1">self._trigger_load_layout()</span>
+<a name="l399"><span class="ln">399  </span></a>
+<a name="l400"><span class="ln">400  </span></a>        <span class="s5"># update layout mode (shift or normal)</span>
+<a name="l401"><span class="ln">401  </span></a>        <span class="s1">self._trigger_update_layout_mode()</span>
+<a name="l402"><span class="ln">402  </span></a>
+<a name="l403"><span class="ln">403  </span></a>        <span class="s5"># create a top layer to draw active keys on</span>
+<a name="l404"><span class="ln">404  </span></a>        <span class="s3">with </span><span class="s1">self.canvas:</span>
+<a name="l405"><span class="ln">405  </span></a>            <span class="s1">self.background_key_layer = Canvas()</span>
+<a name="l406"><span class="ln">406  </span></a>            <span class="s1">self.active_keys_layer = Canvas()</span>
+<a name="l407"><span class="ln">407  </span></a>
+<a name="l408"><span class="ln">408  </span></a>    <span class="s3">def </span><span class="s1">on_disabled(self</span><span class="s3">, </span><span class="s1">intance</span><span class="s3">, </span><span class="s1">value):</span>
+<a name="l409"><span class="ln">409  </span></a>        <span class="s1">self.refresh_keys()</span>
+<a name="l410"><span class="ln">410  </span></a>
+<a name="l411"><span class="ln">411  </span></a>    <span class="s3">def </span><span class="s1">_update_layout_mode(self</span><span class="s3">, </span><span class="s1">*l):</span>
+<a name="l412"><span class="ln">412  </span></a>        <span class="s5"># update mode according to capslock and shift key</span>
+<a name="l413"><span class="ln">413  </span></a>        <span class="s1">mode = self.have_capslock != self.have_shift</span>
+<a name="l414"><span class="ln">414  </span></a>        <span class="s1">mode = </span><span class="s2">'shift' </span><span class="s3">if </span><span class="s1">mode </span><span class="s3">else </span><span class="s2">'normal'</span>
+<a name="l415"><span class="ln">415  </span></a>        <span class="s3">if </span><span class="s1">self.have_special:</span>
+<a name="l416"><span class="ln">416  </span></a>            <span class="s1">mode = </span><span class="s2">&quot;special&quot;</span>
+<a name="l417"><span class="ln">417  </span></a>        <span class="s3">if </span><span class="s1">mode != self.layout_mode:</span>
+<a name="l418"><span class="ln">418  </span></a>            <span class="s1">self.layout_mode = mode</span>
+<a name="l419"><span class="ln">419  </span></a>            <span class="s1">self.refresh(</span><span class="s3">False</span><span class="s1">)</span>
+<a name="l420"><span class="ln">420  </span></a>
+<a name="l421"><span class="ln">421  </span></a>    <span class="s3">def </span><span class="s1">_load_layout(self</span><span class="s3">, </span><span class="s1">*largs):</span>
+<a name="l422"><span class="ln">422  </span></a>        <span class="s5"># ensure new layouts are loaded first</span>
+<a name="l423"><span class="ln">423  </span></a>        <span class="s3">if </span><span class="s1">self._trigger_load_layouts.is_triggered:</span>
+<a name="l424"><span class="ln">424  </span></a>            <span class="s1">self._load_layouts()</span>
+<a name="l425"><span class="ln">425  </span></a>            <span class="s1">self._trigger_load_layouts.cancel()</span>
+<a name="l426"><span class="ln">426  </span></a>
+<a name="l427"><span class="ln">427  </span></a>        <span class="s1">value = self.layout</span>
+<a name="l428"><span class="ln">428  </span></a>        <span class="s1">available_layouts = self.available_layouts</span>
+<a name="l429"><span class="ln">429  </span></a>
+<a name="l430"><span class="ln">430  </span></a>        <span class="s5"># it's a filename, try to load it directly</span>
+<a name="l431"><span class="ln">431  </span></a>        <span class="s3">if </span><span class="s1">self.layout[-</span><span class="s4">5</span><span class="s1">:] == </span><span class="s2">'.json'</span><span class="s1">:</span>
+<a name="l432"><span class="ln">432  </span></a>            <span class="s3">if </span><span class="s1">value </span><span class="s3">not in </span><span class="s1">available_layouts:</span>
+<a name="l433"><span class="ln">433  </span></a>                <span class="s1">fn = resource_find(self.layout)</span>
+<a name="l434"><span class="ln">434  </span></a>                <span class="s1">self._load_layout_fn(fn</span><span class="s3">, </span><span class="s1">self.layout)</span>
+<a name="l435"><span class="ln">435  </span></a>
+<a name="l436"><span class="ln">436  </span></a>        <span class="s3">if not </span><span class="s1">available_layouts:</span>
+<a name="l437"><span class="ln">437  </span></a>            <span class="s3">return</span>
+<a name="l438"><span class="ln">438  </span></a>        <span class="s3">if </span><span class="s1">value </span><span class="s3">not in </span><span class="s1">available_layouts </span><span class="s3">and </span><span class="s1">value != </span><span class="s2">'qwerty'</span><span class="s1">:</span>
+<a name="l439"><span class="ln">439  </span></a>            <span class="s1">Logger.error(</span>
+<a name="l440"><span class="ln">440  </span></a>                <span class="s2">'Vkeyboard: &lt;%s&gt; keyboard layout mentioned in '</span>
+<a name="l441"><span class="ln">441  </span></a>                <span class="s2">'conf file was not found, fallback on qwerty' </span><span class="s1">%</span>
+<a name="l442"><span class="ln">442  </span></a>                <span class="s1">value)</span>
+<a name="l443"><span class="ln">443  </span></a>            <span class="s1">self.layout = </span><span class="s2">'qwerty'</span>
+<a name="l444"><span class="ln">444  </span></a>        <span class="s1">self.refresh(</span><span class="s3">True</span><span class="s1">)</span>
+<a name="l445"><span class="ln">445  </span></a>
+<a name="l446"><span class="ln">446  </span></a>    <span class="s3">def </span><span class="s1">_load_layouts(self</span><span class="s3">, </span><span class="s1">*largs):</span>
+<a name="l447"><span class="ln">447  </span></a>        <span class="s5"># first load available layouts from json files</span>
+<a name="l448"><span class="ln">448  </span></a>        <span class="s5"># XXX fix to be able to reload layout when path is changing</span>
+<a name="l449"><span class="ln">449  </span></a>        <span class="s1">value = self.layout_path</span>
+<a name="l450"><span class="ln">450  </span></a>        <span class="s3">for </span><span class="s1">fn </span><span class="s3">in </span><span class="s1">listdir(value):</span>
+<a name="l451"><span class="ln">451  </span></a>            <span class="s1">self._load_layout_fn(join(value</span><span class="s3">, </span><span class="s1">fn)</span><span class="s3">,</span>
+<a name="l452"><span class="ln">452  </span></a>                                 <span class="s1">basename(splitext(fn)[</span><span class="s4">0</span><span class="s1">]))</span>
+<a name="l453"><span class="ln">453  </span></a>
+<a name="l454"><span class="ln">454  </span></a>    <span class="s3">def </span><span class="s1">_load_layout_fn(self</span><span class="s3">, </span><span class="s1">fn</span><span class="s3">, </span><span class="s1">name):</span>
+<a name="l455"><span class="ln">455  </span></a>        <span class="s1">available_layouts = self.available_layouts</span>
+<a name="l456"><span class="ln">456  </span></a>        <span class="s3">if </span><span class="s1">fn[-</span><span class="s4">5</span><span class="s1">:] != </span><span class="s2">'.json'</span><span class="s1">:</span>
+<a name="l457"><span class="ln">457  </span></a>            <span class="s3">return</span>
+<a name="l458"><span class="ln">458  </span></a>        <span class="s3">with </span><span class="s1">open(fn</span><span class="s3">, </span><span class="s2">'r'</span><span class="s3">, </span><span class="s1">encoding=</span><span class="s2">'utf-8'</span><span class="s1">) </span><span class="s3">as </span><span class="s1">fd:</span>
+<a name="l459"><span class="ln">459  </span></a>            <span class="s1">json_content = fd.read()</span>
+<a name="l460"><span class="ln">460  </span></a>            <span class="s1">layout = loads(json_content)</span>
+<a name="l461"><span class="ln">461  </span></a>        <span class="s1">available_layouts[name] = layout</span>
+<a name="l462"><span class="ln">462  </span></a>
+<a name="l463"><span class="ln">463  </span></a>    <span class="s3">def </span><span class="s1">setup_mode(self</span><span class="s3">, </span><span class="s1">*largs):</span>
+<a name="l464"><span class="ln">464  </span></a>        <span class="s0">'''Call this method when you want to readjust the keyboard according to 
+<a name="l465"><span class="ln">465  </span></a>        options: :attr:`docked` or not, with attached :attr:`target` or not: 
+<a name="l466"><span class="ln">466  </span></a> 
+<a name="l467"><span class="ln">467  </span></a>        * If :attr:`docked` is True, it will call :meth:`setup_mode_dock` 
+<a name="l468"><span class="ln">468  </span></a>        * If :attr:`docked` is False, it will call :meth:`setup_mode_free` 
+<a name="l469"><span class="ln">469  </span></a> 
+<a name="l470"><span class="ln">470  </span></a>        Feel free to overload these methods to create new 
+<a name="l471"><span class="ln">471  </span></a>        positioning behavior. 
+<a name="l472"><span class="ln">472  </span></a>        '''</span>
+<a name="l473"><span class="ln">473  </span></a>        <span class="s3">if </span><span class="s1">self.docked:</span>
+<a name="l474"><span class="ln">474  </span></a>            <span class="s1">self.setup_mode_dock()</span>
+<a name="l475"><span class="ln">475  </span></a>        <span class="s3">else</span><span class="s1">:</span>
+<a name="l476"><span class="ln">476  </span></a>            <span class="s1">self.setup_mode_free()</span>
+<a name="l477"><span class="ln">477  </span></a>
+<a name="l478"><span class="ln">478  </span></a>    <span class="s3">def </span><span class="s1">setup_mode_dock(self</span><span class="s3">, </span><span class="s1">*largs):</span>
+<a name="l479"><span class="ln">479  </span></a>        <span class="s0">'''Setup the keyboard in docked mode. 
+<a name="l480"><span class="ln">480  </span></a> 
+<a name="l481"><span class="ln">481  </span></a>        Dock mode will reset the rotation, disable translation, rotation and 
+<a name="l482"><span class="ln">482  </span></a>        scale. Scale and position will be automatically adjusted to attach the 
+<a name="l483"><span class="ln">483  </span></a>        keyboard to the bottom of the screen. 
+<a name="l484"><span class="ln">484  </span></a> 
+<a name="l485"><span class="ln">485  </span></a>        .. note:: 
+<a name="l486"><span class="ln">486  </span></a>            Don't call this method directly, use :meth:`setup_mode` instead. 
+<a name="l487"><span class="ln">487  </span></a>        '''</span>
+<a name="l488"><span class="ln">488  </span></a>        <span class="s1">self.do_translation = </span><span class="s3">False</span>
+<a name="l489"><span class="ln">489  </span></a>        <span class="s1">self.do_rotation = </span><span class="s3">False</span>
+<a name="l490"><span class="ln">490  </span></a>        <span class="s1">self.do_scale = </span><span class="s3">False</span>
+<a name="l491"><span class="ln">491  </span></a>        <span class="s1">self.rotation = </span><span class="s4">0</span>
+<a name="l492"><span class="ln">492  </span></a>        <span class="s1">win = self.get_parent_window()</span>
+<a name="l493"><span class="ln">493  </span></a>        <span class="s1">scale = win.width / float(self.width)</span>
+<a name="l494"><span class="ln">494  </span></a>        <span class="s1">self.scale = scale</span>
+<a name="l495"><span class="ln">495  </span></a>        <span class="s1">self.pos = </span><span class="s4">0</span><span class="s3">, </span><span class="s4">0</span>
+<a name="l496"><span class="ln">496  </span></a>        <span class="s1">win.bind(on_resize=self._update_dock_mode)</span>
+<a name="l497"><span class="ln">497  </span></a>
+<a name="l498"><span class="ln">498  </span></a>    <span class="s3">def </span><span class="s1">_update_dock_mode(self</span><span class="s3">, </span><span class="s1">win</span><span class="s3">, </span><span class="s1">*largs):</span>
+<a name="l499"><span class="ln">499  </span></a>        <span class="s1">scale = win.width / float(self.width)</span>
+<a name="l500"><span class="ln">500  </span></a>        <span class="s1">self.scale = scale</span>
+<a name="l501"><span class="ln">501  </span></a>        <span class="s1">self.pos = </span><span class="s4">0</span><span class="s3">, </span><span class="s4">0</span>
+<a name="l502"><span class="ln">502  </span></a>
+<a name="l503"><span class="ln">503  </span></a>    <span class="s3">def </span><span class="s1">setup_mode_free(self):</span>
+<a name="l504"><span class="ln">504  </span></a>        <span class="s0">'''Setup the keyboard in free mode. 
+<a name="l505"><span class="ln">505  </span></a> 
+<a name="l506"><span class="ln">506  </span></a>        Free mode is designed to let the user control the position and 
+<a name="l507"><span class="ln">507  </span></a>        orientation of the keyboard. The only real usage is for a multiuser 
+<a name="l508"><span class="ln">508  </span></a>        environment, but you might found other ways to use it. 
+<a name="l509"><span class="ln">509  </span></a>        If a :attr:`target` is set, it will place the vkeyboard under the 
+<a name="l510"><span class="ln">510  </span></a>        target. 
+<a name="l511"><span class="ln">511  </span></a> 
+<a name="l512"><span class="ln">512  </span></a>        .. note:: 
+<a name="l513"><span class="ln">513  </span></a>            Don't call this method directly, use :meth:`setup_mode` instead. 
+<a name="l514"><span class="ln">514  </span></a>        '''</span>
+<a name="l515"><span class="ln">515  </span></a>        <span class="s1">self.do_translation = </span><span class="s3">True</span>
+<a name="l516"><span class="ln">516  </span></a>        <span class="s1">self.do_rotation = </span><span class="s3">True</span>
+<a name="l517"><span class="ln">517  </span></a>        <span class="s1">self.do_scale = </span><span class="s3">True</span>
+<a name="l518"><span class="ln">518  </span></a>        <span class="s1">target = self.target</span>
+<a name="l519"><span class="ln">519  </span></a>        <span class="s3">if not </span><span class="s1">target:</span>
+<a name="l520"><span class="ln">520  </span></a>            <span class="s3">return</span>
+<a name="l521"><span class="ln">521  </span></a>
+<a name="l522"><span class="ln">522  </span></a>        <span class="s5"># NOTE all math will be done in window point of view</span>
+<a name="l523"><span class="ln">523  </span></a>        <span class="s5"># determine rotation of the target</span>
+<a name="l524"><span class="ln">524  </span></a>        <span class="s1">a = Vector(</span><span class="s4">1</span><span class="s3">, </span><span class="s4">0</span><span class="s1">)</span>
+<a name="l525"><span class="ln">525  </span></a>        <span class="s1">b = Vector(target.to_window(</span><span class="s4">0</span><span class="s3">, </span><span class="s4">0</span><span class="s1">))</span>
+<a name="l526"><span class="ln">526  </span></a>        <span class="s1">c = Vector(target.to_window(</span><span class="s4">1</span><span class="s3">, </span><span class="s4">0</span><span class="s1">)) - b</span>
+<a name="l527"><span class="ln">527  </span></a>        <span class="s1">self.rotation = -a.angle(c)</span>
+<a name="l528"><span class="ln">528  </span></a>
+<a name="l529"><span class="ln">529  </span></a>        <span class="s5"># determine the position of center/top of the keyboard</span>
+<a name="l530"><span class="ln">530  </span></a>        <span class="s1">dpos = Vector(self.to_window(self.width / </span><span class="s4">2.</span><span class="s3">, </span><span class="s1">self.height))</span>
+<a name="l531"><span class="ln">531  </span></a>
+<a name="l532"><span class="ln">532  </span></a>        <span class="s5"># determine the position of center/bottom of the target</span>
+<a name="l533"><span class="ln">533  </span></a>        <span class="s1">cpos = Vector(target.to_window(target.center_x</span><span class="s3">, </span><span class="s1">target.y))</span>
+<a name="l534"><span class="ln">534  </span></a>
+<a name="l535"><span class="ln">535  </span></a>        <span class="s5"># the goal now is to map both point, calculate the diff between them</span>
+<a name="l536"><span class="ln">536  </span></a>        <span class="s1">diff = dpos - cpos</span>
+<a name="l537"><span class="ln">537  </span></a>
+<a name="l538"><span class="ln">538  </span></a>        <span class="s5"># we still have an issue, self.pos represent the bounding box,</span>
+<a name="l539"><span class="ln">539  </span></a>        <span class="s5"># not the 0,0 coordinate of the scatter. we need to apply also</span>
+<a name="l540"><span class="ln">540  </span></a>        <span class="s5"># the diff between them (inside and outside coordinate matrix).</span>
+<a name="l541"><span class="ln">541  </span></a>        <span class="s5"># It's hard to explain, but do a scheme on a paper, write all</span>
+<a name="l542"><span class="ln">542  </span></a>        <span class="s5"># the vector i'm calculating, and you'll understand. :)</span>
+<a name="l543"><span class="ln">543  </span></a>        <span class="s1">diff2 = Vector(self.x + self.width / </span><span class="s4">2.</span><span class="s3">, </span><span class="s1">self.y + self.height) - \</span>
+<a name="l544"><span class="ln">544  </span></a>            <span class="s1">Vector(self.to_parent(self.width / </span><span class="s4">2.</span><span class="s3">, </span><span class="s1">self.height))</span>
+<a name="l545"><span class="ln">545  </span></a>        <span class="s1">diff -= diff2</span>
+<a name="l546"><span class="ln">546  </span></a>
+<a name="l547"><span class="ln">547  </span></a>        <span class="s5"># now we have a good &quot;diff&quot;, set it as a pos.</span>
+<a name="l548"><span class="ln">548  </span></a>        <span class="s1">self.pos = -diff</span>
+<a name="l549"><span class="ln">549  </span></a>
+<a name="l550"><span class="ln">550  </span></a>    <span class="s3">def </span><span class="s1">change_layout(self):</span>
+<a name="l551"><span class="ln">551  </span></a>        <span class="s5"># XXX implement popup with all available layouts</span>
+<a name="l552"><span class="ln">552  </span></a>        <span class="s3">pass</span>
+<a name="l553"><span class="ln">553  </span></a>
+<a name="l554"><span class="ln">554  </span></a>    <span class="s3">def </span><span class="s1">refresh(self</span><span class="s3">, </span><span class="s1">force=</span><span class="s3">False</span><span class="s1">):</span>
+<a name="l555"><span class="ln">555  </span></a>        <span class="s0">'''(internal) Recreate the entire widget and graphics according to the 
+<a name="l556"><span class="ln">556  </span></a>        selected layout. 
+<a name="l557"><span class="ln">557  </span></a>        '''</span>
+<a name="l558"><span class="ln">558  </span></a>        <span class="s1">self.clear_widgets()</span>
+<a name="l559"><span class="ln">559  </span></a>        <span class="s3">if </span><span class="s1">force:</span>
+<a name="l560"><span class="ln">560  </span></a>            <span class="s1">self.refresh_keys_hint()</span>
+<a name="l561"><span class="ln">561  </span></a>        <span class="s1">self.refresh_keys()</span>
+<a name="l562"><span class="ln">562  </span></a>        <span class="s1">self.refresh_active_keys_layer()</span>
+<a name="l563"><span class="ln">563  </span></a>
+<a name="l564"><span class="ln">564  </span></a>    <span class="s3">def </span><span class="s1">refresh_active_keys_layer(self):</span>
+<a name="l565"><span class="ln">565  </span></a>        <span class="s1">self.active_keys_layer.clear()</span>
+<a name="l566"><span class="ln">566  </span></a>
+<a name="l567"><span class="ln">567  </span></a>        <span class="s1">active_keys = self.active_keys</span>
+<a name="l568"><span class="ln">568  </span></a>        <span class="s1">layout_geometry = self.layout_geometry</span>
+<a name="l569"><span class="ln">569  </span></a>        <span class="s1">background = resource_find(self.key_background_down)</span>
+<a name="l570"><span class="ln">570  </span></a>        <span class="s1">texture = Image(background</span><span class="s3">, </span><span class="s1">mipmap=</span><span class="s3">True</span><span class="s1">).texture</span>
+<a name="l571"><span class="ln">571  </span></a>
+<a name="l572"><span class="ln">572  </span></a>        <span class="s3">with </span><span class="s1">self.active_keys_layer:</span>
+<a name="l573"><span class="ln">573  </span></a>            <span class="s1">Color(*self.key_background_color)</span>
+<a name="l574"><span class="ln">574  </span></a>            <span class="s3">for </span><span class="s1">line_nb</span><span class="s3">, </span><span class="s1">index </span><span class="s3">in </span><span class="s1">active_keys.values():</span>
+<a name="l575"><span class="ln">575  </span></a>                <span class="s1">pos</span><span class="s3">, </span><span class="s1">size = layout_geometry[</span><span class="s2">'LINE_%d' </span><span class="s1">% line_nb][index]</span>
+<a name="l576"><span class="ln">576  </span></a>                <span class="s1">BorderImage(texture=texture</span><span class="s3">, </span><span class="s1">pos=pos</span><span class="s3">, </span><span class="s1">size=size</span><span class="s3">,</span>
+<a name="l577"><span class="ln">577  </span></a>                            <span class="s1">border=self.key_border)</span>
+<a name="l578"><span class="ln">578  </span></a>
+<a name="l579"><span class="ln">579  </span></a>    <span class="s3">def </span><span class="s1">refresh_keys_hint(self):</span>
+<a name="l580"><span class="ln">580  </span></a>        <span class="s1">layout = self.available_layouts[self.layout]</span>
+<a name="l581"><span class="ln">581  </span></a>        <span class="s1">layout_cols = layout[</span><span class="s2">'cols'</span><span class="s1">]</span>
+<a name="l582"><span class="ln">582  </span></a>        <span class="s1">layout_rows = layout[</span><span class="s2">'rows'</span><span class="s1">]</span>
+<a name="l583"><span class="ln">583  </span></a>        <span class="s1">layout_geometry = self.layout_geometry</span>
+<a name="l584"><span class="ln">584  </span></a>        <span class="s1">mtop</span><span class="s3">, </span><span class="s1">mright</span><span class="s3">, </span><span class="s1">mbottom</span><span class="s3">, </span><span class="s1">mleft = self.margin_hint</span>
+<a name="l585"><span class="ln">585  </span></a>
+<a name="l586"><span class="ln">586  </span></a>        <span class="s5"># get relative EFFICIENT surface of the layout without external margins</span>
+<a name="l587"><span class="ln">587  </span></a>        <span class="s1">el_hint = </span><span class="s4">1. </span><span class="s1">- mleft - mright</span>
+<a name="l588"><span class="ln">588  </span></a>        <span class="s1">eh_hint = </span><span class="s4">1. </span><span class="s1">- mtop - mbottom</span>
+<a name="l589"><span class="ln">589  </span></a>        <span class="s1">ex_hint = </span><span class="s4">0 </span><span class="s1">+ mleft</span>
+<a name="l590"><span class="ln">590  </span></a>        <span class="s1">ey_hint = </span><span class="s4">0 </span><span class="s1">+ mbottom</span>
+<a name="l591"><span class="ln">591  </span></a>
+<a name="l592"><span class="ln">592  </span></a>        <span class="s5"># get relative unit surface</span>
+<a name="l593"><span class="ln">593  </span></a>        <span class="s1">uw_hint = (</span><span class="s4">1. </span><span class="s1">/ layout_cols) * el_hint</span>
+<a name="l594"><span class="ln">594  </span></a>        <span class="s1">uh_hint = (</span><span class="s4">1. </span><span class="s1">/ layout_rows) * eh_hint</span>
+<a name="l595"><span class="ln">595  </span></a>        <span class="s1">layout_geometry[</span><span class="s2">'U_HINT'</span><span class="s1">] = (uw_hint</span><span class="s3">, </span><span class="s1">uh_hint)</span>
+<a name="l596"><span class="ln">596  </span></a>
+<a name="l597"><span class="ln">597  </span></a>        <span class="s5"># calculate individual key RELATIVE surface and pos (without key</span>
+<a name="l598"><span class="ln">598  </span></a>        <span class="s5"># margin)</span>
+<a name="l599"><span class="ln">599  </span></a>        <span class="s1">current_y_hint = ey_hint + eh_hint</span>
+<a name="l600"><span class="ln">600  </span></a>        <span class="s3">for </span><span class="s1">line_nb </span><span class="s3">in </span><span class="s1">range(</span><span class="s4">1</span><span class="s3">, </span><span class="s1">layout_rows + </span><span class="s4">1</span><span class="s1">):</span>
+<a name="l601"><span class="ln">601  </span></a>            <span class="s1">current_y_hint -= uh_hint</span>
+<a name="l602"><span class="ln">602  </span></a>            <span class="s5"># get line_name</span>
+<a name="l603"><span class="ln">603  </span></a>            <span class="s1">line_name = </span><span class="s2">'%s_%d' </span><span class="s1">% (self.layout_mode</span><span class="s3">, </span><span class="s1">line_nb)</span>
+<a name="l604"><span class="ln">604  </span></a>            <span class="s1">line_hint = </span><span class="s2">'LINE_HINT_%d' </span><span class="s1">% line_nb</span>
+<a name="l605"><span class="ln">605  </span></a>            <span class="s1">layout_geometry[line_hint] = []</span>
+<a name="l606"><span class="ln">606  </span></a>            <span class="s1">current_x_hint = ex_hint</span>
+<a name="l607"><span class="ln">607  </span></a>            <span class="s5"># go through the list of keys (tuples of 4)</span>
+<a name="l608"><span class="ln">608  </span></a>            <span class="s3">for </span><span class="s1">key </span><span class="s3">in </span><span class="s1">layout[line_name]:</span>
+<a name="l609"><span class="ln">609  </span></a>                <span class="s5"># calculate relative pos, size</span>
+<a name="l610"><span class="ln">610  </span></a>                <span class="s1">layout_geometry[line_hint].append([</span>
+<a name="l611"><span class="ln">611  </span></a>                    <span class="s1">(current_x_hint</span><span class="s3">, </span><span class="s1">current_y_hint)</span><span class="s3">,</span>
+<a name="l612"><span class="ln">612  </span></a>                    <span class="s1">(key[</span><span class="s4">3</span><span class="s1">] * uw_hint</span><span class="s3">, </span><span class="s1">uh_hint)])</span>
+<a name="l613"><span class="ln">613  </span></a>                <span class="s1">current_x_hint += key[</span><span class="s4">3</span><span class="s1">] * uw_hint</span>
+<a name="l614"><span class="ln">614  </span></a>
+<a name="l615"><span class="ln">615  </span></a>        <span class="s1">self.layout_geometry = layout_geometry</span>
+<a name="l616"><span class="ln">616  </span></a>
+<a name="l617"><span class="ln">617  </span></a>    <span class="s3">def </span><span class="s1">refresh_keys(self):</span>
+<a name="l618"><span class="ln">618  </span></a>        <span class="s1">layout = self.available_layouts[self.layout]</span>
+<a name="l619"><span class="ln">619  </span></a>        <span class="s1">layout_rows = layout[</span><span class="s2">'rows'</span><span class="s1">]</span>
+<a name="l620"><span class="ln">620  </span></a>        <span class="s1">layout_geometry = self.layout_geometry</span>
+<a name="l621"><span class="ln">621  </span></a>        <span class="s1">w</span><span class="s3">, </span><span class="s1">h = self.size</span>
+<a name="l622"><span class="ln">622  </span></a>        <span class="s1">kmtop</span><span class="s3">, </span><span class="s1">kmright</span><span class="s3">, </span><span class="s1">kmbottom</span><span class="s3">, </span><span class="s1">kmleft = self.key_margin</span>
+<a name="l623"><span class="ln">623  </span></a>        <span class="s1">uw_hint</span><span class="s3">, </span><span class="s1">uh_hint = layout_geometry[</span><span class="s2">'U_HINT'</span><span class="s1">]</span>
+<a name="l624"><span class="ln">624  </span></a>
+<a name="l625"><span class="ln">625  </span></a>        <span class="s3">for </span><span class="s1">line_nb </span><span class="s3">in </span><span class="s1">range(</span><span class="s4">1</span><span class="s3">, </span><span class="s1">layout_rows + </span><span class="s4">1</span><span class="s1">):</span>
+<a name="l626"><span class="ln">626  </span></a>            <span class="s1">llg = layout_geometry[</span><span class="s2">'LINE_%d' </span><span class="s1">% line_nb] = []</span>
+<a name="l627"><span class="ln">627  </span></a>            <span class="s1">llg_append = llg.append</span>
+<a name="l628"><span class="ln">628  </span></a>            <span class="s3">for </span><span class="s1">key </span><span class="s3">in </span><span class="s1">layout_geometry[</span><span class="s2">'LINE_HINT_%d' </span><span class="s1">% line_nb]:</span>
+<a name="l629"><span class="ln">629  </span></a>                <span class="s1">x_hint</span><span class="s3">, </span><span class="s1">y_hint = key[</span><span class="s4">0</span><span class="s1">]</span>
+<a name="l630"><span class="ln">630  </span></a>                <span class="s1">w_hint</span><span class="s3">, </span><span class="s1">h_hint = key[</span><span class="s4">1</span><span class="s1">]</span>
+<a name="l631"><span class="ln">631  </span></a>                <span class="s1">kx = x_hint * w</span>
+<a name="l632"><span class="ln">632  </span></a>                <span class="s1">ky = y_hint * h</span>
+<a name="l633"><span class="ln">633  </span></a>                <span class="s1">kw = w_hint * w</span>
+<a name="l634"><span class="ln">634  </span></a>                <span class="s1">kh = h_hint * h</span>
+<a name="l635"><span class="ln">635  </span></a>
+<a name="l636"><span class="ln">636  </span></a>                <span class="s5"># now adjust, considering the key margin</span>
+<a name="l637"><span class="ln">637  </span></a>                <span class="s1">kx = int(kx + kmleft)</span>
+<a name="l638"><span class="ln">638  </span></a>                <span class="s1">ky = int(ky + kmbottom)</span>
+<a name="l639"><span class="ln">639  </span></a>                <span class="s1">kw = int(kw - kmleft - kmright)</span>
+<a name="l640"><span class="ln">640  </span></a>                <span class="s1">kh = int(kh - kmbottom - kmtop)</span>
+<a name="l641"><span class="ln">641  </span></a>
+<a name="l642"><span class="ln">642  </span></a>                <span class="s1">pos = (kx</span><span class="s3">, </span><span class="s1">ky)</span>
+<a name="l643"><span class="ln">643  </span></a>                <span class="s1">size = (kw</span><span class="s3">, </span><span class="s1">kh)</span>
+<a name="l644"><span class="ln">644  </span></a>                <span class="s1">llg_append((pos</span><span class="s3">, </span><span class="s1">size))</span>
+<a name="l645"><span class="ln">645  </span></a>
+<a name="l646"><span class="ln">646  </span></a>        <span class="s1">self.layout_geometry = layout_geometry</span>
+<a name="l647"><span class="ln">647  </span></a>        <span class="s1">self.draw_keys()</span>
+<a name="l648"><span class="ln">648  </span></a>
+<a name="l649"><span class="ln">649  </span></a>    <span class="s3">def </span><span class="s1">draw_keys(self):</span>
+<a name="l650"><span class="ln">650  </span></a>        <span class="s1">layout = self.available_layouts[self.layout]</span>
+<a name="l651"><span class="ln">651  </span></a>        <span class="s1">layout_rows = layout[</span><span class="s2">'rows'</span><span class="s1">]</span>
+<a name="l652"><span class="ln">652  </span></a>        <span class="s1">layout_geometry = self.layout_geometry</span>
+<a name="l653"><span class="ln">653  </span></a>        <span class="s1">layout_mode = self.layout_mode</span>
+<a name="l654"><span class="ln">654  </span></a>
+<a name="l655"><span class="ln">655  </span></a>        <span class="s5"># draw background</span>
+<a name="l656"><span class="ln">656  </span></a>        <span class="s1">background = resource_find(self.background_disabled</span>
+<a name="l657"><span class="ln">657  </span></a>                                   <span class="s3">if </span><span class="s1">self.disabled </span><span class="s3">else</span>
+<a name="l658"><span class="ln">658  </span></a>                                   <span class="s1">self.background)</span>
+<a name="l659"><span class="ln">659  </span></a>        <span class="s1">texture = Image(background</span><span class="s3">, </span><span class="s1">mipmap=</span><span class="s3">True</span><span class="s1">).texture</span>
+<a name="l660"><span class="ln">660  </span></a>        <span class="s1">self.background_key_layer.clear()</span>
+<a name="l661"><span class="ln">661  </span></a>        <span class="s3">with </span><span class="s1">self.background_key_layer:</span>
+<a name="l662"><span class="ln">662  </span></a>            <span class="s1">Color(*self.background_color)</span>
+<a name="l663"><span class="ln">663  </span></a>            <span class="s1">BorderImage(texture=texture</span><span class="s3">, </span><span class="s1">size=self.size</span><span class="s3">,</span>
+<a name="l664"><span class="ln">664  </span></a>                        <span class="s1">border=self.background_border)</span>
+<a name="l665"><span class="ln">665  </span></a>
+<a name="l666"><span class="ln">666  </span></a>        <span class="s5"># XXX separate drawing the keys and the fonts to avoid</span>
+<a name="l667"><span class="ln">667  </span></a>        <span class="s5"># XXX reloading the texture each time</span>
+<a name="l668"><span class="ln">668  </span></a>
+<a name="l669"><span class="ln">669  </span></a>        <span class="s5"># first draw keys without the font</span>
+<a name="l670"><span class="ln">670  </span></a>        <span class="s1">key_normal = resource_find(self.key_background_disabled_normal</span>
+<a name="l671"><span class="ln">671  </span></a>                                   <span class="s3">if </span><span class="s1">self.disabled </span><span class="s3">else</span>
+<a name="l672"><span class="ln">672  </span></a>                                   <span class="s1">self.key_background_normal)</span>
+<a name="l673"><span class="ln">673  </span></a>        <span class="s1">texture = Image(key_normal</span><span class="s3">, </span><span class="s1">mipmap=</span><span class="s3">True</span><span class="s1">).texture</span>
+<a name="l674"><span class="ln">674  </span></a>        <span class="s3">with </span><span class="s1">self.background_key_layer:</span>
+<a name="l675"><span class="ln">675  </span></a>            <span class="s1">Color(*self.key_background_color)</span>
+<a name="l676"><span class="ln">676  </span></a>            <span class="s3">for </span><span class="s1">line_nb </span><span class="s3">in </span><span class="s1">range(</span><span class="s4">1</span><span class="s3">, </span><span class="s1">layout_rows + </span><span class="s4">1</span><span class="s1">):</span>
+<a name="l677"><span class="ln">677  </span></a>                <span class="s3">for </span><span class="s1">pos</span><span class="s3">, </span><span class="s1">size </span><span class="s3">in </span><span class="s1">layout_geometry[</span><span class="s2">'LINE_%d' </span><span class="s1">% line_nb]:</span>
+<a name="l678"><span class="ln">678  </span></a>                    <span class="s1">BorderImage(texture=texture</span><span class="s3">, </span><span class="s1">pos=pos</span><span class="s3">, </span><span class="s1">size=size</span><span class="s3">,</span>
+<a name="l679"><span class="ln">679  </span></a>                                <span class="s1">border=self.key_border)</span>
+<a name="l680"><span class="ln">680  </span></a>
+<a name="l681"><span class="ln">681  </span></a>        <span class="s5"># then draw the text</span>
+<a name="l682"><span class="ln">682  </span></a>        <span class="s3">for </span><span class="s1">line_nb </span><span class="s3">in </span><span class="s1">range(</span><span class="s4">1</span><span class="s3">, </span><span class="s1">layout_rows + </span><span class="s4">1</span><span class="s1">):</span>
+<a name="l683"><span class="ln">683  </span></a>            <span class="s1">key_nb = </span><span class="s4">0</span>
+<a name="l684"><span class="ln">684  </span></a>            <span class="s3">for </span><span class="s1">pos</span><span class="s3">, </span><span class="s1">size </span><span class="s3">in </span><span class="s1">layout_geometry[</span><span class="s2">'LINE_%d' </span><span class="s1">% line_nb]:</span>
+<a name="l685"><span class="ln">685  </span></a>                <span class="s5"># retrieve the relative text</span>
+<a name="l686"><span class="ln">686  </span></a>                <span class="s1">text = layout[layout_mode + </span><span class="s2">'_' </span><span class="s1">+ str(line_nb)][key_nb][</span><span class="s4">0</span><span class="s1">]</span>
+<a name="l687"><span class="ln">687  </span></a>                <span class="s1">z = Label(text=text</span><span class="s3">, </span><span class="s1">font_size=self.font_size</span><span class="s3">, </span><span class="s1">pos=pos</span><span class="s3">,</span>
+<a name="l688"><span class="ln">688  </span></a>                           <span class="s1">size=size</span><span class="s3">, </span><span class="s1">font_name=self.font_name)</span>
+<a name="l689"><span class="ln">689  </span></a>                <span class="s1">self.add_widget(z)</span>
+<a name="l690"><span class="ln">690  </span></a>                <span class="s1">key_nb += </span><span class="s4">1</span>
+<a name="l691"><span class="ln">691  </span></a>
+<a name="l692"><span class="ln">692  </span></a>    <span class="s3">def </span><span class="s1">on_key_down(self</span><span class="s3">, </span><span class="s1">*largs):</span>
+<a name="l693"><span class="ln">693  </span></a>        <span class="s3">pass</span>
+<a name="l694"><span class="ln">694  </span></a>
+<a name="l695"><span class="ln">695  </span></a>    <span class="s3">def </span><span class="s1">on_key_up(self</span><span class="s3">, </span><span class="s1">*largs):</span>
+<a name="l696"><span class="ln">696  </span></a>        <span class="s3">pass</span>
+<a name="l697"><span class="ln">697  </span></a>
+<a name="l698"><span class="ln">698  </span></a>    <span class="s3">def </span><span class="s1">on_textinput(self</span><span class="s3">, </span><span class="s1">*largs):</span>
+<a name="l699"><span class="ln">699  </span></a>        <span class="s3">pass</span>
+<a name="l700"><span class="ln">700  </span></a>
+<a name="l701"><span class="ln">701  </span></a>    <span class="s3">def </span><span class="s1">get_key_at_pos(self</span><span class="s3">, </span><span class="s1">x</span><span class="s3">, </span><span class="s1">y):</span>
+<a name="l702"><span class="ln">702  </span></a>        <span class="s1">w</span><span class="s3">, </span><span class="s1">h = self.size</span>
+<a name="l703"><span class="ln">703  </span></a>        <span class="s1">x_hint = x / w</span>
+<a name="l704"><span class="ln">704  </span></a>        <span class="s5"># focus on the surface without margins</span>
+<a name="l705"><span class="ln">705  </span></a>        <span class="s1">layout_geometry = self.layout_geometry</span>
+<a name="l706"><span class="ln">706  </span></a>        <span class="s1">layout = self.available_layouts[self.layout]</span>
+<a name="l707"><span class="ln">707  </span></a>        <span class="s1">layout_rows = layout[</span><span class="s2">'rows'</span><span class="s1">]</span>
+<a name="l708"><span class="ln">708  </span></a>        <span class="s1">mtop</span><span class="s3">, </span><span class="s1">mright</span><span class="s3">, </span><span class="s1">mbottom</span><span class="s3">, </span><span class="s1">mleft = self.margin_hint</span>
+<a name="l709"><span class="ln">709  </span></a>
+<a name="l710"><span class="ln">710  </span></a>        <span class="s5"># get the line of the layout</span>
+<a name="l711"><span class="ln">711  </span></a>        <span class="s1">e_height = h - (mbottom + mtop) * h  </span><span class="s5"># efficient height in pixels</span>
+<a name="l712"><span class="ln">712  </span></a>        <span class="s1">line_height = e_height / layout_rows  </span><span class="s5"># line height in px</span>
+<a name="l713"><span class="ln">713  </span></a>        <span class="s1">y = y - mbottom * h</span>
+<a name="l714"><span class="ln">714  </span></a>        <span class="s1">line_nb = layout_rows - int(y / line_height)</span>
+<a name="l715"><span class="ln">715  </span></a>
+<a name="l716"><span class="ln">716  </span></a>        <span class="s3">if </span><span class="s1">line_nb &gt; layout_rows:</span>
+<a name="l717"><span class="ln">717  </span></a>            <span class="s1">line_nb = layout_rows</span>
+<a name="l718"><span class="ln">718  </span></a>        <span class="s3">if </span><span class="s1">line_nb &lt; </span><span class="s4">1</span><span class="s1">:</span>
+<a name="l719"><span class="ln">719  </span></a>            <span class="s1">line_nb = </span><span class="s4">1</span>
+<a name="l720"><span class="ln">720  </span></a>
+<a name="l721"><span class="ln">721  </span></a>        <span class="s5"># get the key within the line</span>
+<a name="l722"><span class="ln">722  </span></a>        <span class="s1">key_index = </span><span class="s2">''</span>
+<a name="l723"><span class="ln">723  </span></a>        <span class="s1">current_key_index = </span><span class="s4">0</span>
+<a name="l724"><span class="ln">724  </span></a>        <span class="s3">for </span><span class="s1">key </span><span class="s3">in </span><span class="s1">layout_geometry[</span><span class="s2">'LINE_HINT_%d' </span><span class="s1">% line_nb]:</span>
+<a name="l725"><span class="ln">725  </span></a>            <span class="s3">if </span><span class="s1">x_hint &gt;= key[</span><span class="s4">0</span><span class="s1">][</span><span class="s4">0</span><span class="s1">] </span><span class="s3">and </span><span class="s1">x_hint &lt; key[</span><span class="s4">0</span><span class="s1">][</span><span class="s4">0</span><span class="s1">] + key[</span><span class="s4">1</span><span class="s1">][</span><span class="s4">0</span><span class="s1">]:</span>
+<a name="l726"><span class="ln">726  </span></a>                <span class="s1">key_index = current_key_index</span>
+<a name="l727"><span class="ln">727  </span></a>                <span class="s3">break</span>
+<a name="l728"><span class="ln">728  </span></a>            <span class="s3">else</span><span class="s1">:</span>
+<a name="l729"><span class="ln">729  </span></a>                <span class="s1">current_key_index += </span><span class="s4">1</span>
+<a name="l730"><span class="ln">730  </span></a>        <span class="s3">if </span><span class="s1">key_index == </span><span class="s2">''</span><span class="s1">:</span>
+<a name="l731"><span class="ln">731  </span></a>            <span class="s3">return None</span>
+<a name="l732"><span class="ln">732  </span></a>
+<a name="l733"><span class="ln">733  </span></a>        <span class="s5"># get the full character</span>
+<a name="l734"><span class="ln">734  </span></a>        <span class="s1">key = layout[</span><span class="s2">'%s_%d' </span><span class="s1">% (self.layout_mode</span><span class="s3">, </span><span class="s1">line_nb)][key_index]</span>
+<a name="l735"><span class="ln">735  </span></a>
+<a name="l736"><span class="ln">736  </span></a>        <span class="s3">return </span><span class="s1">[key</span><span class="s3">, </span><span class="s1">(line_nb</span><span class="s3">, </span><span class="s1">key_index)]</span>
+<a name="l737"><span class="ln">737  </span></a>
+<a name="l738"><span class="ln">738  </span></a>    <span class="s3">def </span><span class="s1">collide_margin(self</span><span class="s3">, </span><span class="s1">x</span><span class="s3">, </span><span class="s1">y):</span>
+<a name="l739"><span class="ln">739  </span></a>        <span class="s0">'''Do a collision test, and return True if the (x, y) is inside the 
+<a name="l740"><span class="ln">740  </span></a>        vkeyboard margin. 
+<a name="l741"><span class="ln">741  </span></a>        '''</span>
+<a name="l742"><span class="ln">742  </span></a>        <span class="s1">mtop</span><span class="s3">, </span><span class="s1">mright</span><span class="s3">, </span><span class="s1">mbottom</span><span class="s3">, </span><span class="s1">mleft = self.margin_hint</span>
+<a name="l743"><span class="ln">743  </span></a>        <span class="s1">x_hint = x / self.width</span>
+<a name="l744"><span class="ln">744  </span></a>        <span class="s1">y_hint = y / self.height</span>
+<a name="l745"><span class="ln">745  </span></a>        <span class="s3">if </span><span class="s1">x_hint &gt; mleft </span><span class="s3">and </span><span class="s1">x_hint &lt; </span><span class="s4">1. </span><span class="s1">- mright \</span>
+<a name="l746"><span class="ln">746  </span></a>                <span class="s3">and </span><span class="s1">y_hint &gt; mbottom </span><span class="s3">and </span><span class="s1">y_hint &lt; </span><span class="s4">1. </span><span class="s1">- mtop:</span>
+<a name="l747"><span class="ln">747  </span></a>            <span class="s3">return False</span>
+<a name="l748"><span class="ln">748  </span></a>        <span class="s3">return True</span>
+<a name="l749"><span class="ln">749  </span></a>
+<a name="l750"><span class="ln">750  </span></a>    <span class="s3">def </span><span class="s1">process_key_on(self</span><span class="s3">, </span><span class="s1">touch):</span>
+<a name="l751"><span class="ln">751  </span></a>        <span class="s3">if not </span><span class="s1">touch:</span>
+<a name="l752"><span class="ln">752  </span></a>            <span class="s3">return</span>
+<a name="l753"><span class="ln">753  </span></a>        <span class="s1">x</span><span class="s3">, </span><span class="s1">y = self.to_local(*touch.pos)</span>
+<a name="l754"><span class="ln">754  </span></a>        <span class="s1">key = self.get_key_at_pos(x</span><span class="s3">, </span><span class="s1">y)</span>
+<a name="l755"><span class="ln">755  </span></a>        <span class="s3">if not </span><span class="s1">key:</span>
+<a name="l756"><span class="ln">756  </span></a>            <span class="s3">return</span>
+<a name="l757"><span class="ln">757  </span></a>
+<a name="l758"><span class="ln">758  </span></a>        <span class="s1">key_data = key[</span><span class="s4">0</span><span class="s1">]</span>
+<a name="l759"><span class="ln">759  </span></a>        <span class="s1">displayed_char</span><span class="s3">, </span><span class="s1">internal</span><span class="s3">, </span><span class="s1">special_char</span><span class="s3">, </span><span class="s1">size = key_data</span>
+<a name="l760"><span class="ln">760  </span></a>        <span class="s1">line_nb</span><span class="s3">, </span><span class="s1">key_index = key[</span><span class="s4">1</span><span class="s1">]</span>
+<a name="l761"><span class="ln">761  </span></a>
+<a name="l762"><span class="ln">762  </span></a>        <span class="s5"># save pressed key on the touch</span>
+<a name="l763"><span class="ln">763  </span></a>        <span class="s1">ud = touch.ud[self.uid] = {}</span>
+<a name="l764"><span class="ln">764  </span></a>        <span class="s1">ud[</span><span class="s2">'key'</span><span class="s1">] = key</span>
+<a name="l765"><span class="ln">765  </span></a>
+<a name="l766"><span class="ln">766  </span></a>        <span class="s5"># for caps lock or shift only:</span>
+<a name="l767"><span class="ln">767  </span></a>        <span class="s1">uid = touch.uid</span>
+<a name="l768"><span class="ln">768  </span></a>        <span class="s3">if </span><span class="s1">special_char </span><span class="s3">is not None</span><span class="s1">:</span>
+<a name="l769"><span class="ln">769  </span></a>            <span class="s5"># Do not repeat special keys</span>
+<a name="l770"><span class="ln">770  </span></a>            <span class="s3">if </span><span class="s1">special_char </span><span class="s3">in </span><span class="s1">(</span><span class="s2">'capslock'</span><span class="s3">, </span><span class="s2">'shift'</span><span class="s3">, </span><span class="s2">'layout'</span><span class="s3">, </span><span class="s2">'special'</span><span class="s1">):</span>
+<a name="l771"><span class="ln">771  </span></a>                <span class="s3">if </span><span class="s1">self._start_repeat_key_ev </span><span class="s3">is not None</span><span class="s1">:</span>
+<a name="l772"><span class="ln">772  </span></a>                    <span class="s1">self._start_repeat_key_ev.cancel()</span>
+<a name="l773"><span class="ln">773  </span></a>                    <span class="s1">self._start_repeat_key_ev = </span><span class="s3">None</span>
+<a name="l774"><span class="ln">774  </span></a>                <span class="s1">self.repeat_touch = </span><span class="s3">None</span>
+<a name="l775"><span class="ln">775  </span></a>            <span class="s3">if </span><span class="s1">special_char == </span><span class="s2">'capslock'</span><span class="s1">:</span>
+<a name="l776"><span class="ln">776  </span></a>                <span class="s1">self.have_capslock = </span><span class="s3">not </span><span class="s1">self.have_capslock</span>
+<a name="l777"><span class="ln">777  </span></a>                <span class="s1">uid = -</span><span class="s4">1</span>
+<a name="l778"><span class="ln">778  </span></a>            <span class="s3">elif </span><span class="s1">special_char == </span><span class="s2">'shift'</span><span class="s1">:</span>
+<a name="l779"><span class="ln">779  </span></a>                <span class="s1">self.have_shift = </span><span class="s3">True</span>
+<a name="l780"><span class="ln">780  </span></a>            <span class="s3">elif </span><span class="s1">special_char == </span><span class="s2">'special'</span><span class="s1">:</span>
+<a name="l781"><span class="ln">781  </span></a>                <span class="s1">self.have_special = </span><span class="s3">True</span>
+<a name="l782"><span class="ln">782  </span></a>            <span class="s3">elif </span><span class="s1">special_char == </span><span class="s2">'layout'</span><span class="s1">:</span>
+<a name="l783"><span class="ln">783  </span></a>                <span class="s1">self.change_layout()</span>
+<a name="l784"><span class="ln">784  </span></a>
+<a name="l785"><span class="ln">785  </span></a>        <span class="s5"># send info to the bus</span>
+<a name="l786"><span class="ln">786  </span></a>        <span class="s1">b_keycode = special_char</span>
+<a name="l787"><span class="ln">787  </span></a>        <span class="s1">b_modifiers = self._get_modifiers()</span>
+<a name="l788"><span class="ln">788  </span></a>        <span class="s3">if </span><span class="s1">self.get_parent_window().__class__.__module__ == \</span>
+<a name="l789"><span class="ln">789  </span></a>            <span class="s2">'kivy.core.window.window_sdl2' </span><span class="s3">and </span><span class="s1">internal:</span>
+<a name="l790"><span class="ln">790  </span></a>            <span class="s1">self.dispatch(</span><span class="s2">'on_textinput'</span><span class="s3">, </span><span class="s1">internal)</span>
+<a name="l791"><span class="ln">791  </span></a>        <span class="s3">else</span><span class="s1">:</span>
+<a name="l792"><span class="ln">792  </span></a>            <span class="s1">self.dispatch(</span><span class="s2">'on_key_down'</span><span class="s3">, </span><span class="s1">b_keycode</span><span class="s3">, </span><span class="s1">internal</span><span class="s3">, </span><span class="s1">b_modifiers)</span>
+<a name="l793"><span class="ln">793  </span></a>
+<a name="l794"><span class="ln">794  </span></a>        <span class="s5"># save key as an active key for drawing</span>
+<a name="l795"><span class="ln">795  </span></a>        <span class="s1">self.active_keys[uid] = key[</span><span class="s4">1</span><span class="s1">]</span>
+<a name="l796"><span class="ln">796  </span></a>        <span class="s1">self.refresh_active_keys_layer()</span>
+<a name="l797"><span class="ln">797  </span></a>
+<a name="l798"><span class="ln">798  </span></a>    <span class="s3">def </span><span class="s1">process_key_up(self</span><span class="s3">, </span><span class="s1">touch):</span>
+<a name="l799"><span class="ln">799  </span></a>        <span class="s1">uid = touch.uid</span>
+<a name="l800"><span class="ln">800  </span></a>        <span class="s3">if </span><span class="s1">self.uid </span><span class="s3">not in </span><span class="s1">touch.ud:</span>
+<a name="l801"><span class="ln">801  </span></a>            <span class="s3">return</span>
+<a name="l802"><span class="ln">802  </span></a>
+<a name="l803"><span class="ln">803  </span></a>        <span class="s5"># save pressed key on the touch</span>
+<a name="l804"><span class="ln">804  </span></a>        <span class="s1">key_data</span><span class="s3">, </span><span class="s1">key = touch.ud[self.uid][</span><span class="s2">'key'</span><span class="s1">]</span>
+<a name="l805"><span class="ln">805  </span></a>        <span class="s1">displayed_char</span><span class="s3">, </span><span class="s1">internal</span><span class="s3">, </span><span class="s1">special_char</span><span class="s3">, </span><span class="s1">size = key_data</span>
+<a name="l806"><span class="ln">806  </span></a>
+<a name="l807"><span class="ln">807  </span></a>        <span class="s5"># send info to the bus</span>
+<a name="l808"><span class="ln">808  </span></a>        <span class="s1">b_keycode = special_char</span>
+<a name="l809"><span class="ln">809  </span></a>        <span class="s1">b_modifiers = self._get_modifiers()</span>
+<a name="l810"><span class="ln">810  </span></a>        <span class="s1">self.dispatch(</span><span class="s2">'on_key_up'</span><span class="s3">, </span><span class="s1">b_keycode</span><span class="s3">, </span><span class="s1">internal</span><span class="s3">, </span><span class="s1">b_modifiers)</span>
+<a name="l811"><span class="ln">811  </span></a>
+<a name="l812"><span class="ln">812  </span></a>        <span class="s3">if </span><span class="s1">special_char == </span><span class="s2">'capslock'</span><span class="s1">:</span>
+<a name="l813"><span class="ln">813  </span></a>            <span class="s1">uid = -</span><span class="s4">1</span>
+<a name="l814"><span class="ln">814  </span></a>
+<a name="l815"><span class="ln">815  </span></a>        <span class="s3">if </span><span class="s1">uid </span><span class="s3">in </span><span class="s1">self.active_keys:</span>
+<a name="l816"><span class="ln">816  </span></a>            <span class="s1">self.active_keys.pop(uid</span><span class="s3">, None</span><span class="s1">)</span>
+<a name="l817"><span class="ln">817  </span></a>            <span class="s3">if </span><span class="s1">special_char == </span><span class="s2">'shift'</span><span class="s1">:</span>
+<a name="l818"><span class="ln">818  </span></a>                <span class="s1">self.have_shift = </span><span class="s3">False</span>
+<a name="l819"><span class="ln">819  </span></a>            <span class="s3">elif </span><span class="s1">special_char == </span><span class="s2">'special'</span><span class="s1">:</span>
+<a name="l820"><span class="ln">820  </span></a>                <span class="s1">self.have_special = </span><span class="s3">False</span>
+<a name="l821"><span class="ln">821  </span></a>            <span class="s3">if </span><span class="s1">special_char == </span><span class="s2">'capslock' </span><span class="s3">and </span><span class="s1">self.have_capslock:</span>
+<a name="l822"><span class="ln">822  </span></a>                <span class="s1">self.active_keys[-</span><span class="s4">1</span><span class="s1">] = key</span>
+<a name="l823"><span class="ln">823  </span></a>            <span class="s1">self.refresh_active_keys_layer()</span>
+<a name="l824"><span class="ln">824  </span></a>
+<a name="l825"><span class="ln">825  </span></a>    <span class="s3">def </span><span class="s1">_get_modifiers(self):</span>
+<a name="l826"><span class="ln">826  </span></a>        <span class="s1">ret = []</span>
+<a name="l827"><span class="ln">827  </span></a>        <span class="s3">if </span><span class="s1">self.have_shift:</span>
+<a name="l828"><span class="ln">828  </span></a>            <span class="s1">ret.append(</span><span class="s2">'shift'</span><span class="s1">)</span>
+<a name="l829"><span class="ln">829  </span></a>        <span class="s3">if </span><span class="s1">self.have_capslock:</span>
+<a name="l830"><span class="ln">830  </span></a>            <span class="s1">ret.append(</span><span class="s2">'capslock'</span><span class="s1">)</span>
+<a name="l831"><span class="ln">831  </span></a>        <span class="s3">return </span><span class="s1">ret</span>
+<a name="l832"><span class="ln">832  </span></a>
+<a name="l833"><span class="ln">833  </span></a>    <span class="s3">def </span><span class="s1">_start_repeat_key(self</span><span class="s3">, </span><span class="s1">*kwargs):</span>
+<a name="l834"><span class="ln">834  </span></a>        <span class="s1">self._repeat_key_ev = Clock.schedule_interval(self._repeat_key</span><span class="s3">, </span><span class="s4">0.05</span><span class="s1">)</span>
+<a name="l835"><span class="ln">835  </span></a>
+<a name="l836"><span class="ln">836  </span></a>    <span class="s3">def </span><span class="s1">_repeat_key(self</span><span class="s3">, </span><span class="s1">*kwargs):</span>
+<a name="l837"><span class="ln">837  </span></a>        <span class="s1">self.process_key_on(self.repeat_touch)</span>
+<a name="l838"><span class="ln">838  </span></a>
+<a name="l839"><span class="ln">839  </span></a>    <span class="s3">def </span><span class="s1">on_touch_down(self</span><span class="s3">, </span><span class="s1">touch):</span>
+<a name="l840"><span class="ln">840  </span></a>        <span class="s1">x</span><span class="s3">, </span><span class="s1">y = touch.pos</span>
+<a name="l841"><span class="ln">841  </span></a>        <span class="s3">if not </span><span class="s1">self.collide_point(x</span><span class="s3">, </span><span class="s1">y):</span>
+<a name="l842"><span class="ln">842  </span></a>            <span class="s3">return</span>
+<a name="l843"><span class="ln">843  </span></a>        <span class="s3">if </span><span class="s1">self.disabled:</span>
+<a name="l844"><span class="ln">844  </span></a>            <span class="s3">return True</span>
+<a name="l845"><span class="ln">845  </span></a>
+<a name="l846"><span class="ln">846  </span></a>        <span class="s1">x</span><span class="s3">, </span><span class="s1">y = self.to_local(x</span><span class="s3">, </span><span class="s1">y)</span>
+<a name="l847"><span class="ln">847  </span></a>        <span class="s3">if not </span><span class="s1">self.collide_margin(x</span><span class="s3">, </span><span class="s1">y):</span>
+<a name="l848"><span class="ln">848  </span></a>            <span class="s3">if </span><span class="s1">self.repeat_touch </span><span class="s3">is None</span><span class="s1">:</span>
+<a name="l849"><span class="ln">849  </span></a>                <span class="s1">self._start_repeat_key_ev = Clock.schedule_once(</span>
+<a name="l850"><span class="ln">850  </span></a>                    <span class="s1">self._start_repeat_key</span><span class="s3">, </span><span class="s4">0.5</span><span class="s1">)</span>
+<a name="l851"><span class="ln">851  </span></a>            <span class="s1">self.repeat_touch = touch</span>
+<a name="l852"><span class="ln">852  </span></a>
+<a name="l853"><span class="ln">853  </span></a>            <span class="s1">self.process_key_on(touch)</span>
+<a name="l854"><span class="ln">854  </span></a>            <span class="s1">touch.grab(self</span><span class="s3">, </span><span class="s1">exclusive=</span><span class="s3">True</span><span class="s1">)</span>
+<a name="l855"><span class="ln">855  </span></a>
+<a name="l856"><span class="ln">856  </span></a>        <span class="s3">else</span><span class="s1">:</span>
+<a name="l857"><span class="ln">857  </span></a>            <span class="s1">super(VKeyboard</span><span class="s3">, </span><span class="s1">self).on_touch_down(touch)</span>
+<a name="l858"><span class="ln">858  </span></a>        <span class="s3">return True</span>
+<a name="l859"><span class="ln">859  </span></a>
+<a name="l860"><span class="ln">860  </span></a>    <span class="s3">def </span><span class="s1">on_touch_up(self</span><span class="s3">, </span><span class="s1">touch):</span>
+<a name="l861"><span class="ln">861  </span></a>        <span class="s3">if </span><span class="s1">touch.grab_current </span><span class="s3">is </span><span class="s1">self:</span>
+<a name="l862"><span class="ln">862  </span></a>            <span class="s1">self.process_key_up(touch)</span>
+<a name="l863"><span class="ln">863  </span></a>
+<a name="l864"><span class="ln">864  </span></a>            <span class="s3">if </span><span class="s1">self._start_repeat_key_ev </span><span class="s3">is not None</span><span class="s1">:</span>
+<a name="l865"><span class="ln">865  </span></a>                <span class="s1">self._start_repeat_key_ev.cancel()</span>
+<a name="l866"><span class="ln">866  </span></a>                <span class="s1">self._start_repeat_key_ev = </span><span class="s3">None</span>
+<a name="l867"><span class="ln">867  </span></a>            <span class="s3">if </span><span class="s1">touch == self.repeat_touch:</span>
+<a name="l868"><span class="ln">868  </span></a>                <span class="s3">if </span><span class="s1">self._repeat_key_ev </span><span class="s3">is not None</span><span class="s1">:</span>
+<a name="l869"><span class="ln">869  </span></a>                    <span class="s1">self._repeat_key_ev.cancel()</span>
+<a name="l870"><span class="ln">870  </span></a>                    <span class="s1">self._repeat_key_ev = </span><span class="s3">None</span>
+<a name="l871"><span class="ln">871  </span></a>                <span class="s1">self.repeat_touch = </span><span class="s3">None</span>
+<a name="l872"><span class="ln">872  </span></a>
+<a name="l873"><span class="ln">873  </span></a>        <span class="s3">return </span><span class="s1">super(VKeyboard</span><span class="s3">, </span><span class="s1">self).on_touch_up(touch)</span>
+<a name="l874"><span class="ln">874  </span></a>
+<a name="l875"><span class="ln">875  </span></a>
+<a name="l876"><span class="ln">876  </span></a><span class="s3">if </span><span class="s1">__name__ == </span><span class="s2">'__main__'</span><span class="s1">:</span>
+<a name="l877"><span class="ln">877  </span></a>    <span class="s3">from </span><span class="s1">kivy.base </span><span class="s3">import </span><span class="s1">runTouchApp</span>
+<a name="l878"><span class="ln">878  </span></a>    <span class="s1">vk = VKeyboard(layout=</span><span class="s2">'azerty'</span><span class="s1">)</span>
+<a name="l879"><span class="ln">879  </span></a>    <span class="s1">runTouchApp(vk)</span>
+<a name="l880"><span class="ln">880  </span></a></pre>
+</body>
+</html>

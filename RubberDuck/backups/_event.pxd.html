@@ -1,0 +1,77 @@
+<html>
+<head>
+<title>_event.pxd</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type="text/css">
+.s0 { color: #a9b7c6;}
+.ln { color: #606366; font-weight: normal; font-style: normal; }
+</style>
+</head>
+<body bgcolor="#2b2b2b">
+<table CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#606060" >
+<tr><td><center>
+<font face="Arial, Helvetica" color="#000000">
+_event.pxd</font>
+</center></td></tr></table>
+<pre><a name="l1"><span class="ln">1    </span></a><span class="s0">from cpython.ref cimport PyObject</span>
+<a name="l2"><span class="ln">2    </span></a>
+<a name="l3"><span class="ln">3    </span></a><span class="s0">cdef class ObjectWithUid(object):</span>
+<a name="l4"><span class="ln">4    </span></a>    <span class="s0">cdef readonly int uid</span>
+<a name="l5"><span class="ln">5    </span></a>
+<a name="l6"><span class="ln">6    </span></a>
+<a name="l7"><span class="ln">7    </span></a><span class="s0">cdef class Observable(ObjectWithUid):</span>
+<a name="l8"><span class="ln">8    </span></a>    <span class="s0">cdef object __fbind_mapping</span>
+<a name="l9"><span class="ln">9    </span></a>    <span class="s0">cdef object bound_uid</span>
+<a name="l10"><span class="ln">10   </span></a>
+<a name="l11"><span class="ln">11   </span></a>
+<a name="l12"><span class="ln">12   </span></a><span class="s0">cdef class EventDispatcher(ObjectWithUid):</span>
+<a name="l13"><span class="ln">13   </span></a>    <span class="s0">cdef dict __event_stack</span>
+<a name="l14"><span class="ln">14   </span></a>    <span class="s0">cdef dict __properties</span>
+<a name="l15"><span class="ln">15   </span></a>    <span class="s0">cdef dict __storage</span>
+<a name="l16"><span class="ln">16   </span></a>    <span class="s0">cdef object __weakref__</span>
+<a name="l17"><span class="ln">17   </span></a>    <span class="s0">cdef public set _kwargs_applied_init</span>
+<a name="l18"><span class="ln">18   </span></a>    <span class="s0">cdef public object _proxy_ref</span>
+<a name="l19"><span class="ln">19   </span></a>    <span class="s0">cpdef dict properties(self)</span>
+<a name="l20"><span class="ln">20   </span></a>
+<a name="l21"><span class="ln">21   </span></a>
+<a name="l22"><span class="ln">22   </span></a><span class="s0">cdef enum BoundLock:</span>
+<a name="l23"><span class="ln">23   </span></a>    <span class="s0"># the state of the BoundCallback, i.e. whether it can be deleted</span>
+<a name="l24"><span class="ln">24   </span></a>    <span class="s0">unlocked  # whether the BoundCallback is unlocked and can be deleted</span>
+<a name="l25"><span class="ln">25   </span></a>    <span class="s0">locked  # whether the BoundCallback is locked and cannot be deleted</span>
+<a name="l26"><span class="ln">26   </span></a>    <span class="s0">deleted  # whether the locked BoundCallback was marked for deletion</span>
+<a name="l27"><span class="ln">27   </span></a>
+<a name="l28"><span class="ln">28   </span></a><span class="s0">cdef class BoundCallback:</span>
+<a name="l29"><span class="ln">29   </span></a>    <span class="s0">cdef object func</span>
+<a name="l30"><span class="ln">30   </span></a>    <span class="s0">cdef tuple largs</span>
+<a name="l31"><span class="ln">31   </span></a>    <span class="s0">cdef dict kwargs</span>
+<a name="l32"><span class="ln">32   </span></a>    <span class="s0">cdef int is_ref  # if func is a ref to the function</span>
+<a name="l33"><span class="ln">33   </span></a>    <span class="s0">cdef BoundLock lock  # see BoundLock</span>
+<a name="l34"><span class="ln">34   </span></a>    <span class="s0">cdef BoundCallback next  # next callback in chain</span>
+<a name="l35"><span class="ln">35   </span></a>    <span class="s0">cdef BoundCallback prev  # previous callback in chain</span>
+<a name="l36"><span class="ln">36   </span></a>    <span class="s0">cdef object uid  # the uid given for this callback, None if not given</span>
+<a name="l37"><span class="ln">37   </span></a>
+<a name="l38"><span class="ln">38   </span></a>
+<a name="l39"><span class="ln">39   </span></a><span class="s0">cdef class EventObservers:</span>
+<a name="l40"><span class="ln">40   </span></a>    <span class="s0"># If dispatching should occur in normal or reverse order of binding.</span>
+<a name="l41"><span class="ln">41   </span></a>    <span class="s0">cdef int dispatch_reverse</span>
+<a name="l42"><span class="ln">42   </span></a>    <span class="s0"># If in dispatch, the value parameter is dispatched or ignored.</span>
+<a name="l43"><span class="ln">43   </span></a>    <span class="s0">cdef int dispatch_value</span>
+<a name="l44"><span class="ln">44   </span></a>    <span class="s0"># The first callback bound</span>
+<a name="l45"><span class="ln">45   </span></a>    <span class="s0">cdef BoundCallback first_callback</span>
+<a name="l46"><span class="ln">46   </span></a>    <span class="s0"># The last callback bound</span>
+<a name="l47"><span class="ln">47   </span></a>    <span class="s0">cdef BoundCallback last_callback</span>
+<a name="l48"><span class="ln">48   </span></a>    <span class="s0"># The uid to assign to the next bound callback.</span>
+<a name="l49"><span class="ln">49   </span></a>    <span class="s0">cdef object uid</span>
+<a name="l50"><span class="ln">50   </span></a>
+<a name="l51"><span class="ln">51   </span></a>    <span class="s0">cdef inline void bind(self, object observer, object src_observer, int is_ref) except *</span>
+<a name="l52"><span class="ln">52   </span></a>    <span class="s0">cdef inline object fbind(self, object observer, tuple largs, dict kwargs, int is_ref)</span>
+<a name="l53"><span class="ln">53   </span></a>    <span class="s0">cdef inline void unbind(self, object observer, int stop_on_first) except *</span>
+<a name="l54"><span class="ln">54   </span></a>    <span class="s0">cdef inline void funbind(self, object observer, tuple largs, dict kwargs) except *</span>
+<a name="l55"><span class="ln">55   </span></a>    <span class="s0">cdef inline object unbind_uid(self, object uid)</span>
+<a name="l56"><span class="ln">56   </span></a>    <span class="s0">cdef inline void remove_callback(self, BoundCallback callback, int force=*) except *</span>
+<a name="l57"><span class="ln">57   </span></a>    <span class="s0">cdef inline object _dispatch(</span>
+<a name="l58"><span class="ln">58   </span></a>        <span class="s0">self, object f, tuple slargs, dict skwargs, object obj, object value, tuple largs, dict kwargs)</span>
+<a name="l59"><span class="ln">59   </span></a>    <span class="s0">cdef inline int dispatch(self, object obj, object value, tuple largs, dict kwargs, int stop_on_true) except 2</span>
+<a name="l60"><span class="ln">60   </span></a></pre>
+</body>
+</html>
