@@ -1,0 +1,59 @@
+<html>
+<head>
+<title>demo_intro.htm</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type="text/css">
+.s0 { color: #e8bf6a;}
+.s1 { color: #a9b7c6;}
+.s2 { color: #bababa;}
+.s3 { color: #a5c261;}
+.ln { color: #606366; font-weight: normal; font-style: normal; }
+</style>
+</head>
+<body bgcolor="#2b2b2b">
+<table CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#606060" >
+<tr><td><center>
+<font face="Arial, Helvetica" color="#000000">
+demo_intro.htm</font>
+</center></td></tr></table>
+<pre><a name="l1"><span class="ln">1    </span></a><span class="s0">&lt;HTML&gt;</span>
+<a name="l2"><span class="ln">2    </span></a><span class="s0">&lt;BODY&gt;</span>
+<a name="l3"><span class="ln">3    </span></a>
+<a name="l4"><span class="ln">4    </span></a><span class="s0">&lt;H1&gt;</span>
+<a name="l5"><span class="ln">5    </span></a>  <span class="s0">&lt;MARQUEE </span><span class="s2">NAME</span><span class="s3">=&quot;Marquee1&quot; </span><span class="s2">DIRECTION</span><span class="s3">=LEFT </span><span class="s2">BEHAVIOR</span><span class="s3">=SCROLL </span><span class="s2">SCROLLAMOUNT</span><span class="s3">=10 </span><span class="s2">SCROLLDELAY</span><span class="s3">=200</span>
+<a name="l6"><span class="ln">6    </span></a>  <span class="s0">&gt;</span><span class="s1">Python ActiveX Scripting Demonstation</span>
+<a name="l7"><span class="ln">7    </span></a>  <span class="s0">&lt;/MARQUEE&gt; </span>
+<a name="l8"><span class="ln">8    </span></a><span class="s0">&lt;/H1&gt;</span>
+<a name="l9"><span class="ln">9    </span></a>
+<a name="l10"><span class="ln">10   </span></a><span class="s0">&lt;p&gt;</span><span class="s1">Congratulations on installing the Python ActiveX Scripting Engine</span><span class="s0">&lt;/p&gt;</span>
+<a name="l11"><span class="ln">11   </span></a>
+<a name="l12"><span class="ln">12   </span></a><span class="s0">&lt;p&gt;</span><span class="s1">Be warned that there is a </span><span class="s0">&lt;a </span><span class="s2">href</span><span class="s3">=&quot;http://starship.python.net/crew/mhammond/win32/PrivacyProblem.html&quot;</span><span class="s0">&gt;</span><span class="s1">privacy</span>
+<a name="l13"><span class="ln">13   </span></a><span class="s1">concern</span><span class="s0">&lt;/a&gt; </span><span class="s1">with this engine.  Please read this information, including how to disable the feature.</span><span class="s0">&lt;/p&gt;</span>
+<a name="l14"><span class="ln">14   </span></a>
+<a name="l15"><span class="ln">15   </span></a>
+<a name="l16"><span class="ln">16   </span></a><span class="s0">&lt;H3&gt;</span><span class="s1">Object model</span><span class="s0">&lt;/H3&gt;</span>
+<a name="l17"><span class="ln">17   </span></a><span class="s0">&lt;P&gt;</span><span class="s1">Except as described below, the object module exposed should be similar to that exposed</span>
+<a name="l18"><span class="ln">18   </span></a><span class="s1">by Visual Basic, etc.  Due to the nature of ActiveX Scripting, the details for each</span>
+<a name="l19"><span class="ln">19   </span></a><span class="s1">host are different, but Python should work &quot;correctly&quot;.</span>
+<a name="l20"><span class="ln">20   </span></a>
+<a name="l21"><span class="ln">21   </span></a><span class="s0">&lt;P&gt;</span><span class="s1">The object model exposed via Python for MSIE is not as seamless as VB.  The biggest limitation is </span>
+<a name="l22"><span class="ln">22   </span></a><span class="s1">the concept of a &quot;local&quot; namespace.  For example, in VB, you can</span>
+<a name="l23"><span class="ln">23   </span></a><span class="s1">code </span><span class="s0">&lt;code&gt;</span><span class="s1">text=&quot;Hi there&quot;</span><span class="s0">&lt;/code&gt;</span><span class="s1">, but in Python, you must code </span>
+<a name="l24"><span class="ln">24   </span></a><span class="s0">&lt;code&gt;</span><span class="s1">MyForm.ThisButton.Text=&quot;Hi There&quot;</span><span class="s0">&lt;/code&gt;</span><span class="s1">.  See the </span><span class="s0">&lt;A </span><span class="s2">HREF</span><span class="s3">=&quot;foo2.htm&quot;</span><span class="s0">&gt;</span><span class="s1">foo2</span><span class="s0">&lt;/A&gt; </span><span class="s1">sample </span>
+<a name="l25"><span class="ln">25   </span></a><span class="s1">for futher details.</span>
+<a name="l26"><span class="ln">26   </span></a>
+<a name="l27"><span class="ln">27   </span></a><span class="s0">&lt;H3&gt;</span><span class="s1">Known bugs and problems</span><span class="s0">&lt;/H3&gt;</span>
+<a name="l28"><span class="ln">28   </span></a><span class="s0">&lt;UL&gt;</span>
+<a name="l29"><span class="ln">29   </span></a><span class="s0">&lt;LI&gt;&lt;P&gt;</span><span class="s1">This release seems to have broken Aaron's mouse-trace sample.  No idea why, and Im supposed to be looking into it.</span>
+<a name="l30"><span class="ln">30   </span></a><span class="s0">&lt;LI&gt;&lt;P&gt;</span><span class="s1">Builtin objects such as MARQUEE are giving me grief.  Objects accessed via forms are generally</span>
+<a name="l31"><span class="ln">31   </span></a><span class="s1">no problem.</span>
+<a name="l32"><span class="ln">32   </span></a><span class="s0">&lt;LI&gt;&lt;P&gt;</span><span class="s1">If you are trying to use Python with the Windows Scripting Host, note that</span>
+<a name="l33"><span class="ln">33   </span></a><span class="s1">.pys files are not correct registered - you will need to explicitely</span>
+<a name="l34"><span class="ln">34   </span></a><span class="s1">specify either cscript.exe or wscript.exe on the command line.</span>
+<a name="l35"><span class="ln">35   </span></a><span class="s0">&lt;/UL&gt;</span>
+<a name="l36"><span class="ln">36   </span></a>
+<a name="l37"><span class="ln">37   </span></a><span class="s0">&lt;/BODY&gt;&lt;/HTML&gt;</span>
+<a name="l38"><span class="ln">38   </span></a>
+<a name="l39"><span class="ln">39   </span></a></pre>
+</body>
+</html>

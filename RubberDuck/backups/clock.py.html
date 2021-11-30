@@ -1,0 +1,1195 @@
+<html>
+<head>
+<title>clock.py</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type="text/css">
+.s0 { color: #629755; font-style: italic;}
+.s1 { color: #a9b7c6;}
+.s2 { color: #6a8759;}
+.s3 { color: #cc7832;}
+.s4 { color: #808080;}
+.s5 { color: #6897bb;}
+.ln { color: #606366; font-weight: normal; font-style: normal; }
+</style>
+</head>
+<body bgcolor="#2b2b2b">
+<table CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#606060" >
+<tr><td><center>
+<font face="Arial, Helvetica" color="#000000">
+clock.py</font>
+</center></td></tr></table>
+<pre><a name="l1"><span class="ln">1    </span></a><span class="s0">''' 
+<a name="l2"><span class="ln">2    </span></a>Clock object 
+<a name="l3"><span class="ln">3    </span></a>============ 
+<a name="l4"><span class="ln">4    </span></a> 
+<a name="l5"><span class="ln">5    </span></a>The :class:`Clock` object allows you to schedule a function call in the 
+<a name="l6"><span class="ln">6    </span></a>future; once or repeatedly at specified intervals. You can get the time 
+<a name="l7"><span class="ln">7    </span></a>elapsed between the scheduling and the calling of the callback via the 
+<a name="l8"><span class="ln">8    </span></a>`dt` argument:: 
+<a name="l9"><span class="ln">9    </span></a> 
+<a name="l10"><span class="ln">10   </span></a>    # dt means delta-time 
+<a name="l11"><span class="ln">11   </span></a>    def my_callback(dt): 
+<a name="l12"><span class="ln">12   </span></a>        pass 
+<a name="l13"><span class="ln">13   </span></a> 
+<a name="l14"><span class="ln">14   </span></a>    # call my_callback every 0.5 seconds 
+<a name="l15"><span class="ln">15   </span></a>    Clock.schedule_interval(my_callback, 0.5) 
+<a name="l16"><span class="ln">16   </span></a> 
+<a name="l17"><span class="ln">17   </span></a>    # call my_callback in 5 seconds 
+<a name="l18"><span class="ln">18   </span></a>    Clock.schedule_once(my_callback, 5) 
+<a name="l19"><span class="ln">19   </span></a> 
+<a name="l20"><span class="ln">20   </span></a>    # call my_callback as soon as possible (usually next frame.) 
+<a name="l21"><span class="ln">21   </span></a>    Clock.schedule_once(my_callback) 
+<a name="l22"><span class="ln">22   </span></a> 
+<a name="l23"><span class="ln">23   </span></a>.. note:: 
+<a name="l24"><span class="ln">24   </span></a> 
+<a name="l25"><span class="ln">25   </span></a>    If the callback returns False, the schedule will be canceled and won't 
+<a name="l26"><span class="ln">26   </span></a>    repeat. 
+<a name="l27"><span class="ln">27   </span></a> 
+<a name="l28"><span class="ln">28   </span></a>If you want to schedule a function to call with default arguments, you can use 
+<a name="l29"><span class="ln">29   </span></a>the `functools.partial 
+<a name="l30"><span class="ln">30   </span></a>&lt;http://docs.python.org/library/functools.html#functools.partial&gt;`_ python 
+<a name="l31"><span class="ln">31   </span></a>module:: 
+<a name="l32"><span class="ln">32   </span></a> 
+<a name="l33"><span class="ln">33   </span></a>    from functools import partial 
+<a name="l34"><span class="ln">34   </span></a> 
+<a name="l35"><span class="ln">35   </span></a>    def my_callback(value, key, *largs): 
+<a name="l36"><span class="ln">36   </span></a>        pass 
+<a name="l37"><span class="ln">37   </span></a> 
+<a name="l38"><span class="ln">38   </span></a>    Clock.schedule_interval(partial(my_callback, 'my value', 'my key'), 0.5) 
+<a name="l39"><span class="ln">39   </span></a> 
+<a name="l40"><span class="ln">40   </span></a>Conversely, if you want to schedule a function that doesn't accept the dt 
+<a name="l41"><span class="ln">41   </span></a>argument, you can use a `lambda 
+<a name="l42"><span class="ln">42   </span></a>&lt;http://docs.python.org/2/reference/expressions.html#lambda&gt;`_ expression 
+<a name="l43"><span class="ln">43   </span></a>to write a short function that does accept dt. For Example:: 
+<a name="l44"><span class="ln">44   </span></a> 
+<a name="l45"><span class="ln">45   </span></a>    def no_args_func(): 
+<a name="l46"><span class="ln">46   </span></a>        print(&quot;I accept no arguments, so don't schedule me in the clock&quot;) 
+<a name="l47"><span class="ln">47   </span></a> 
+<a name="l48"><span class="ln">48   </span></a>    Clock.schedule_once(lambda dt: no_args_func(), 0.5) 
+<a name="l49"><span class="ln">49   </span></a> 
+<a name="l50"><span class="ln">50   </span></a>.. note:: 
+<a name="l51"><span class="ln">51   </span></a> 
+<a name="l52"><span class="ln">52   </span></a>    You cannot unschedule an anonymous function unless you keep a 
+<a name="l53"><span class="ln">53   </span></a>    reference to it. It's better to add \\*args to your function 
+<a name="l54"><span class="ln">54   </span></a>    definition so that it can be called with an arbitrary number of 
+<a name="l55"><span class="ln">55   </span></a>    parameters. 
+<a name="l56"><span class="ln">56   </span></a> 
+<a name="l57"><span class="ln">57   </span></a>.. important:: 
+<a name="l58"><span class="ln">58   </span></a> 
+<a name="l59"><span class="ln">59   </span></a>    The class method callback is weak-referenced: you are responsible for 
+<a name="l60"><span class="ln">60   </span></a>    keeping a reference to your original object/callback. If you don't keep a 
+<a name="l61"><span class="ln">61   </span></a>    reference, the ClockBase will never execute your callback. For 
+<a name="l62"><span class="ln">62   </span></a>    example:: 
+<a name="l63"><span class="ln">63   </span></a> 
+<a name="l64"><span class="ln">64   </span></a>        class Foo(object): 
+<a name="l65"><span class="ln">65   </span></a>            def start(self): 
+<a name="l66"><span class="ln">66   </span></a>                Clock.schedule_interval(self.callback, 0.5) 
+<a name="l67"><span class="ln">67   </span></a> 
+<a name="l68"><span class="ln">68   </span></a>            def callback(self, dt): 
+<a name="l69"><span class="ln">69   </span></a>                print('In callback') 
+<a name="l70"><span class="ln">70   </span></a> 
+<a name="l71"><span class="ln">71   </span></a>        # A Foo object is created and the method start is called. 
+<a name="l72"><span class="ln">72   </span></a>        # Because no reference is kept to the instance returned from Foo(), 
+<a name="l73"><span class="ln">73   </span></a>        # the object will be collected by the Python Garbage Collector and 
+<a name="l74"><span class="ln">74   </span></a>        # your callback will be never called. 
+<a name="l75"><span class="ln">75   </span></a>        Foo().start() 
+<a name="l76"><span class="ln">76   </span></a> 
+<a name="l77"><span class="ln">77   </span></a>        # So you should do the following and keep a reference to the instance 
+<a name="l78"><span class="ln">78   </span></a>        # of foo until you don't need it anymore! 
+<a name="l79"><span class="ln">79   </span></a>        foo = Foo() 
+<a name="l80"><span class="ln">80   </span></a>        foo.start() 
+<a name="l81"><span class="ln">81   </span></a> 
+<a name="l82"><span class="ln">82   </span></a> 
+<a name="l83"><span class="ln">83   </span></a>.. _schedule-before-frame: 
+<a name="l84"><span class="ln">84   </span></a> 
+<a name="l85"><span class="ln">85   </span></a>Schedule before frame 
+<a name="l86"><span class="ln">86   </span></a>--------------------- 
+<a name="l87"><span class="ln">87   </span></a> 
+<a name="l88"><span class="ln">88   </span></a>.. versionadded:: 1.0.5 
+<a name="l89"><span class="ln">89   </span></a> 
+<a name="l90"><span class="ln">90   </span></a>Sometimes you need to schedule a callback BEFORE the next frame. Starting 
+<a name="l91"><span class="ln">91   </span></a>from 1.0.5, you can use a timeout of -1:: 
+<a name="l92"><span class="ln">92   </span></a> 
+<a name="l93"><span class="ln">93   </span></a>    Clock.schedule_once(my_callback, 0) # call after the next frame 
+<a name="l94"><span class="ln">94   </span></a>    Clock.schedule_once(my_callback, -1) # call before the next frame 
+<a name="l95"><span class="ln">95   </span></a> 
+<a name="l96"><span class="ln">96   </span></a>The Clock will execute all the callbacks with a timeout of -1 before the 
+<a name="l97"><span class="ln">97   </span></a>next frame even if you add a new callback with -1 from a running 
+<a name="l98"><span class="ln">98   </span></a>callback. However, :class:`Clock` has an iteration limit for these 
+<a name="l99"><span class="ln">99   </span></a>callbacks: it defaults to 10. 
+<a name="l100"><span class="ln">100  </span></a> 
+<a name="l101"><span class="ln">101  </span></a>If you schedule a callback that schedules a callback that schedules a ... etc 
+<a name="l102"><span class="ln">102  </span></a>more than 10 times, it will leave the loop and send a warning to the console, 
+<a name="l103"><span class="ln">103  </span></a>then continue after the next frame. This is implemented to prevent bugs from 
+<a name="l104"><span class="ln">104  </span></a>hanging or crashing the application. 
+<a name="l105"><span class="ln">105  </span></a> 
+<a name="l106"><span class="ln">106  </span></a>If you need to increase the limit, set the :attr:`max_iteration` property:: 
+<a name="l107"><span class="ln">107  </span></a> 
+<a name="l108"><span class="ln">108  </span></a>    from kivy.clock import Clock 
+<a name="l109"><span class="ln">109  </span></a>    Clock.max_iteration = 20 
+<a name="l110"><span class="ln">110  </span></a> 
+<a name="l111"><span class="ln">111  </span></a>.. _triggered-events: 
+<a name="l112"><span class="ln">112  </span></a> 
+<a name="l113"><span class="ln">113  </span></a>Triggered Events 
+<a name="l114"><span class="ln">114  </span></a>---------------- 
+<a name="l115"><span class="ln">115  </span></a> 
+<a name="l116"><span class="ln">116  </span></a>.. versionadded:: 1.0.5 
+<a name="l117"><span class="ln">117  </span></a> 
+<a name="l118"><span class="ln">118  </span></a>:meth:`CyClockBase.create_trigger` is an advanced method way to defer a 
+<a name="l119"><span class="ln">119  </span></a>callback. It functions exactly like :meth:`CyClockBase.schedule_once` and 
+<a name="l120"><span class="ln">120  </span></a>:meth:`CyClockBase.schedule_interval` except that it doesn't immediately 
+<a name="l121"><span class="ln">121  </span></a>schedule the callback. Instead, one schedules the callback using the 
+<a name="l122"><span class="ln">122  </span></a>:class:`ClockEvent` returned by it. This ensures that you can call the event 
+<a name="l123"><span class="ln">123  </span></a>multiple times but it won't be scheduled more than once. This is not the case 
+<a name="l124"><span class="ln">124  </span></a>with :meth:`CyClockBase.schedule_once`:: 
+<a name="l125"><span class="ln">125  </span></a> 
+<a name="l126"><span class="ln">126  </span></a>    # will run the callback twice before the next frame 
+<a name="l127"><span class="ln">127  </span></a>    Clock.schedule_once(my_callback) 
+<a name="l128"><span class="ln">128  </span></a>    Clock.schedule_once(my_callback) 
+<a name="l129"><span class="ln">129  </span></a> 
+<a name="l130"><span class="ln">130  </span></a>    # will run the callback once before the next frame 
+<a name="l131"><span class="ln">131  </span></a>    event = Clock.create_trigger(my_callback) 
+<a name="l132"><span class="ln">132  </span></a>    event() 
+<a name="l133"><span class="ln">133  </span></a>    event() 
+<a name="l134"><span class="ln">134  </span></a> 
+<a name="l135"><span class="ln">135  </span></a>    # will also run the callback only once before the next frame 
+<a name="l136"><span class="ln">136  </span></a>    event = Clock.schedule_once(my_callback)  # now it's already scheduled 
+<a name="l137"><span class="ln">137  </span></a>    event()  # won't be scheduled again 
+<a name="l138"><span class="ln">138  </span></a>    event() 
+<a name="l139"><span class="ln">139  </span></a> 
+<a name="l140"><span class="ln">140  </span></a>In addition, it is more convenient to create and bind to 
+<a name="l141"><span class="ln">141  </span></a>the triggered event than using :meth:`CyClockBase.schedule_once` in a 
+<a name="l142"><span class="ln">142  </span></a>function:: 
+<a name="l143"><span class="ln">143  </span></a> 
+<a name="l144"><span class="ln">144  </span></a>    from kivy.clock import Clock 
+<a name="l145"><span class="ln">145  </span></a>    from kivy.uix.widget import Widget 
+<a name="l146"><span class="ln">146  </span></a> 
+<a name="l147"><span class="ln">147  </span></a>    class Sample(Widget): 
+<a name="l148"><span class="ln">148  </span></a>        def __init__(self, **kwargs): 
+<a name="l149"><span class="ln">149  </span></a>            self._trigger = Clock.create_trigger(self.cb) 
+<a name="l150"><span class="ln">150  </span></a>            super(Sample, self).__init__(**kwargs) 
+<a name="l151"><span class="ln">151  </span></a>            self.bind(x=self._trigger, y=self._trigger) 
+<a name="l152"><span class="ln">152  </span></a> 
+<a name="l153"><span class="ln">153  </span></a>        def cb(self, *largs): 
+<a name="l154"><span class="ln">154  </span></a>            pass 
+<a name="l155"><span class="ln">155  </span></a> 
+<a name="l156"><span class="ln">156  </span></a>Even if x and y changes within one frame, the callback is only run once. 
+<a name="l157"><span class="ln">157  </span></a> 
+<a name="l158"><span class="ln">158  </span></a>Unscheduling 
+<a name="l159"><span class="ln">159  </span></a>------------- 
+<a name="l160"><span class="ln">160  </span></a> 
+<a name="l161"><span class="ln">161  </span></a>An event scheduled with :meth:`CyClockBase.schedule_once`, 
+<a name="l162"><span class="ln">162  </span></a>:meth:`CyClockBase.schedule_interval`, or with 
+<a name="l163"><span class="ln">163  </span></a>:meth:`CyClockBase.create_trigger` and then triggered can be unscheduled in 
+<a name="l164"><span class="ln">164  </span></a>multiple ways. E.g:: 
+<a name="l165"><span class="ln">165  </span></a> 
+<a name="l166"><span class="ln">166  </span></a>    def my_callback(dt): 
+<a name="l167"><span class="ln">167  </span></a>        pass 
+<a name="l168"><span class="ln">168  </span></a> 
+<a name="l169"><span class="ln">169  </span></a>    # call my_callback every 0.5 seconds 
+<a name="l170"><span class="ln">170  </span></a>    event = Clock.schedule_interval(my_callback, 0.5) 
+<a name="l171"><span class="ln">171  </span></a> 
+<a name="l172"><span class="ln">172  </span></a>    # call my_callback in 5 seconds 
+<a name="l173"><span class="ln">173  </span></a>    event2 = Clock.schedule_once(my_callback, 5) 
+<a name="l174"><span class="ln">174  </span></a> 
+<a name="l175"><span class="ln">175  </span></a>    event_trig = Clock.create_trigger(my_callback, 5) 
+<a name="l176"><span class="ln">176  </span></a>    event_trig() 
+<a name="l177"><span class="ln">177  </span></a> 
+<a name="l178"><span class="ln">178  </span></a>    # unschedule using cancel 
+<a name="l179"><span class="ln">179  </span></a>    event.cancel() 
+<a name="l180"><span class="ln">180  </span></a> 
+<a name="l181"><span class="ln">181  </span></a>    # unschedule using Clock.unschedule 
+<a name="l182"><span class="ln">182  </span></a>    Clock.unschedule(event2) 
+<a name="l183"><span class="ln">183  </span></a> 
+<a name="l184"><span class="ln">184  </span></a>    # unschedule using Clock.unschedule with the callback 
+<a name="l185"><span class="ln">185  </span></a>    # NOT RECOMMENDED 
+<a name="l186"><span class="ln">186  </span></a>    Clock.unschedule(my_callback) 
+<a name="l187"><span class="ln">187  </span></a> 
+<a name="l188"><span class="ln">188  </span></a>The best way to unschedule a callback is with :meth:`ClockEvent.cancel`. 
+<a name="l189"><span class="ln">189  </span></a>:meth:`CyClockBase.unschedule` is mainly an alias for that for that function. 
+<a name="l190"><span class="ln">190  </span></a>However, if the original callback itself is passed to 
+<a name="l191"><span class="ln">191  </span></a>:meth:`CyClockBase.unschedule`, it'll unschedule all instances of that 
+<a name="l192"><span class="ln">192  </span></a>callback (provided ``all`` is True, the default, otherwise only the first match 
+<a name="l193"><span class="ln">193  </span></a>is removed). 
+<a name="l194"><span class="ln">194  </span></a> 
+<a name="l195"><span class="ln">195  </span></a>Calling :meth:`CyClockBase.unschedule` on the original callback is highly 
+<a name="l196"><span class="ln">196  </span></a>discouraged because it's significantly slower than when using the event. 
+<a name="l197"><span class="ln">197  </span></a> 
+<a name="l198"><span class="ln">198  </span></a>Clock Lifecycle 
+<a name="l199"><span class="ln">199  </span></a>--------------- 
+<a name="l200"><span class="ln">200  </span></a> 
+<a name="l201"><span class="ln">201  </span></a>Kivy's clock has a lifecycle. By default, scheduling a callback after the Clock 
+<a name="l202"><span class="ln">202  </span></a>has ended will not raise an error, even though the callback may never be 
+<a name="l203"><span class="ln">203  </span></a>called. That's because most callbacks are like services, e.g. responding to a 
+<a name="l204"><span class="ln">204  </span></a>user button press - if the app is running the callbacks need to service the app 
+<a name="l205"><span class="ln">205  </span></a>and respond to the input, but once the app has stopped or is stopping, we can 
+<a name="l206"><span class="ln">206  </span></a>safely not process these events. 
+<a name="l207"><span class="ln">207  </span></a> 
+<a name="l208"><span class="ln">208  </span></a>Other events always need to be processed. E.g. another thread may request a 
+<a name="l209"><span class="ln">209  </span></a>callback in kivy's thread and then process some result. If the event is not 
+<a name="l210"><span class="ln">210  </span></a>processed in Kivy's thread because the app stopped, the second thread may 
+<a name="l211"><span class="ln">211  </span></a>block forever hanging the application as it exits. 
+<a name="l212"><span class="ln">212  </span></a> 
+<a name="l213"><span class="ln">213  </span></a>Consequently, we provide a API 
+<a name="l214"><span class="ln">214  </span></a>(:meth:`CyClockBase.create_lifecycle_aware_trigger`) for scheduling callbacks 
+<a name="l215"><span class="ln">215  </span></a>that raise a :class:`ClockNotRunningError` if the clock has stopped. If the 
+<a name="l216"><span class="ln">216  </span></a>scheduling succeeded it guarantees that one of its callbacks will be called. 
+<a name="l217"><span class="ln">217  </span></a>I.e. the new :meth:`CyClockBase.create_lifecycle_aware_trigger` accepts an 
+<a name="l218"><span class="ln">218  </span></a>additional ``clock_ended_callback`` parameter. Normally, ``callback`` will be 
+<a name="l219"><span class="ln">219  </span></a>called when the event is processed. But, if the clock is stopped before it can 
+<a name="l220"><span class="ln">220  </span></a>be processed, if the application exited normally (and the app was started) and 
+<a name="l221"><span class="ln">221  </span></a>the event wasn't canceled, and the callbacks are not garbage collected, then 
+<a name="l222"><span class="ln">222  </span></a>``clock_ended_callback`` will be called instead when the clock is stopped. 
+<a name="l223"><span class="ln">223  </span></a> 
+<a name="l224"><span class="ln">224  </span></a>That is, given these conditions, if :class:`ClockNotRunningError` was not 
+<a name="l225"><span class="ln">225  </span></a>raised when the event was scheduled, then one of these callbacks will be 
+<a name="l226"><span class="ln">226  </span></a>called - either ``callback`` if the event executed normally, or 
+<a name="l227"><span class="ln">227  </span></a>``clock_ended_callback`` if the clock is stopped while the event is scheduled. 
+<a name="l228"><span class="ln">228  </span></a> 
+<a name="l229"><span class="ln">229  </span></a>By default, events can be scheduled before the clock is started because it is 
+<a name="l230"><span class="ln">230  </span></a>assumed the clock will eventually be started when the app starts. I.e. 
+<a name="l231"><span class="ln">231  </span></a>calling :meth:`CyClockBase.create_lifecycle_aware_trigger` before the clock 
+<a name="l232"><span class="ln">232  </span></a>and application starts will succeed. But if the app never actually starts, then 
+<a name="l233"><span class="ln">233  </span></a>neither of the callbacks may be executed. 
+<a name="l234"><span class="ln">234  </span></a> 
+<a name="l235"><span class="ln">235  </span></a>.. versionadded:: 2.0.0 
+<a name="l236"><span class="ln">236  </span></a>    The lifecycle was added in 2.0.0 
+<a name="l237"><span class="ln">237  </span></a> 
+<a name="l238"><span class="ln">238  </span></a>Exception Handling 
+<a name="l239"><span class="ln">239  </span></a>------------------ 
+<a name="l240"><span class="ln">240  </span></a> 
+<a name="l241"><span class="ln">241  </span></a>Kivy provides a exception handling manager, 
+<a name="l242"><span class="ln">242  </span></a>:attr:`~kivy.base.ExceptionManager`, to handle its internal exceptions 
+<a name="l243"><span class="ln">243  </span></a>including exceptions raised by clock callbacks, without crashing the 
+<a name="l244"><span class="ln">244  </span></a>application. By default when an exception is raised, the app will crash. 
+<a name="l245"><span class="ln">245  </span></a>But, if a handler is registered with the exception manager and the handler 
+<a name="l246"><span class="ln">246  </span></a>handles the exception, the app will not crash and will continue as normal.:: 
+<a name="l247"><span class="ln">247  </span></a> 
+<a name="l248"><span class="ln">248  </span></a>    from kivy.base import ExceptionHandler, ExceptionManager 
+<a name="l249"><span class="ln">249  </span></a>    class MyHandler(ExceptionHandler): 
+<a name="l250"><span class="ln">250  </span></a>        def handle_exception(self, inst): 
+<a name="l251"><span class="ln">251  </span></a>            if isinstance(inst, ValueError): 
+<a name="l252"><span class="ln">252  </span></a>                Logger.exception('ValueError caught by MyHandler') 
+<a name="l253"><span class="ln">253  </span></a>                return ExceptionManager.PASS 
+<a name="l254"><span class="ln">254  </span></a>            return ExceptionManager.RAISE 
+<a name="l255"><span class="ln">255  </span></a> 
+<a name="l256"><span class="ln">256  </span></a>    ExceptionManager.add_handler(MyHandler()) 
+<a name="l257"><span class="ln">257  </span></a> 
+<a name="l258"><span class="ln">258  </span></a>Then, all ValueError exceptions will be logged to the console and ignored. 
+<a name="l259"><span class="ln">259  </span></a>Similarly, if a scheduled clock callback raises a ValueError, other clock 
+<a name="l260"><span class="ln">260  </span></a>events will still be processed normally. 
+<a name="l261"><span class="ln">261  </span></a> 
+<a name="l262"><span class="ln">262  </span></a>If an event's callback raises an exception, before the exception handler is 
+<a name="l263"><span class="ln">263  </span></a>executed, the callback is immediately canceled. 
+<a name="l264"><span class="ln">264  </span></a> 
+<a name="l265"><span class="ln">265  </span></a>It still is possible for the app to be corrupted if kivy itself is the source 
+<a name="l266"><span class="ln">266  </span></a>of the exception. I.e. even with a handler that ignores exceptions and doesn't 
+<a name="l267"><span class="ln">267  </span></a>crash, the app may be in a corrupted state if the error originates from within 
+<a name="l268"><span class="ln">268  </span></a>Kivy itself. However, the exception handler can help protect the app from 
+<a name="l269"><span class="ln">269  </span></a>crashing and can help protect against user callbacks crashing the app. 
+<a name="l270"><span class="ln">270  </span></a> 
+<a name="l271"><span class="ln">271  </span></a>.. versionchanged:: 2.0.0 
+<a name="l272"><span class="ln">272  </span></a>    Prior to Kivy 2.0.0, an exception raised in a event's callback would 
+<a name="l273"><span class="ln">273  </span></a>    cause the clock to crash and subsequent events may or may not be executed. 
+<a name="l274"><span class="ln">274  </span></a>    Even if the exception was handled by an 
+<a name="l275"><span class="ln">275  </span></a>    :class:`~kivy.base.ExceptionHandler`, there was no guarantee that some 
+<a name="l276"><span class="ln">276  </span></a>    scheduled events would not be skipped. 
+<a name="l277"><span class="ln">277  </span></a> 
+<a name="l278"><span class="ln">278  </span></a>    From 2.0.0 onward, if a event's exception is handled by an 
+<a name="l279"><span class="ln">279  </span></a>    :class:`~kivy.base.ExceptionHandler`, other events will be shielded from 
+<a name="l280"><span class="ln">280  </span></a>    the exception and will execute normally. 
+<a name="l281"><span class="ln">281  </span></a> 
+<a name="l282"><span class="ln">282  </span></a>Scheduling from ``__del__`` 
+<a name="l283"><span class="ln">283  </span></a>--------------------------- 
+<a name="l284"><span class="ln">284  </span></a> 
+<a name="l285"><span class="ln">285  </span></a>It is not safe to schedule Clock events from a object's ``__del__`` or 
+<a name="l286"><span class="ln">286  </span></a>``__dealloc__`` method. If you must schedule a Clock call from this method, use 
+<a name="l287"><span class="ln">287  </span></a>:meth:`CyClockBase.schedule_del_safe` or 
+<a name="l288"><span class="ln">288  </span></a>:meth:`CyClockBase.schedule_lifecycle_aware_del_safe` instead. 
+<a name="l289"><span class="ln">289  </span></a> 
+<a name="l290"><span class="ln">290  </span></a>Threading and Callback Order 
+<a name="l291"><span class="ln">291  </span></a>----------------------------- 
+<a name="l292"><span class="ln">292  </span></a> 
+<a name="l293"><span class="ln">293  </span></a>Beginning with 1.10.0, all the events scheduled for the same frame, e.g. 
+<a name="l294"><span class="ln">294  </span></a>all the events scheduled in the same frame with a ``timeout`` of ``0``, 
+<a name="l295"><span class="ln">295  </span></a>well be executed in the order they were scheduled. 
+<a name="l296"><span class="ln">296  </span></a> 
+<a name="l297"><span class="ln">297  </span></a>Also, all the scheduling and canceling methods are fully thread safe and 
+<a name="l298"><span class="ln">298  </span></a>can be safely used from external threads. 
+<a name="l299"><span class="ln">299  </span></a> 
+<a name="l300"><span class="ln">300  </span></a>As a a consequence, calling :meth:`CyClockBase.unschedule` with the original 
+<a name="l301"><span class="ln">301  </span></a>callback is now significantly slower and highly discouraged. Instead, the 
+<a name="l302"><span class="ln">302  </span></a>returned events should be used to cancel. As a tradeoff, all the other methods 
+<a name="l303"><span class="ln">303  </span></a>are now significantly faster than before. 
+<a name="l304"><span class="ln">304  </span></a> 
+<a name="l305"><span class="ln">305  </span></a>Advanced Clock Details 
+<a name="l306"><span class="ln">306  </span></a>----------------------- 
+<a name="l307"><span class="ln">307  </span></a> 
+<a name="l308"><span class="ln">308  </span></a>The following section goes into the internal kivy clock details as well 
+<a name="l309"><span class="ln">309  </span></a>as the various clock options. It is meant only for advanced users. 
+<a name="l310"><span class="ln">310  </span></a> 
+<a name="l311"><span class="ln">311  </span></a>Fundamentally, the Kivy clock attempts to execute any scheduled callback 
+<a name="l312"><span class="ln">312  </span></a>rhythmically as determined by the specified fps (frame per second, see 
+<a name="l313"><span class="ln">313  </span></a>``maxfps`` in :mod:`~kivy.config`). That is, ideally, given e.g. a desired fps 
+<a name="l314"><span class="ln">314  </span></a>of 30, the clock will execute the callbacks at intervals of 1 / 30 seconds, or 
+<a name="l315"><span class="ln">315  </span></a>every 33.33 ms. All the callbacks in a frame are given the same timestamp, 
+<a name="l316"><span class="ln">316  </span></a>i.e. the ``dt`` passed to the callback are all the same and it's the difference 
+<a name="l317"><span class="ln">317  </span></a>in time between the start of this and the previous frame. 
+<a name="l318"><span class="ln">318  </span></a> 
+<a name="l319"><span class="ln">319  </span></a>Because of inherent indeterminism, the frames do not actually occur exactly 
+<a name="l320"><span class="ln">320  </span></a>at intervals of the fps and ``dt`` may be under or over the desired fps. 
+<a name="l321"><span class="ln">321  </span></a>Also, once the timeout is &quot;close enough&quot; to the desired timeout, as determined 
+<a name="l322"><span class="ln">322  </span></a>internally, Kivy will execute the callback in the current frame even when the 
+<a name="l323"><span class="ln">323  </span></a>&quot;actual time&quot; has not elapsed the ``timeout`` amount. 
+<a name="l324"><span class="ln">324  </span></a> 
+<a name="l325"><span class="ln">325  </span></a>Kivy offers now, since ``1.10.0``, multiple clocks with different behaviors. 
+<a name="l326"><span class="ln">326  </span></a> 
+<a name="l327"><span class="ln">327  </span></a>Default Clock 
+<a name="l328"><span class="ln">328  </span></a>^^^^^^^^^^^^^^ 
+<a name="l329"><span class="ln">329  </span></a> 
+<a name="l330"><span class="ln">330  </span></a>The default clock (``default``) behaves as described above. When a callback 
+<a name="l331"><span class="ln">331  </span></a>with a timeout of zero or non-zero is scheduled, they are executed at the frame 
+<a name="l332"><span class="ln">332  </span></a>that is near the timeout, which is a function of the fps. So a timeout of zero 
+<a name="l333"><span class="ln">333  </span></a>would still result in a delay of one frame or about 1 / fps, typically a bit 
+<a name="l334"><span class="ln">334  </span></a>less but sometimes more depending on the CPU usage of the other events 
+<a name="l335"><span class="ln">335  </span></a>scheduled for that frame. 
+<a name="l336"><span class="ln">336  </span></a> 
+<a name="l337"><span class="ln">337  </span></a>In a test using a fps of 30, a callback with a timeout of 0, 0.001, and 0.05, 
+<a name="l338"><span class="ln">338  </span></a>resulted in a mean callback delay of 0.02487, 0.02488, and 0.05011 seconds, 
+<a name="l339"><span class="ln">339  </span></a>respectively. When tested with a fps of 600 the delay for 0.05 was similar, 
+<a name="l340"><span class="ln">340  </span></a>except the standard deviation was reduced resulting in overall better accuracy. 
+<a name="l341"><span class="ln">341  </span></a> 
+<a name="l342"><span class="ln">342  </span></a>Interruptible Clock 
+<a name="l343"><span class="ln">343  </span></a>^^^^^^^^^^^^^^^^^^^^ 
+<a name="l344"><span class="ln">344  </span></a> 
+<a name="l345"><span class="ln">345  </span></a>The default clock suffers from the quantization problem, as frames occur only 
+<a name="l346"><span class="ln">346  </span></a>on intervals and any scheduled timeouts will not be able to occur during an 
+<a name="l347"><span class="ln">347  </span></a>interval. For example, with the timeout of 0.05, while the mean was 0.05011, 
+<a name="l348"><span class="ln">348  </span></a>its values ranged between 0.02548 - 0.07348 and a standard deviation of 0.002. 
+<a name="l349"><span class="ln">349  </span></a>Also, there's the minimum timeout of about 0.02487. 
+<a name="l350"><span class="ln">350  </span></a> 
+<a name="l351"><span class="ln">351  </span></a>The interruptible clock (``interrupt``) will execute timeouts even during a 
+<a name="l352"><span class="ln">352  </span></a>frame. So a timeout of zero will execute as quickly as possible and similarly 
+<a name="l353"><span class="ln">353  </span></a>a non-zero timeout will be executed even during the interval. 
+<a name="l354"><span class="ln">354  </span></a> 
+<a name="l355"><span class="ln">355  </span></a>This clock, and all the clocks described after this have an option, 
+<a name="l356"><span class="ln">356  </span></a>:attr:`ClockBaseInterruptBehavior.interupt_next_only`. When True, any of the 
+<a name="l357"><span class="ln">357  </span></a>behavior new behavior will only apply to the callbacks with a timeout of 
+<a name="l358"><span class="ln">358  </span></a>zero. Non-zero timeouts will behave like in the default clock. E.g. for this 
+<a name="l359"><span class="ln">359  </span></a>clock when True, only zero timeouts will execute during the the interval. 
+<a name="l360"><span class="ln">360  </span></a> 
+<a name="l361"><span class="ln">361  </span></a>In a test using a fps of 30, a callback with a timeout of 0, 0.001, and 0.05, 
+<a name="l362"><span class="ln">362  </span></a>resulted in a mean callback delay of 0.00013, 0.00013, and 0.04120 seconds, 
+<a name="l363"><span class="ln">363  </span></a>respectively when :attr:`ClockBaseInterruptBehavior.interupt_next_only` was 
+<a name="l364"><span class="ln">364  </span></a>False. Also, compared to the default clock the standard deviation was reduced. 
+<a name="l365"><span class="ln">365  </span></a>When :attr:`ClockBaseInterruptBehavior.interupt_next_only` was True, the values 
+<a name="l366"><span class="ln">366  </span></a>were 0.00010, 0.02414, and 0.05034, respectively. 
+<a name="l367"><span class="ln">367  </span></a> 
+<a name="l368"><span class="ln">368  </span></a>Free Clock 
+<a name="l369"><span class="ln">369  </span></a>^^^^^^^^^^^ 
+<a name="l370"><span class="ln">370  </span></a> 
+<a name="l371"><span class="ln">371  </span></a>The interruptible clock may not be ideal for all cases because all the events 
+<a name="l372"><span class="ln">372  </span></a>are executed during the intervals and events are not executed anymore 
+<a name="l373"><span class="ln">373  </span></a>rhythmically as multiples of the fps. For example, there may not be any benefit 
+<a name="l374"><span class="ln">374  </span></a>for the graphics to update in a sub-interval, so the additional accuracy 
+<a name="l375"><span class="ln">375  </span></a>wastes CPU. 
+<a name="l376"><span class="ln">376  </span></a> 
+<a name="l377"><span class="ln">377  </span></a>The Free clock (``free_all``) solves this by having ``Clock.xxx_free`` versions 
+<a name="l378"><span class="ln">378  </span></a>of all the Clock scheduling methods. By free, we mean the event is free from 
+<a name="l379"><span class="ln">379  </span></a>the fps because it's not fps limited. E.g. 
+<a name="l380"><span class="ln">380  </span></a>:meth:`CyClockBaseFree.create_trigger_free` corresponds to 
+<a name="l381"><span class="ln">381  </span></a>:meth:`CyClockBase.create_trigger`. Only when an event scheduled using the 
+<a name="l382"><span class="ln">382  </span></a>``Clock.xxx_free`` methods is present will the clock interrupt and execute 
+<a name="l383"><span class="ln">383  </span></a>the events during the interval. So, if no ``free`` event is present the clock 
+<a name="l384"><span class="ln">384  </span></a>behaves like the ``default`` clock, otherwise it behaves like the ``interrupt`` 
+<a name="l385"><span class="ln">385  </span></a>clock. 
+<a name="l386"><span class="ln">386  </span></a> 
+<a name="l387"><span class="ln">387  </span></a>In a test using a fps of 30, a callback with a timeout of 0s, 0.001s, and 
+<a name="l388"><span class="ln">388  </span></a>0.05s, resulted in a mean callback delay of 0.00012s, 0.00017s, and 0.04121s 
+<a name="l389"><span class="ln">389  </span></a>seconds, respectively when it was a free event and 0.02403s, 0.02405s, and 
+<a name="l390"><span class="ln">390  </span></a>0.04829s, respectively when it wasn't. 
+<a name="l391"><span class="ln">391  </span></a> 
+<a name="l392"><span class="ln">392  </span></a>Free Only Clock 
+<a name="l393"><span class="ln">393  </span></a>^^^^^^^^^^^^^^^^^ 
+<a name="l394"><span class="ln">394  </span></a> 
+<a name="l395"><span class="ln">395  </span></a>The Free clock executes all events when a free event was scheduled. This 
+<a name="l396"><span class="ln">396  </span></a>results in normal events also being execute in the middle of the interval 
+<a name="l397"><span class="ln">397  </span></a>when a free event is scheduled. For example, above, when a free event was 
+<a name="l398"><span class="ln">398  </span></a>absent, a normal event with a 0.001s timeout was delayed for 0.02405s. However, 
+<a name="l399"><span class="ln">399  </span></a>if a free event happened to be also scheduled, the normal event was only 
+<a name="l400"><span class="ln">400  </span></a>delayed 0.00014s, which may be undesirable. 
+<a name="l401"><span class="ln">401  </span></a> 
+<a name="l402"><span class="ln">402  </span></a>The Free only clock (``free_only``) solves it by only executing free events 
+<a name="l403"><span class="ln">403  </span></a>during the interval and normal events are always executed like with the 
+<a name="l404"><span class="ln">404  </span></a>default clock. For example, in the presence of a free event, a normal event 
+<a name="l405"><span class="ln">405  </span></a>with a timeout of 0.001s still had a delay of 0.02406. So this clock, 
+<a name="l406"><span class="ln">406  </span></a>treats free and normal events independently, with normal events always being 
+<a name="l407"><span class="ln">407  </span></a>fps limited, but never the free events. 
+<a name="l408"><span class="ln">408  </span></a> 
+<a name="l409"><span class="ln">409  </span></a>Summary 
+<a name="l410"><span class="ln">410  </span></a>^^^^^^^^ 
+<a name="l411"><span class="ln">411  </span></a> 
+<a name="l412"><span class="ln">412  </span></a>The kivy clock type to use can be set with the ``kivy_clock`` option the 
+<a name="l413"><span class="ln">413  </span></a>:mod:`~kivy.config`. If ``KIVY_CLOCK`` is present in the environment it 
+<a name="l414"><span class="ln">414  </span></a>overwrites the config selection. Its possible values are as follows: 
+<a name="l415"><span class="ln">415  </span></a> 
+<a name="l416"><span class="ln">416  </span></a>* When ``kivy_clock`` is ``default``, the normal clock, :class:`ClockBase`, 
+<a name="l417"><span class="ln">417  </span></a>  which limits callbacks to the maxfps quantization - is used. 
+<a name="l418"><span class="ln">418  </span></a>* When ``kivy_clock`` is ``interrupt``, a interruptible clock, 
+<a name="l419"><span class="ln">419  </span></a>  :class:`ClockBaseInterrupt`, which doesn't limit any callbacks to the 
+<a name="l420"><span class="ln">420  </span></a>  maxfps - is used. Callbacks will be executed at any time. 
+<a name="l421"><span class="ln">421  </span></a>* When ``kivy_clock`` is ``free_all``, a interruptible clock, 
+<a name="l422"><span class="ln">422  </span></a>  :class:`ClockBaseFreeInterruptAll`, which doesn't limit any callbacks to the 
+<a name="l423"><span class="ln">423  </span></a>  maxfps in the presence of free events, but in their absence it limits events 
+<a name="l424"><span class="ln">424  </span></a>  to the fps quantization interval - is used. 
+<a name="l425"><span class="ln">425  </span></a>* When ``kivy_clock`` is ``free_only``, a interruptible clock, 
+<a name="l426"><span class="ln">426  </span></a>  :class:`ClockBaseFreeInterruptAll`, which treats free and normal events 
+<a name="l427"><span class="ln">427  </span></a>  independently; normal events are fps limited while free events are not - is 
+<a name="l428"><span class="ln">428  </span></a>  used. 
+<a name="l429"><span class="ln">429  </span></a> 
+<a name="l430"><span class="ln">430  </span></a>Async clock support 
+<a name="l431"><span class="ln">431  </span></a>------------------- 
+<a name="l432"><span class="ln">432  </span></a> 
+<a name="l433"><span class="ln">433  </span></a>.. versionadded:: 2.0.0 
+<a name="l434"><span class="ln">434  </span></a> 
+<a name="l435"><span class="ln">435  </span></a>Experimental async support has been added in 2.0.0. The Clock now has a 
+<a name="l436"><span class="ln">436  </span></a>:meth:`ClockBaseBehavior.async_tick` and :meth:`ClockBaseBehavior.async_idle` 
+<a name="l437"><span class="ln">437  </span></a>coroutine method which is used by the kivy EventLoop when the kivy EventLoop is 
+<a name="l438"><span class="ln">438  </span></a>executed in a asynchronous manner. When used, the kivy clock does not 
+<a name="l439"><span class="ln">439  </span></a>block while idling. 
+<a name="l440"><span class="ln">440  </span></a> 
+<a name="l441"><span class="ln">441  </span></a>The async library to use is selected with the `KIVY_EVENTLOOP` environmental 
+<a name="l442"><span class="ln">442  </span></a>variable or by  calling :meth:`~kivy.clock.ClockBaseBehavior.init_async_lib` 
+<a name="l443"><span class="ln">443  </span></a>directly. The library can be one of `&quot;asyncio&quot;` when the standard library 
+<a name="l444"><span class="ln">444  </span></a>`asyncio` should be used, or `&quot;trio&quot;` if the trio library 
+<a name="l445"><span class="ln">445  </span></a>should be used. If not set it defaults to `&quot;asyncio&quot;`. 
+<a name="l446"><span class="ln">446  </span></a> 
+<a name="l447"><span class="ln">447  </span></a>See :mod:`~kivy.app` for example usage. 
+<a name="l448"><span class="ln">448  </span></a>'''</span>
+<a name="l449"><span class="ln">449  </span></a>
+<a name="l450"><span class="ln">450  </span></a><span class="s1">__all__ = (</span>
+<a name="l451"><span class="ln">451  </span></a>    <span class="s2">'Clock'</span><span class="s3">, </span><span class="s2">'ClockNotRunningError'</span><span class="s3">, </span><span class="s2">'ClockEvent'</span><span class="s3">, </span><span class="s2">'FreeClockEvent'</span><span class="s3">,</span>
+<a name="l452"><span class="ln">452  </span></a>    <span class="s2">'CyClockBase'</span><span class="s3">, </span><span class="s2">'CyClockBaseFree'</span><span class="s3">,</span>
+<a name="l453"><span class="ln">453  </span></a>    <span class="s2">'ClockBaseBehavior'</span><span class="s3">, </span><span class="s2">'ClockBaseInterruptBehavior'</span><span class="s3">,</span>
+<a name="l454"><span class="ln">454  </span></a>    <span class="s2">'ClockBaseInterruptFreeBehavior'</span><span class="s3">, </span><span class="s2">'ClockBase'</span><span class="s3">, </span><span class="s2">'ClockBaseInterrupt'</span><span class="s3">,</span>
+<a name="l455"><span class="ln">455  </span></a>    <span class="s2">'ClockBaseFreeInterruptAll'</span><span class="s3">, </span><span class="s2">'ClockBaseFreeInterruptOnly'</span><span class="s3">, </span><span class="s2">'mainthread'</span><span class="s1">)</span>
+<a name="l456"><span class="ln">456  </span></a>
+<a name="l457"><span class="ln">457  </span></a><span class="s3">from </span><span class="s1">sys </span><span class="s3">import </span><span class="s1">platform</span>
+<a name="l458"><span class="ln">458  </span></a><span class="s3">from </span><span class="s1">os </span><span class="s3">import </span><span class="s1">environ</span>
+<a name="l459"><span class="ln">459  </span></a><span class="s3">from </span><span class="s1">functools </span><span class="s3">import </span><span class="s1">wraps</span><span class="s3">, </span><span class="s1">partial</span>
+<a name="l460"><span class="ln">460  </span></a><span class="s3">from </span><span class="s1">kivy.context </span><span class="s3">import </span><span class="s1">register_context</span>
+<a name="l461"><span class="ln">461  </span></a><span class="s3">from </span><span class="s1">kivy.config </span><span class="s3">import </span><span class="s1">Config</span>
+<a name="l462"><span class="ln">462  </span></a><span class="s3">from </span><span class="s1">kivy.logger </span><span class="s3">import </span><span class="s1">Logger</span>
+<a name="l463"><span class="ln">463  </span></a><span class="s3">from </span><span class="s1">kivy.compat </span><span class="s3">import </span><span class="s1">clock </span><span class="s3">as </span><span class="s1">_default_time</span>
+<a name="l464"><span class="ln">464  </span></a><span class="s3">import </span><span class="s1">time</span>
+<a name="l465"><span class="ln">465  </span></a><span class="s3">try</span><span class="s1">:</span>
+<a name="l466"><span class="ln">466  </span></a>    <span class="s3">from </span><span class="s1">kivy._clock </span><span class="s3">import </span><span class="s1">CyClockBase</span><span class="s3">, </span><span class="s1">ClockEvent</span><span class="s3">, </span><span class="s1">FreeClockEvent</span><span class="s3">, </span><span class="s1">\</span>
+<a name="l467"><span class="ln">467  </span></a>        <span class="s1">CyClockBaseFree</span><span class="s3">, </span><span class="s1">ClockNotRunningError</span>
+<a name="l468"><span class="ln">468  </span></a><span class="s3">except </span><span class="s1">ImportError:</span>
+<a name="l469"><span class="ln">469  </span></a>    <span class="s1">Logger.error(</span>
+<a name="l470"><span class="ln">470  </span></a>        <span class="s2">'Clock: Unable to import kivy._clock. Have you perhaps forgotten to '</span>
+<a name="l471"><span class="ln">471  </span></a>        <span class="s2">'compile kivy? Kivy contains Cython code which needs to be compiled. '</span>
+<a name="l472"><span class="ln">472  </span></a>        <span class="s2">'A missing kivy._clock often indicates the Cython code has not been '</span>
+<a name="l473"><span class="ln">473  </span></a>        <span class="s2">'compiled. Please follow the installation instructions and make sure '</span>
+<a name="l474"><span class="ln">474  </span></a>        <span class="s2">'to compile Kivy'</span><span class="s1">)</span>
+<a name="l475"><span class="ln">475  </span></a>    <span class="s3">raise</span>
+<a name="l476"><span class="ln">476  </span></a>
+<a name="l477"><span class="ln">477  </span></a><span class="s3">from </span><span class="s1">threading </span><span class="s3">import </span><span class="s1">Event </span><span class="s3">as </span><span class="s1">ThreadingEvent</span>
+<a name="l478"><span class="ln">478  </span></a>
+<a name="l479"><span class="ln">479  </span></a><span class="s4"># some reading: http://gameprogrammingpatterns.com/game-loop.html</span>
+<a name="l480"><span class="ln">480  </span></a>
+<a name="l481"><span class="ln">481  </span></a>
+<a name="l482"><span class="ln">482  </span></a><span class="s3">def </span><span class="s1">_get_sleep_obj():</span>
+<a name="l483"><span class="ln">483  </span></a>    <span class="s3">pass</span>
+<a name="l484"><span class="ln">484  </span></a>
+<a name="l485"><span class="ln">485  </span></a>
+<a name="l486"><span class="ln">486  </span></a><span class="s3">try</span><span class="s1">:</span>
+<a name="l487"><span class="ln">487  </span></a>    <span class="s3">import </span><span class="s1">ctypes</span>
+<a name="l488"><span class="ln">488  </span></a>    <span class="s3">if </span><span class="s1">platform </span><span class="s3">in </span><span class="s1">(</span><span class="s2">'win32'</span><span class="s3">, </span><span class="s2">'cygwin'</span><span class="s1">):</span>
+<a name="l489"><span class="ln">489  </span></a>        <span class="s4"># Win32 Sleep function is only 10-millisecond resolution, so</span>
+<a name="l490"><span class="ln">490  </span></a>        <span class="s4"># instead use a waitable timer object, which has up to</span>
+<a name="l491"><span class="ln">491  </span></a>        <span class="s4"># 100-nanosecond resolution (hardware and implementation</span>
+<a name="l492"><span class="ln">492  </span></a>        <span class="s4"># dependent, of course).</span>
+<a name="l493"><span class="ln">493  </span></a>
+<a name="l494"><span class="ln">494  </span></a>        <span class="s1">_kernel32 = ctypes.windll.kernel32</span>
+<a name="l495"><span class="ln">495  </span></a>
+<a name="l496"><span class="ln">496  </span></a>        <span class="s3">def </span><span class="s1">_get_sleep_obj():  </span><span class="s4"># noqa: F811</span>
+<a name="l497"><span class="ln">497  </span></a>            <span class="s3">return </span><span class="s1">_kernel32.CreateWaitableTimerA(</span><span class="s3">None, True, None</span><span class="s1">)</span>
+<a name="l498"><span class="ln">498  </span></a>
+<a name="l499"><span class="ln">499  </span></a>        <span class="s3">def </span><span class="s1">_usleep(microseconds</span><span class="s3">, </span><span class="s1">obj=</span><span class="s3">None</span><span class="s1">):</span>
+<a name="l500"><span class="ln">500  </span></a>            <span class="s1">delay = ctypes.c_longlong(int(-microseconds * </span><span class="s5">10</span><span class="s1">))</span>
+<a name="l501"><span class="ln">501  </span></a>            <span class="s1">_kernel32.SetWaitableTimer(</span>
+<a name="l502"><span class="ln">502  </span></a>                <span class="s1">obj</span><span class="s3">, </span><span class="s1">ctypes.byref(delay)</span><span class="s3">, </span><span class="s5">0</span><span class="s3">,</span>
+<a name="l503"><span class="ln">503  </span></a>                <span class="s1">ctypes.c_void_p()</span><span class="s3">, </span><span class="s1">ctypes.c_void_p()</span><span class="s3">, False</span><span class="s1">)</span>
+<a name="l504"><span class="ln">504  </span></a>            <span class="s1">_kernel32.WaitForSingleObject(obj</span><span class="s3">, </span><span class="s5">0xffffffff</span><span class="s1">)</span>
+<a name="l505"><span class="ln">505  </span></a>    <span class="s3">else</span><span class="s1">:</span>
+<a name="l506"><span class="ln">506  </span></a>        <span class="s3">if </span><span class="s1">platform == </span><span class="s2">'darwin'</span><span class="s1">:</span>
+<a name="l507"><span class="ln">507  </span></a>            <span class="s1">_libc = ctypes.CDLL(</span><span class="s2">'libc.dylib'</span><span class="s1">)</span>
+<a name="l508"><span class="ln">508  </span></a>        <span class="s3">else</span><span class="s1">:</span>
+<a name="l509"><span class="ln">509  </span></a>            <span class="s3">from </span><span class="s1">ctypes.util </span><span class="s3">import </span><span class="s1">find_library</span>
+<a name="l510"><span class="ln">510  </span></a>            <span class="s1">_libc = ctypes.CDLL(find_library(</span><span class="s2">'c'</span><span class="s1">)</span><span class="s3">, </span><span class="s1">use_errno=</span><span class="s3">True</span><span class="s1">)</span>
+<a name="l511"><span class="ln">511  </span></a>
+<a name="l512"><span class="ln">512  </span></a>            <span class="s3">def </span><span class="s1">_libc_clock_gettime_wrapper():</span>
+<a name="l513"><span class="ln">513  </span></a>                <span class="s3">from </span><span class="s1">os </span><span class="s3">import </span><span class="s1">strerror</span>
+<a name="l514"><span class="ln">514  </span></a>
+<a name="l515"><span class="ln">515  </span></a>                <span class="s3">class </span><span class="s1">struct_tv(ctypes.Structure):</span>
+<a name="l516"><span class="ln">516  </span></a>                    <span class="s1">_fields_ = [(</span><span class="s2">'tv_sec'</span><span class="s3">, </span><span class="s1">ctypes.c_long)</span><span class="s3">,</span>
+<a name="l517"><span class="ln">517  </span></a>                                <span class="s1">(</span><span class="s2">'tv_usec'</span><span class="s3">, </span><span class="s1">ctypes.c_long)]</span>
+<a name="l518"><span class="ln">518  </span></a>
+<a name="l519"><span class="ln">519  </span></a>                <span class="s1">_clock_gettime = _libc.clock_gettime</span>
+<a name="l520"><span class="ln">520  </span></a>                <span class="s1">_clock_gettime.argtypes = [ctypes.c_long</span><span class="s3">,</span>
+<a name="l521"><span class="ln">521  </span></a>                                           <span class="s1">ctypes.POINTER(struct_tv)]</span>
+<a name="l522"><span class="ln">522  </span></a>
+<a name="l523"><span class="ln">523  </span></a>                <span class="s3">if </span><span class="s2">'linux' </span><span class="s3">in </span><span class="s1">platform:</span>
+<a name="l524"><span class="ln">524  </span></a>                    <span class="s1">_clockid = </span><span class="s5">4  </span><span class="s4"># CLOCK_MONOTONIC_RAW (Linux specific)</span>
+<a name="l525"><span class="ln">525  </span></a>                <span class="s3">elif </span><span class="s2">'freebsd' </span><span class="s3">in </span><span class="s1">platform:</span>
+<a name="l526"><span class="ln">526  </span></a>                    <span class="s4"># clockid constants from sys/time.h</span>
+<a name="l527"><span class="ln">527  </span></a>                    <span class="s4"># _clockid = 4 # CLOCK_MONOTONIC (FreeBSD specific)</span>
+<a name="l528"><span class="ln">528  </span></a>                    <span class="s4"># 11: CLOCK_MONOTONIC_PRECISE (FreeBSD known OK for 10.2)</span>
+<a name="l529"><span class="ln">529  </span></a>                    <span class="s1">_clockid = </span><span class="s5">11</span>
+<a name="l530"><span class="ln">530  </span></a>                    <span class="s4"># _clockid = 12</span>
+<a name="l531"><span class="ln">531  </span></a>                    <span class="s4"># 12: CLOCK_MONOTONIC_FAST (FreeBSD specific)</span>
+<a name="l532"><span class="ln">532  </span></a>                    <span class="s1">Logger.debug(</span><span class="s2">'clock.py: {{{:s}}} clock ID {:d}'</span><span class="s1">.format(</span>
+<a name="l533"><span class="ln">533  </span></a>                        <span class="s1">platform</span><span class="s3">, </span><span class="s1">_clockid))</span>
+<a name="l534"><span class="ln">534  </span></a>                <span class="s3">elif </span><span class="s2">'openbsd' </span><span class="s3">in </span><span class="s1">platform:</span>
+<a name="l535"><span class="ln">535  </span></a>                    <span class="s1">_clockid = </span><span class="s5">3  </span><span class="s4"># CLOCK_MONOTONIC</span>
+<a name="l536"><span class="ln">536  </span></a>                <span class="s3">else</span><span class="s1">:</span>
+<a name="l537"><span class="ln">537  </span></a>                    <span class="s1">_clockid = </span><span class="s5">1  </span><span class="s4"># CLOCK_MONOTONIC</span>
+<a name="l538"><span class="ln">538  </span></a>
+<a name="l539"><span class="ln">539  </span></a>                <span class="s1">tv = struct_tv()</span>
+<a name="l540"><span class="ln">540  </span></a>
+<a name="l541"><span class="ln">541  </span></a>                <span class="s3">def </span><span class="s1">_time():</span>
+<a name="l542"><span class="ln">542  </span></a>                    <span class="s3">if </span><span class="s1">_clock_gettime(ctypes.c_long(_clockid)</span><span class="s3">,</span>
+<a name="l543"><span class="ln">543  </span></a>                                      <span class="s1">ctypes.pointer(tv)) != </span><span class="s5">0</span><span class="s1">:</span>
+<a name="l544"><span class="ln">544  </span></a>                        <span class="s1">_ernno = ctypes.get_errno()</span>
+<a name="l545"><span class="ln">545  </span></a>                        <span class="s3">raise </span><span class="s1">OSError(_ernno</span><span class="s3">, </span><span class="s1">strerror(_ernno))</span>
+<a name="l546"><span class="ln">546  </span></a>                    <span class="s3">return </span><span class="s1">tv.tv_sec + (tv.tv_usec * </span><span class="s5">0.000000001</span><span class="s1">)</span>
+<a name="l547"><span class="ln">547  </span></a>
+<a name="l548"><span class="ln">548  </span></a>                <span class="s3">return </span><span class="s1">_time</span>
+<a name="l549"><span class="ln">549  </span></a>
+<a name="l550"><span class="ln">550  </span></a>            <span class="s1">_default_time = _libc_clock_gettime_wrapper()  </span><span class="s4"># noqa: F811</span>
+<a name="l551"><span class="ln">551  </span></a>
+<a name="l552"><span class="ln">552  </span></a>        <span class="s1">_libc.usleep.argtypes = [ctypes.c_ulong]</span>
+<a name="l553"><span class="ln">553  </span></a>        <span class="s1">_libc_usleep = _libc.usleep</span>
+<a name="l554"><span class="ln">554  </span></a>
+<a name="l555"><span class="ln">555  </span></a>        <span class="s3">def </span><span class="s1">_usleep(microseconds</span><span class="s3">, </span><span class="s1">obj=</span><span class="s3">None</span><span class="s1">):</span>
+<a name="l556"><span class="ln">556  </span></a>            <span class="s1">_libc_usleep(int(microseconds))</span>
+<a name="l557"><span class="ln">557  </span></a>
+<a name="l558"><span class="ln">558  </span></a><span class="s3">except </span><span class="s1">(OSError</span><span class="s3">, </span><span class="s1">ImportError</span><span class="s3">, </span><span class="s1">AttributeError):</span>
+<a name="l559"><span class="ln">559  </span></a>    <span class="s4"># ImportError: ctypes is not available on python-for-android.</span>
+<a name="l560"><span class="ln">560  </span></a>    <span class="s4"># AttributeError: ctypes is now available on python-for-android, but</span>
+<a name="l561"><span class="ln">561  </span></a>    <span class="s4">#   &quot;undefined symbol: clock_gettime&quot;. CF #3797</span>
+<a name="l562"><span class="ln">562  </span></a>    <span class="s4"># OSError: if the libc cannot be readed (like with buildbot: invalid ELF</span>
+<a name="l563"><span class="ln">563  </span></a>    <span class="s4"># header)</span>
+<a name="l564"><span class="ln">564  </span></a>
+<a name="l565"><span class="ln">565  </span></a>    <span class="s3">def </span><span class="s1">_usleep(microseconds</span><span class="s3">, </span><span class="s1">obj=</span><span class="s3">None</span><span class="s1">):</span>
+<a name="l566"><span class="ln">566  </span></a>        <span class="s1">time.sleep(microseconds / </span><span class="s5">1000000.</span><span class="s1">)</span>
+<a name="l567"><span class="ln">567  </span></a>
+<a name="l568"><span class="ln">568  </span></a>
+<a name="l569"><span class="ln">569  </span></a><span class="s3">class </span><span class="s1">ClockBaseBehavior(object):</span>
+<a name="l570"><span class="ln">570  </span></a>    <span class="s0">'''The base of the kivy clock. 
+<a name="l571"><span class="ln">571  </span></a> 
+<a name="l572"><span class="ln">572  </span></a>    :parameters: 
+<a name="l573"><span class="ln">573  </span></a> 
+<a name="l574"><span class="ln">574  </span></a>        `async_lib`: string 
+<a name="l575"><span class="ln">575  </span></a>            The async library to use when the clock is run asynchronously. 
+<a name="l576"><span class="ln">576  </span></a>            Can be one of, `&quot;asyncio&quot;` when the standard library asyncio 
+<a name="l577"><span class="ln">577  </span></a>            should be used, or `&quot;trio&quot;` if the trio library should be used. 
+<a name="l578"><span class="ln">578  </span></a> 
+<a name="l579"><span class="ln">579  </span></a>            It defaults to `'asyncio'` or the value in the environmental 
+<a name="l580"><span class="ln">580  </span></a>            variable `KIVY_EVENTLOOP` if set. :meth:`init_async_lib` can also 
+<a name="l581"><span class="ln">581  </span></a>            be called directly to set the library. 
+<a name="l582"><span class="ln">582  </span></a>    '''</span>
+<a name="l583"><span class="ln">583  </span></a>
+<a name="l584"><span class="ln">584  </span></a>    <span class="s1">_dt = </span><span class="s5">0.0001</span>
+<a name="l585"><span class="ln">585  </span></a>    <span class="s1">_last_fps_tick = </span><span class="s3">None</span>
+<a name="l586"><span class="ln">586  </span></a>    <span class="s1">_start_tick = </span><span class="s5">0</span>
+<a name="l587"><span class="ln">587  </span></a>    <span class="s1">_fps = </span><span class="s5">0</span>
+<a name="l588"><span class="ln">588  </span></a>    <span class="s1">_rfps = </span><span class="s5">0</span>
+<a name="l589"><span class="ln">589  </span></a>    <span class="s1">_fps_counter = </span><span class="s5">0</span>
+<a name="l590"><span class="ln">590  </span></a>    <span class="s1">_rfps_counter = </span><span class="s5">0</span>
+<a name="l591"><span class="ln">591  </span></a>    <span class="s1">_frames = </span><span class="s5">0</span>
+<a name="l592"><span class="ln">592  </span></a>    <span class="s1">_frames_displayed = </span><span class="s5">0</span>
+<a name="l593"><span class="ln">593  </span></a>    <span class="s1">_events_duration = </span><span class="s5">0</span>
+<a name="l594"><span class="ln">594  </span></a>    <span class="s2">'''The measured time that it takes to process all the events etc, excepting 
+<a name="l595"><span class="ln">595  </span></a>    any sleep or waiting time. It is the average and is updated every 5 
+<a name="l596"><span class="ln">596  </span></a>    seconds. 
+<a name="l597"><span class="ln">597  </span></a>    '''</span>
+<a name="l598"><span class="ln">598  </span></a>
+<a name="l599"><span class="ln">599  </span></a>    <span class="s1">_duration_count = </span><span class="s5">0</span>
+<a name="l600"><span class="ln">600  </span></a>    <span class="s1">_sleep_time = </span><span class="s5">0</span>
+<a name="l601"><span class="ln">601  </span></a>    <span class="s1">_duration_ts0 = </span><span class="s5">0</span>
+<a name="l602"><span class="ln">602  </span></a>
+<a name="l603"><span class="ln">603  </span></a>    <span class="s1">MIN_SLEEP = </span><span class="s5">0.005</span>
+<a name="l604"><span class="ln">604  </span></a>    <span class="s2">'''The minimum time to sleep. If the remaining time is less than this, 
+<a name="l605"><span class="ln">605  </span></a>    the event loop will continue. 
+<a name="l606"><span class="ln">606  </span></a>    '''</span>
+<a name="l607"><span class="ln">607  </span></a>    <span class="s1">SLEEP_UNDERSHOOT = MIN_SLEEP - </span><span class="s5">0.001</span>
+<a name="l608"><span class="ln">608  </span></a>
+<a name="l609"><span class="ln">609  </span></a>    <span class="s1">_async_lib = </span><span class="s3">None</span>
+<a name="l610"><span class="ln">610  </span></a>
+<a name="l611"><span class="ln">611  </span></a>    <span class="s1">_async_wait_for = </span><span class="s3">None</span>
+<a name="l612"><span class="ln">612  </span></a>
+<a name="l613"><span class="ln">613  </span></a>    <span class="s3">def </span><span class="s1">__init__(self</span><span class="s3">, </span><span class="s1">async_lib=</span><span class="s2">'asyncio'</span><span class="s3">, </span><span class="s1">**kwargs):</span>
+<a name="l614"><span class="ln">614  </span></a>        <span class="s1">self.init_async_lib(async_lib)</span>
+<a name="l615"><span class="ln">615  </span></a>        <span class="s1">super(ClockBaseBehavior</span><span class="s3">, </span><span class="s1">self).__init__(**kwargs)</span>
+<a name="l616"><span class="ln">616  </span></a>        <span class="s1">self._duration_ts0 = self._start_tick = self._last_tick = self.time()</span>
+<a name="l617"><span class="ln">617  </span></a>        <span class="s1">self._max_fps = float(Config.getint(</span><span class="s2">'graphics'</span><span class="s3">, </span><span class="s2">'maxfps'</span><span class="s1">))</span>
+<a name="l618"><span class="ln">618  </span></a>
+<a name="l619"><span class="ln">619  </span></a>    <span class="s3">def </span><span class="s1">init_async_lib(self</span><span class="s3">, </span><span class="s1">lib):</span>
+<a name="l620"><span class="ln">620  </span></a>        <span class="s0">&quot;&quot;&quot;Manually sets the async library to use internally, when running in 
+<a name="l621"><span class="ln">621  </span></a>        a asynchronous manner. 
+<a name="l622"><span class="ln">622  </span></a> 
+<a name="l623"><span class="ln">623  </span></a>        This can be called anytime before the kivy event loop has started, 
+<a name="l624"><span class="ln">624  </span></a>        but not once the kivy App is running. 
+<a name="l625"><span class="ln">625  </span></a> 
+<a name="l626"><span class="ln">626  </span></a>        :parameters: 
+<a name="l627"><span class="ln">627  </span></a> 
+<a name="l628"><span class="ln">628  </span></a>            `lib`: string 
+<a name="l629"><span class="ln">629  </span></a>                The async library to use when the clock is run asynchronously. 
+<a name="l630"><span class="ln">630  </span></a>                Can be one of, `&quot;asyncio&quot;` when the standard library asyncio 
+<a name="l631"><span class="ln">631  </span></a>                should be used, or `&quot;trio&quot;` if the trio library should be used. 
+<a name="l632"><span class="ln">632  </span></a>        &quot;&quot;&quot;</span>
+<a name="l633"><span class="ln">633  </span></a>        <span class="s3">if </span><span class="s1">lib == </span><span class="s2">'trio'</span><span class="s1">:</span>
+<a name="l634"><span class="ln">634  </span></a>            <span class="s3">import </span><span class="s1">trio</span>
+<a name="l635"><span class="ln">635  </span></a>            <span class="s1">self._async_lib = trio</span>
+<a name="l636"><span class="ln">636  </span></a>
+<a name="l637"><span class="ln">637  </span></a>            <span class="s3">async def </span><span class="s1">wait_for(coro</span><span class="s3">, </span><span class="s1">t):</span>
+<a name="l638"><span class="ln">638  </span></a>                <span class="s3">with </span><span class="s1">trio.move_on_after(t):</span>
+<a name="l639"><span class="ln">639  </span></a>                    <span class="s3">await </span><span class="s1">coro</span>
+<a name="l640"><span class="ln">640  </span></a>            <span class="s1">self._async_wait_for = wait_for</span>
+<a name="l641"><span class="ln">641  </span></a>        <span class="s3">elif </span><span class="s1">lib == </span><span class="s2">'asyncio'</span><span class="s1">:</span>
+<a name="l642"><span class="ln">642  </span></a>            <span class="s3">import </span><span class="s1">asyncio</span>
+<a name="l643"><span class="ln">643  </span></a>            <span class="s1">self._async_lib = asyncio</span>
+<a name="l644"><span class="ln">644  </span></a>            <span class="s1">self._async_wait_for = asyncio.wait_for</span>
+<a name="l645"><span class="ln">645  </span></a>        <span class="s3">else</span><span class="s1">:</span>
+<a name="l646"><span class="ln">646  </span></a>            <span class="s3">raise </span><span class="s1">ValueError(</span><span class="s2">'async library {} not recognized'</span><span class="s1">.format(lib))</span>
+<a name="l647"><span class="ln">647  </span></a>
+<a name="l648"><span class="ln">648  </span></a>    <span class="s1">@property</span>
+<a name="l649"><span class="ln">649  </span></a>    <span class="s3">def </span><span class="s1">frametime(self):</span>
+<a name="l650"><span class="ln">650  </span></a>        <span class="s0">'''Time spent between the last frame and the current frame 
+<a name="l651"><span class="ln">651  </span></a>        (in seconds). 
+<a name="l652"><span class="ln">652  </span></a> 
+<a name="l653"><span class="ln">653  </span></a>        .. versionadded:: 1.8.0 
+<a name="l654"><span class="ln">654  </span></a>        '''</span>
+<a name="l655"><span class="ln">655  </span></a>        <span class="s3">return </span><span class="s1">self._dt</span>
+<a name="l656"><span class="ln">656  </span></a>
+<a name="l657"><span class="ln">657  </span></a>    <span class="s1">@property</span>
+<a name="l658"><span class="ln">658  </span></a>    <span class="s3">def </span><span class="s1">frames(self):</span>
+<a name="l659"><span class="ln">659  </span></a>        <span class="s0">'''Number of internal frames (not necessarily drawed) from the start of 
+<a name="l660"><span class="ln">660  </span></a>        the clock. 
+<a name="l661"><span class="ln">661  </span></a> 
+<a name="l662"><span class="ln">662  </span></a>        .. versionadded:: 1.8.0 
+<a name="l663"><span class="ln">663  </span></a>        '''</span>
+<a name="l664"><span class="ln">664  </span></a>        <span class="s3">return </span><span class="s1">self._frames</span>
+<a name="l665"><span class="ln">665  </span></a>
+<a name="l666"><span class="ln">666  </span></a>    <span class="s1">@property</span>
+<a name="l667"><span class="ln">667  </span></a>    <span class="s3">def </span><span class="s1">frames_displayed(self):</span>
+<a name="l668"><span class="ln">668  </span></a>        <span class="s0">'''Number of displayed frames from the start of the clock. 
+<a name="l669"><span class="ln">669  </span></a>        '''</span>
+<a name="l670"><span class="ln">670  </span></a>        <span class="s3">return </span><span class="s1">self._frames_displayed</span>
+<a name="l671"><span class="ln">671  </span></a>
+<a name="l672"><span class="ln">672  </span></a>    <span class="s3">def </span><span class="s1">usleep(self</span><span class="s3">, </span><span class="s1">microseconds):</span>
+<a name="l673"><span class="ln">673  </span></a>        <span class="s0">'''Sleeps for the number of microseconds. 
+<a name="l674"><span class="ln">674  </span></a>        '''</span>
+<a name="l675"><span class="ln">675  </span></a>        <span class="s3">pass</span>
+<a name="l676"><span class="ln">676  </span></a>
+<a name="l677"><span class="ln">677  </span></a>    <span class="s3">def </span><span class="s1">idle(self):</span>
+<a name="l678"><span class="ln">678  </span></a>        <span class="s0">'''(internal) waits here until the next frame. 
+<a name="l679"><span class="ln">679  </span></a>        '''</span>
+<a name="l680"><span class="ln">680  </span></a>        <span class="s1">fps = self._max_fps</span>
+<a name="l681"><span class="ln">681  </span></a>        <span class="s3">if </span><span class="s1">fps &gt; </span><span class="s5">0</span><span class="s1">:</span>
+<a name="l682"><span class="ln">682  </span></a>            <span class="s1">min_sleep = self.get_resolution()</span>
+<a name="l683"><span class="ln">683  </span></a>            <span class="s1">undershoot = </span><span class="s5">4 </span><span class="s1">/ </span><span class="s5">5. </span><span class="s1">* min_sleep</span>
+<a name="l684"><span class="ln">684  </span></a>            <span class="s1">usleep = self.usleep</span>
+<a name="l685"><span class="ln">685  </span></a>            <span class="s1">ready = self._check_ready</span>
+<a name="l686"><span class="ln">686  </span></a>
+<a name="l687"><span class="ln">687  </span></a>            <span class="s1">done</span><span class="s3">, </span><span class="s1">sleeptime = ready(fps</span><span class="s3">, </span><span class="s1">min_sleep</span><span class="s3">, </span><span class="s1">undershoot)</span>
+<a name="l688"><span class="ln">688  </span></a>            <span class="s3">while not </span><span class="s1">done:</span>
+<a name="l689"><span class="ln">689  </span></a>                <span class="s1">usleep(</span><span class="s5">1000000 </span><span class="s1">* sleeptime)</span>
+<a name="l690"><span class="ln">690  </span></a>                <span class="s1">done</span><span class="s3">, </span><span class="s1">sleeptime = ready(fps</span><span class="s3">, </span><span class="s1">min_sleep</span><span class="s3">, </span><span class="s1">undershoot)</span>
+<a name="l691"><span class="ln">691  </span></a>
+<a name="l692"><span class="ln">692  </span></a>        <span class="s1">current = self.time()</span>
+<a name="l693"><span class="ln">693  </span></a>        <span class="s1">self._dt = current - self._last_tick</span>
+<a name="l694"><span class="ln">694  </span></a>        <span class="s1">self._last_tick = current</span>
+<a name="l695"><span class="ln">695  </span></a>        <span class="s3">return </span><span class="s1">current</span>
+<a name="l696"><span class="ln">696  </span></a>
+<a name="l697"><span class="ln">697  </span></a>    <span class="s3">async def </span><span class="s1">async_idle(self):</span>
+<a name="l698"><span class="ln">698  </span></a>        <span class="s0">'''(internal) async version of :meth:`idle`. 
+<a name="l699"><span class="ln">699  </span></a>        '''</span>
+<a name="l700"><span class="ln">700  </span></a>        <span class="s1">fps = self._max_fps</span>
+<a name="l701"><span class="ln">701  </span></a>        <span class="s3">if </span><span class="s1">fps &gt; </span><span class="s5">0</span><span class="s1">:</span>
+<a name="l702"><span class="ln">702  </span></a>            <span class="s1">min_sleep = self.get_resolution()</span>
+<a name="l703"><span class="ln">703  </span></a>            <span class="s1">undershoot = </span><span class="s5">4 </span><span class="s1">/ </span><span class="s5">5. </span><span class="s1">* min_sleep</span>
+<a name="l704"><span class="ln">704  </span></a>            <span class="s1">ready = self._check_ready</span>
+<a name="l705"><span class="ln">705  </span></a>
+<a name="l706"><span class="ln">706  </span></a>            <span class="s1">slept = </span><span class="s3">False</span>
+<a name="l707"><span class="ln">707  </span></a>            <span class="s1">done</span><span class="s3">, </span><span class="s1">sleeptime = ready(fps</span><span class="s3">, </span><span class="s1">min_sleep</span><span class="s3">, </span><span class="s1">undershoot)</span>
+<a name="l708"><span class="ln">708  </span></a>            <span class="s3">while not </span><span class="s1">done:</span>
+<a name="l709"><span class="ln">709  </span></a>                <span class="s1">slept = </span><span class="s3">True</span>
+<a name="l710"><span class="ln">710  </span></a>                <span class="s3">await </span><span class="s1">self._async_lib.sleep(sleeptime)</span>
+<a name="l711"><span class="ln">711  </span></a>                <span class="s1">done</span><span class="s3">, </span><span class="s1">sleeptime = ready(fps</span><span class="s3">, </span><span class="s1">min_sleep</span><span class="s3">, </span><span class="s1">undershoot)</span>
+<a name="l712"><span class="ln">712  </span></a>
+<a name="l713"><span class="ln">713  </span></a>            <span class="s3">if not </span><span class="s1">slept:</span>
+<a name="l714"><span class="ln">714  </span></a>                <span class="s3">await </span><span class="s1">self._async_lib.sleep(</span><span class="s5">0</span><span class="s1">)</span>
+<a name="l715"><span class="ln">715  </span></a>        <span class="s3">else</span><span class="s1">:</span>
+<a name="l716"><span class="ln">716  </span></a>            <span class="s3">await </span><span class="s1">self._async_lib.sleep(</span><span class="s5">0</span><span class="s1">)</span>
+<a name="l717"><span class="ln">717  </span></a>
+<a name="l718"><span class="ln">718  </span></a>        <span class="s1">current = self.time()</span>
+<a name="l719"><span class="ln">719  </span></a>        <span class="s1">self._dt = current - self._last_tick</span>
+<a name="l720"><span class="ln">720  </span></a>        <span class="s1">self._last_tick = current</span>
+<a name="l721"><span class="ln">721  </span></a>        <span class="s3">return </span><span class="s1">current</span>
+<a name="l722"><span class="ln">722  </span></a>
+<a name="l723"><span class="ln">723  </span></a>    <span class="s3">def </span><span class="s1">_check_ready(self</span><span class="s3">, </span><span class="s1">fps</span><span class="s3">, </span><span class="s1">min_sleep</span><span class="s3">, </span><span class="s1">undershoot):</span>
+<a name="l724"><span class="ln">724  </span></a>        <span class="s1">sleeptime = </span><span class="s5">1 </span><span class="s1">/ fps - (self.time() - self._last_tick)</span>
+<a name="l725"><span class="ln">725  </span></a>        <span class="s3">return </span><span class="s1">sleeptime - undershoot &lt;= min_sleep</span><span class="s3">, </span><span class="s1">sleeptime - undershoot</span>
+<a name="l726"><span class="ln">726  </span></a>
+<a name="l727"><span class="ln">727  </span></a>    <span class="s3">def </span><span class="s1">tick(self):</span>
+<a name="l728"><span class="ln">728  </span></a>        <span class="s0">'''Advance the clock to the next step. Must be called every frame. 
+<a name="l729"><span class="ln">729  </span></a>        The default clock has a tick() function called by the core Kivy 
+<a name="l730"><span class="ln">730  </span></a>        framework.'''</span>
+<a name="l731"><span class="ln">731  </span></a>        <span class="s1">self.pre_idle()</span>
+<a name="l732"><span class="ln">732  </span></a>        <span class="s1">ts = self.time()</span>
+<a name="l733"><span class="ln">733  </span></a>        <span class="s1">self.post_idle(ts</span><span class="s3">, </span><span class="s1">self.idle())</span>
+<a name="l734"><span class="ln">734  </span></a>
+<a name="l735"><span class="ln">735  </span></a>    <span class="s3">async def </span><span class="s1">async_tick(self):</span>
+<a name="l736"><span class="ln">736  </span></a>        <span class="s0">'''async version of :meth:`tick`. '''</span>
+<a name="l737"><span class="ln">737  </span></a>        <span class="s1">self.pre_idle()</span>
+<a name="l738"><span class="ln">738  </span></a>        <span class="s1">ts = self.time()</span>
+<a name="l739"><span class="ln">739  </span></a>        <span class="s1">current = </span><span class="s3">await </span><span class="s1">self.async_idle()</span>
+<a name="l740"><span class="ln">740  </span></a>        <span class="s1">self.post_idle(ts</span><span class="s3">, </span><span class="s1">current)</span>
+<a name="l741"><span class="ln">741  </span></a>
+<a name="l742"><span class="ln">742  </span></a>    <span class="s3">def </span><span class="s1">pre_idle(self):</span>
+<a name="l743"><span class="ln">743  </span></a>        <span class="s0">'''Called before :meth:`idle` by :meth:`tick`. 
+<a name="l744"><span class="ln">744  </span></a>        '''</span>
+<a name="l745"><span class="ln">745  </span></a>        <span class="s1">self._release_references()</span>
+<a name="l746"><span class="ln">746  </span></a>
+<a name="l747"><span class="ln">747  </span></a>    <span class="s3">def </span><span class="s1">post_idle(self</span><span class="s3">, </span><span class="s1">ts</span><span class="s3">, </span><span class="s1">current):</span>
+<a name="l748"><span class="ln">748  </span></a>        <span class="s0">'''Called after :meth:`idle` by :meth:`tick`. 
+<a name="l749"><span class="ln">749  </span></a>        '''</span>
+<a name="l750"><span class="ln">750  </span></a>        <span class="s4"># tick the current time</span>
+<a name="l751"><span class="ln">751  </span></a>        <span class="s1">self._frames += </span><span class="s5">1</span>
+<a name="l752"><span class="ln">752  </span></a>        <span class="s1">self._fps_counter += </span><span class="s5">1</span>
+<a name="l753"><span class="ln">753  </span></a>
+<a name="l754"><span class="ln">754  </span></a>        <span class="s4"># compute how long the event processing takes</span>
+<a name="l755"><span class="ln">755  </span></a>        <span class="s1">self._duration_count += </span><span class="s5">1</span>
+<a name="l756"><span class="ln">756  </span></a>        <span class="s1">self._sleep_time += current - ts</span>
+<a name="l757"><span class="ln">757  </span></a>        <span class="s1">t_tot = current - self._duration_ts0</span>
+<a name="l758"><span class="ln">758  </span></a>        <span class="s3">if </span><span class="s1">t_tot &gt;= </span><span class="s5">1.</span><span class="s1">:</span>
+<a name="l759"><span class="ln">759  </span></a>            <span class="s1">self._events_duration = \</span>
+<a name="l760"><span class="ln">760  </span></a>                <span class="s1">(t_tot - self._sleep_time) / float(self._duration_count)</span>
+<a name="l761"><span class="ln">761  </span></a>            <span class="s1">self._duration_ts0 = current</span>
+<a name="l762"><span class="ln">762  </span></a>            <span class="s1">self._sleep_time = self._duration_count = </span><span class="s5">0</span>
+<a name="l763"><span class="ln">763  </span></a>
+<a name="l764"><span class="ln">764  </span></a>        <span class="s4"># calculate fps things</span>
+<a name="l765"><span class="ln">765  </span></a>        <span class="s3">if </span><span class="s1">self._last_fps_tick </span><span class="s3">is None</span><span class="s1">:</span>
+<a name="l766"><span class="ln">766  </span></a>            <span class="s1">self._last_fps_tick = current</span>
+<a name="l767"><span class="ln">767  </span></a>        <span class="s3">elif </span><span class="s1">current - self._last_fps_tick &gt; </span><span class="s5">1</span><span class="s1">:</span>
+<a name="l768"><span class="ln">768  </span></a>            <span class="s1">d = float(current - self._last_fps_tick)</span>
+<a name="l769"><span class="ln">769  </span></a>            <span class="s1">self._fps = self._fps_counter / d</span>
+<a name="l770"><span class="ln">770  </span></a>            <span class="s1">self._rfps = self._rfps_counter</span>
+<a name="l771"><span class="ln">771  </span></a>            <span class="s1">self._last_fps_tick = current</span>
+<a name="l772"><span class="ln">772  </span></a>            <span class="s1">self._fps_counter = </span><span class="s5">0</span>
+<a name="l773"><span class="ln">773  </span></a>            <span class="s1">self._rfps_counter = </span><span class="s5">0</span>
+<a name="l774"><span class="ln">774  </span></a>
+<a name="l775"><span class="ln">775  </span></a>        <span class="s4"># process event</span>
+<a name="l776"><span class="ln">776  </span></a>        <span class="s1">self._process_events()</span>
+<a name="l777"><span class="ln">777  </span></a>
+<a name="l778"><span class="ln">778  </span></a>        <span class="s3">return </span><span class="s1">self._dt</span>
+<a name="l779"><span class="ln">779  </span></a>
+<a name="l780"><span class="ln">780  </span></a>    <span class="s3">def </span><span class="s1">tick_draw(self):</span>
+<a name="l781"><span class="ln">781  </span></a>        <span class="s0">'''Tick the drawing counter. 
+<a name="l782"><span class="ln">782  </span></a>        '''</span>
+<a name="l783"><span class="ln">783  </span></a>        <span class="s1">self._process_events_before_frame()</span>
+<a name="l784"><span class="ln">784  </span></a>        <span class="s1">self._rfps_counter += </span><span class="s5">1</span>
+<a name="l785"><span class="ln">785  </span></a>        <span class="s1">self._frames_displayed += </span><span class="s5">1</span>
+<a name="l786"><span class="ln">786  </span></a>
+<a name="l787"><span class="ln">787  </span></a>    <span class="s3">def </span><span class="s1">get_fps(self):</span>
+<a name="l788"><span class="ln">788  </span></a>        <span class="s0">'''Get the current average FPS calculated by the clock. 
+<a name="l789"><span class="ln">789  </span></a>        '''</span>
+<a name="l790"><span class="ln">790  </span></a>        <span class="s3">return </span><span class="s1">self._fps</span>
+<a name="l791"><span class="ln">791  </span></a>
+<a name="l792"><span class="ln">792  </span></a>    <span class="s3">def </span><span class="s1">get_rfps(self):</span>
+<a name="l793"><span class="ln">793  </span></a>        <span class="s0">'''Get the current &quot;real&quot; FPS calculated by the clock. 
+<a name="l794"><span class="ln">794  </span></a>        This counter reflects the real framerate displayed on the screen. 
+<a name="l795"><span class="ln">795  </span></a> 
+<a name="l796"><span class="ln">796  </span></a>        In contrast to get_fps(), this function returns a counter of the 
+<a name="l797"><span class="ln">797  </span></a>        number of frames, not the average of frames per second. 
+<a name="l798"><span class="ln">798  </span></a>        '''</span>
+<a name="l799"><span class="ln">799  </span></a>        <span class="s3">return </span><span class="s1">self._rfps</span>
+<a name="l800"><span class="ln">800  </span></a>
+<a name="l801"><span class="ln">801  </span></a>    <span class="s3">def </span><span class="s1">get_time(self):</span>
+<a name="l802"><span class="ln">802  </span></a>        <span class="s0">'''Get the last tick made by the clock.'''</span>
+<a name="l803"><span class="ln">803  </span></a>        <span class="s3">return </span><span class="s1">self._last_tick</span>
+<a name="l804"><span class="ln">804  </span></a>
+<a name="l805"><span class="ln">805  </span></a>    <span class="s3">def </span><span class="s1">get_boottime(self):</span>
+<a name="l806"><span class="ln">806  </span></a>        <span class="s0">'''Get the time in seconds from the application start.'''</span>
+<a name="l807"><span class="ln">807  </span></a>        <span class="s3">return </span><span class="s1">self._last_tick - self._start_tick</span>
+<a name="l808"><span class="ln">808  </span></a>
+<a name="l809"><span class="ln">809  </span></a>    <span class="s1">time = staticmethod(partial(_default_time))</span>
+<a name="l810"><span class="ln">810  </span></a>
+<a name="l811"><span class="ln">811  </span></a>    <span class="s3">def </span><span class="s1">handle_exception(self</span><span class="s3">, </span><span class="s1">e):</span>
+<a name="l812"><span class="ln">812  </span></a>        <span class="s3">from </span><span class="s1">kivy.base </span><span class="s3">import </span><span class="s1">ExceptionManager</span>
+<a name="l813"><span class="ln">813  </span></a>
+<a name="l814"><span class="ln">814  </span></a>        <span class="s3">if </span><span class="s1">ExceptionManager.handle_exception(e) == ExceptionManager.RAISE:</span>
+<a name="l815"><span class="ln">815  </span></a>            <span class="s3">raise</span>
+<a name="l816"><span class="ln">816  </span></a>
+<a name="l817"><span class="ln">817  </span></a>
+<a name="l818"><span class="ln">818  </span></a><span class="s1">ClockBaseBehavior.time.__doc__ = \</span>
+<a name="l819"><span class="ln">819  </span></a>    <span class="s2">'''Proxy method for :func:`~kivy.compat.clock`. '''</span>
+<a name="l820"><span class="ln">820  </span></a>
+<a name="l821"><span class="ln">821  </span></a>
+<a name="l822"><span class="ln">822  </span></a><span class="s3">class </span><span class="s1">ClockBaseInterruptBehavior(ClockBaseBehavior):</span>
+<a name="l823"><span class="ln">823  </span></a>    <span class="s0">'''A kivy clock which can be interrupted during a frame to execute events. 
+<a name="l824"><span class="ln">824  </span></a>    '''</span>
+<a name="l825"><span class="ln">825  </span></a>
+<a name="l826"><span class="ln">826  </span></a>    <span class="s1">interupt_next_only = </span><span class="s3">False</span>
+<a name="l827"><span class="ln">827  </span></a>    <span class="s1">_event = </span><span class="s3">None</span>
+<a name="l828"><span class="ln">828  </span></a>    <span class="s1">_async_event = </span><span class="s3">None</span>
+<a name="l829"><span class="ln">829  </span></a>    <span class="s1">_get_min_timeout_func = </span><span class="s3">None</span>
+<a name="l830"><span class="ln">830  </span></a>
+<a name="l831"><span class="ln">831  </span></a>    <span class="s3">def </span><span class="s1">__init__(self</span><span class="s3">, </span><span class="s1">interupt_next_only=</span><span class="s3">False, </span><span class="s1">**kwargs):</span>
+<a name="l832"><span class="ln">832  </span></a>        <span class="s1">super(ClockBaseInterruptBehavior</span><span class="s3">, </span><span class="s1">self).__init__(**kwargs)</span>
+<a name="l833"><span class="ln">833  </span></a>        <span class="s1">self._event = ThreadingEvent()</span>
+<a name="l834"><span class="ln">834  </span></a>        <span class="s1">self.interupt_next_only = interupt_next_only</span>
+<a name="l835"><span class="ln">835  </span></a>        <span class="s1">self._get_min_timeout_func = self.get_min_timeout</span>
+<a name="l836"><span class="ln">836  </span></a>
+<a name="l837"><span class="ln">837  </span></a>    <span class="s3">def </span><span class="s1">init_async_lib(self</span><span class="s3">, </span><span class="s1">lib):</span>
+<a name="l838"><span class="ln">838  </span></a>        <span class="s1">super(ClockBaseInterruptBehavior</span><span class="s3">, </span><span class="s1">self).init_async_lib(lib)</span>
+<a name="l839"><span class="ln">839  </span></a>        <span class="s3">if </span><span class="s1">lib == </span><span class="s2">'trio'</span><span class="s1">:</span>
+<a name="l840"><span class="ln">840  </span></a>            <span class="s3">import </span><span class="s1">trio</span>
+<a name="l841"><span class="ln">841  </span></a>            <span class="s1">self._async_event = trio.Event()</span>
+<a name="l842"><span class="ln">842  </span></a>            <span class="s4"># we don't know if this is called after things have already been</span>
+<a name="l843"><span class="ln">843  </span></a>            <span class="s4"># scheduled, so don't delay for a full frame before processing</span>
+<a name="l844"><span class="ln">844  </span></a>            <span class="s4"># events</span>
+<a name="l845"><span class="ln">845  </span></a>            <span class="s1">self._async_event.set()</span>
+<a name="l846"><span class="ln">846  </span></a>        <span class="s3">elif </span><span class="s1">lib == </span><span class="s2">'asyncio'</span><span class="s1">:</span>
+<a name="l847"><span class="ln">847  </span></a>            <span class="s3">import </span><span class="s1">asyncio</span>
+<a name="l848"><span class="ln">848  </span></a>            <span class="s1">self._async_event = asyncio.Event()</span>
+<a name="l849"><span class="ln">849  </span></a>            <span class="s1">self._async_event.set()</span>
+<a name="l850"><span class="ln">850  </span></a>
+<a name="l851"><span class="ln">851  </span></a>    <span class="s3">def </span><span class="s1">usleep(self</span><span class="s3">, </span><span class="s1">microseconds):</span>
+<a name="l852"><span class="ln">852  </span></a>        <span class="s1">self._event.clear()</span>
+<a name="l853"><span class="ln">853  </span></a>        <span class="s1">self._event.wait(microseconds / </span><span class="s5">1000000.</span><span class="s1">)</span>
+<a name="l854"><span class="ln">854  </span></a>
+<a name="l855"><span class="ln">855  </span></a>    <span class="s3">async def </span><span class="s1">async_usleep(self</span><span class="s3">, </span><span class="s1">microseconds):</span>
+<a name="l856"><span class="ln">856  </span></a>        <span class="s1">self._async_event.clear()</span>
+<a name="l857"><span class="ln">857  </span></a>        <span class="s3">await </span><span class="s1">self._async_wait_for(</span>
+<a name="l858"><span class="ln">858  </span></a>            <span class="s1">self._async_event.wait()</span><span class="s3">, </span><span class="s1">microseconds / </span><span class="s5">1000000.</span><span class="s1">)</span>
+<a name="l859"><span class="ln">859  </span></a>
+<a name="l860"><span class="ln">860  </span></a>    <span class="s3">def </span><span class="s1">on_schedule(self</span><span class="s3">, </span><span class="s1">event):</span>
+<a name="l861"><span class="ln">861  </span></a>        <span class="s1">fps = self._max_fps</span>
+<a name="l862"><span class="ln">862  </span></a>        <span class="s3">if not </span><span class="s1">fps:</span>
+<a name="l863"><span class="ln">863  </span></a>            <span class="s3">return</span>
+<a name="l864"><span class="ln">864  </span></a>
+<a name="l865"><span class="ln">865  </span></a>        <span class="s3">if not </span><span class="s1">event.timeout </span><span class="s3">or </span><span class="s1">(</span>
+<a name="l866"><span class="ln">866  </span></a>                <span class="s3">not </span><span class="s1">self.interupt_next_only </span><span class="s3">and </span><span class="s1">event.timeout &lt;=</span>
+<a name="l867"><span class="ln">867  </span></a>                <span class="s5">1 </span><span class="s1">/ fps -  </span><span class="s4"># remaining time</span>
+<a name="l868"><span class="ln">868  </span></a>                <span class="s1">(self.time() - self._last_tick) +  </span><span class="s4"># elapsed time</span>
+<a name="l869"><span class="ln">869  </span></a>                <span class="s5">4 </span><span class="s1">/ </span><span class="s5">5. </span><span class="s1">* self.get_resolution()):  </span><span class="s4"># resolution fudge factor</span>
+<a name="l870"><span class="ln">870  </span></a>            <span class="s1">self._event.set()</span>
+<a name="l871"><span class="ln">871  </span></a>            <span class="s3">if </span><span class="s1">self._async_event:</span>
+<a name="l872"><span class="ln">872  </span></a>                <span class="s1">self._async_event.set()</span>
+<a name="l873"><span class="ln">873  </span></a>
+<a name="l874"><span class="ln">874  </span></a>    <span class="s3">def </span><span class="s1">idle(self):</span>
+<a name="l875"><span class="ln">875  </span></a>        <span class="s1">fps = self._max_fps</span>
+<a name="l876"><span class="ln">876  </span></a>        <span class="s1">event = self._event</span>
+<a name="l877"><span class="ln">877  </span></a>        <span class="s1">resolution = self.get_resolution()</span>
+<a name="l878"><span class="ln">878  </span></a>        <span class="s3">if </span><span class="s1">fps &gt; </span><span class="s5">0</span><span class="s1">:</span>
+<a name="l879"><span class="ln">879  </span></a>            <span class="s1">done</span><span class="s3">, </span><span class="s1">sleeptime = self._check_ready(</span>
+<a name="l880"><span class="ln">880  </span></a>                <span class="s1">fps</span><span class="s3">, </span><span class="s1">resolution</span><span class="s3">, </span><span class="s5">4 </span><span class="s1">/ </span><span class="s5">5. </span><span class="s1">* resolution</span><span class="s3">, </span><span class="s1">event)</span>
+<a name="l881"><span class="ln">881  </span></a>            <span class="s3">if not </span><span class="s1">done:</span>
+<a name="l882"><span class="ln">882  </span></a>                <span class="s1">event.wait(sleeptime)</span>
+<a name="l883"><span class="ln">883  </span></a>
+<a name="l884"><span class="ln">884  </span></a>        <span class="s1">current = self.time()</span>
+<a name="l885"><span class="ln">885  </span></a>        <span class="s1">self._dt = current - self._last_tick</span>
+<a name="l886"><span class="ln">886  </span></a>        <span class="s1">self._last_tick = current</span>
+<a name="l887"><span class="ln">887  </span></a>        <span class="s1">event.clear()</span>
+<a name="l888"><span class="ln">888  </span></a>        <span class="s4"># anything scheduled from now on, if scheduled for the upcoming frame</span>
+<a name="l889"><span class="ln">889  </span></a>        <span class="s4"># will cause a timeout of the event on the next idle due to on_schedule</span>
+<a name="l890"><span class="ln">890  </span></a>        <span class="s4"># `self._last_tick = current` must happen before clear, otherwise the</span>
+<a name="l891"><span class="ln">891  </span></a>        <span class="s4"># on_schedule computation is wrong when exec between the clear and</span>
+<a name="l892"><span class="ln">892  </span></a>        <span class="s4"># the `self._last_tick = current` bytecode.</span>
+<a name="l893"><span class="ln">893  </span></a>        <span class="s3">return </span><span class="s1">current</span>
+<a name="l894"><span class="ln">894  </span></a>
+<a name="l895"><span class="ln">895  </span></a>    <span class="s3">async def </span><span class="s1">async_idle(self):</span>
+<a name="l896"><span class="ln">896  </span></a>        <span class="s1">fps = self._max_fps</span>
+<a name="l897"><span class="ln">897  </span></a>        <span class="s1">event = self._async_event</span>
+<a name="l898"><span class="ln">898  </span></a>        <span class="s1">resolution = self.get_resolution()</span>
+<a name="l899"><span class="ln">899  </span></a>        <span class="s3">if </span><span class="s1">fps &gt; </span><span class="s5">0</span><span class="s1">:</span>
+<a name="l900"><span class="ln">900  </span></a>            <span class="s1">done</span><span class="s3">, </span><span class="s1">sleeptime = self._check_ready(</span>
+<a name="l901"><span class="ln">901  </span></a>                <span class="s1">fps</span><span class="s3">, </span><span class="s1">resolution</span><span class="s3">, </span><span class="s5">4 </span><span class="s1">/ </span><span class="s5">5. </span><span class="s1">* resolution</span><span class="s3">, </span><span class="s1">event)</span>
+<a name="l902"><span class="ln">902  </span></a>            <span class="s3">if not </span><span class="s1">done:</span>
+<a name="l903"><span class="ln">903  </span></a>                <span class="s3">await </span><span class="s1">self._async_wait_for(event.wait()</span><span class="s3">, </span><span class="s1">sleeptime)</span>
+<a name="l904"><span class="ln">904  </span></a>            <span class="s3">else</span><span class="s1">:</span>
+<a name="l905"><span class="ln">905  </span></a>                <span class="s3">await </span><span class="s1">self._async_lib.sleep(</span><span class="s5">0</span><span class="s1">)</span>
+<a name="l906"><span class="ln">906  </span></a>        <span class="s3">else</span><span class="s1">:</span>
+<a name="l907"><span class="ln">907  </span></a>            <span class="s3">await </span><span class="s1">self._async_lib.sleep(</span><span class="s5">0</span><span class="s1">)</span>
+<a name="l908"><span class="ln">908  </span></a>
+<a name="l909"><span class="ln">909  </span></a>        <span class="s1">current = self.time()</span>
+<a name="l910"><span class="ln">910  </span></a>        <span class="s1">self._dt = current - self._last_tick</span>
+<a name="l911"><span class="ln">911  </span></a>        <span class="s1">self._last_tick = current</span>
+<a name="l912"><span class="ln">912  </span></a>        <span class="s1">event.clear()</span>
+<a name="l913"><span class="ln">913  </span></a>        <span class="s4"># anything scheduled from now on, if scheduled for the upcoming frame</span>
+<a name="l914"><span class="ln">914  </span></a>        <span class="s4"># will cause a timeout of the event on the next idle due to on_schedule</span>
+<a name="l915"><span class="ln">915  </span></a>        <span class="s4"># `self._last_tick = current` must happen before clear, otherwise the</span>
+<a name="l916"><span class="ln">916  </span></a>        <span class="s4"># on_schedule computation is wrong when exec between the clear and</span>
+<a name="l917"><span class="ln">917  </span></a>        <span class="s4"># the `self._last_tick = current` bytecode.</span>
+<a name="l918"><span class="ln">918  </span></a>        <span class="s3">return </span><span class="s1">current</span>
+<a name="l919"><span class="ln">919  </span></a>
+<a name="l920"><span class="ln">920  </span></a>    <span class="s3">def </span><span class="s1">_check_ready(self</span><span class="s3">, </span><span class="s1">fps</span><span class="s3">, </span><span class="s1">min_sleep</span><span class="s3">, </span><span class="s1">undershoot</span><span class="s3">, </span><span class="s1">event):</span>
+<a name="l921"><span class="ln">921  </span></a>        <span class="s3">if </span><span class="s1">event.is_set():</span>
+<a name="l922"><span class="ln">922  </span></a>            <span class="s3">return True, </span><span class="s5">0</span>
+<a name="l923"><span class="ln">923  </span></a>
+<a name="l924"><span class="ln">924  </span></a>        <span class="s1">t = self._get_min_timeout_func()</span>
+<a name="l925"><span class="ln">925  </span></a>        <span class="s3">if not </span><span class="s1">t:</span>
+<a name="l926"><span class="ln">926  </span></a>            <span class="s3">return True, </span><span class="s5">0</span>
+<a name="l927"><span class="ln">927  </span></a>
+<a name="l928"><span class="ln">928  </span></a>        <span class="s3">if not </span><span class="s1">self.interupt_next_only:</span>
+<a name="l929"><span class="ln">929  </span></a>            <span class="s1">curr_t = self.time()</span>
+<a name="l930"><span class="ln">930  </span></a>            <span class="s1">sleeptime = min(</span><span class="s5">1 </span><span class="s1">/ fps - (curr_t - self._last_tick)</span><span class="s3">, </span><span class="s1">t - curr_t)</span>
+<a name="l931"><span class="ln">931  </span></a>        <span class="s3">else</span><span class="s1">:</span>
+<a name="l932"><span class="ln">932  </span></a>            <span class="s1">sleeptime = </span><span class="s5">1 </span><span class="s1">/ fps - (self.time() - self._last_tick)</span>
+<a name="l933"><span class="ln">933  </span></a>        <span class="s3">return </span><span class="s1">sleeptime - undershoot &lt;= min_sleep</span><span class="s3">, </span><span class="s1">sleeptime - undershoot</span>
+<a name="l934"><span class="ln">934  </span></a>
+<a name="l935"><span class="ln">935  </span></a>
+<a name="l936"><span class="ln">936  </span></a><span class="s3">class </span><span class="s1">ClockBaseInterruptFreeBehavior(ClockBaseInterruptBehavior):</span>
+<a name="l937"><span class="ln">937  </span></a>    <span class="s0">'''A base class for the clock that interrupts the sleep interval for 
+<a name="l938"><span class="ln">938  </span></a>    free events. 
+<a name="l939"><span class="ln">939  </span></a>    '''</span>
+<a name="l940"><span class="ln">940  </span></a>
+<a name="l941"><span class="ln">941  </span></a>    <span class="s3">def </span><span class="s1">__init__(self</span><span class="s3">, </span><span class="s1">**kwargs):</span>
+<a name="l942"><span class="ln">942  </span></a>        <span class="s1">super(ClockBaseInterruptFreeBehavior</span><span class="s3">, </span><span class="s1">self).__init__(**kwargs)</span>
+<a name="l943"><span class="ln">943  </span></a>        <span class="s1">self._get_min_timeout_func = self.get_min_free_timeout</span>
+<a name="l944"><span class="ln">944  </span></a>
+<a name="l945"><span class="ln">945  </span></a>    <span class="s3">def </span><span class="s1">on_schedule(self</span><span class="s3">, </span><span class="s1">event):</span>
+<a name="l946"><span class="ln">946  </span></a>        <span class="s3">if not </span><span class="s1">event.free:  </span><span class="s4"># only wake up for free events</span>
+<a name="l947"><span class="ln">947  </span></a>            <span class="s3">return</span>
+<a name="l948"><span class="ln">948  </span></a>        <span class="s4"># free events should use real time not frame time</span>
+<a name="l949"><span class="ln">949  </span></a>        <span class="s1">event._last_dt = self.time()</span>
+<a name="l950"><span class="ln">950  </span></a>        <span class="s3">return </span><span class="s1">super(ClockBaseInterruptFreeBehavior</span><span class="s3">,</span>
+<a name="l951"><span class="ln">951  </span></a>                     <span class="s1">self).on_schedule(event)</span>
+<a name="l952"><span class="ln">952  </span></a>
+<a name="l953"><span class="ln">953  </span></a>
+<a name="l954"><span class="ln">954  </span></a><span class="s3">class </span><span class="s1">ClockBase(ClockBaseBehavior</span><span class="s3">, </span><span class="s1">CyClockBase):</span>
+<a name="l955"><span class="ln">955  </span></a>    <span class="s0">'''The ``default`` kivy clock. See module for details. 
+<a name="l956"><span class="ln">956  </span></a>    '''</span>
+<a name="l957"><span class="ln">957  </span></a>
+<a name="l958"><span class="ln">958  </span></a>    <span class="s1">_sleep_obj = </span><span class="s3">None</span>
+<a name="l959"><span class="ln">959  </span></a>
+<a name="l960"><span class="ln">960  </span></a>    <span class="s3">def </span><span class="s1">__init__(self</span><span class="s3">, </span><span class="s1">**kwargs):</span>
+<a name="l961"><span class="ln">961  </span></a>        <span class="s1">super(ClockBase</span><span class="s3">, </span><span class="s1">self).__init__(**kwargs)</span>
+<a name="l962"><span class="ln">962  </span></a>        <span class="s1">self._sleep_obj = _get_sleep_obj()</span>
+<a name="l963"><span class="ln">963  </span></a>
+<a name="l964"><span class="ln">964  </span></a>    <span class="s3">def </span><span class="s1">usleep(self</span><span class="s3">, </span><span class="s1">microseconds):</span>
+<a name="l965"><span class="ln">965  </span></a>        <span class="s1">_usleep(microseconds</span><span class="s3">, </span><span class="s1">self._sleep_obj)</span>
+<a name="l966"><span class="ln">966  </span></a>
+<a name="l967"><span class="ln">967  </span></a>
+<a name="l968"><span class="ln">968  </span></a><span class="s3">class </span><span class="s1">ClockBaseInterrupt(ClockBaseInterruptBehavior</span><span class="s3">, </span><span class="s1">CyClockBase):</span>
+<a name="l969"><span class="ln">969  </span></a>    <span class="s0">'''The ``interrupt`` kivy clock. See module for details. 
+<a name="l970"><span class="ln">970  </span></a>    '''</span>
+<a name="l971"><span class="ln">971  </span></a>
+<a name="l972"><span class="ln">972  </span></a>    <span class="s3">pass</span>
+<a name="l973"><span class="ln">973  </span></a>
+<a name="l974"><span class="ln">974  </span></a>
+<a name="l975"><span class="ln">975  </span></a><span class="s3">class </span><span class="s1">ClockBaseFreeInterruptAll(</span>
+<a name="l976"><span class="ln">976  </span></a>        <span class="s1">ClockBaseInterruptFreeBehavior</span><span class="s3">, </span><span class="s1">CyClockBaseFree):</span>
+<a name="l977"><span class="ln">977  </span></a>    <span class="s0">'''The ``free_all`` kivy clock. See module for details. 
+<a name="l978"><span class="ln">978  </span></a>    '''</span>
+<a name="l979"><span class="ln">979  </span></a>
+<a name="l980"><span class="ln">980  </span></a>    <span class="s3">pass</span>
+<a name="l981"><span class="ln">981  </span></a>
+<a name="l982"><span class="ln">982  </span></a>
+<a name="l983"><span class="ln">983  </span></a><span class="s3">class </span><span class="s1">ClockBaseFreeInterruptOnly(</span>
+<a name="l984"><span class="ln">984  </span></a>        <span class="s1">ClockBaseInterruptFreeBehavior</span><span class="s3">, </span><span class="s1">CyClockBaseFree):</span>
+<a name="l985"><span class="ln">985  </span></a>    <span class="s0">'''The ``free_only`` kivy clock. See module for details. 
+<a name="l986"><span class="ln">986  </span></a>    '''</span>
+<a name="l987"><span class="ln">987  </span></a>
+<a name="l988"><span class="ln">988  </span></a>    <span class="s3">def </span><span class="s1">idle(self):</span>
+<a name="l989"><span class="ln">989  </span></a>        <span class="s1">fps = self._max_fps</span>
+<a name="l990"><span class="ln">990  </span></a>        <span class="s1">current = self.time()</span>
+<a name="l991"><span class="ln">991  </span></a>        <span class="s1">event = self._event</span>
+<a name="l992"><span class="ln">992  </span></a>        <span class="s3">if </span><span class="s1">fps &gt; </span><span class="s5">0</span><span class="s1">:</span>
+<a name="l993"><span class="ln">993  </span></a>            <span class="s1">min_sleep = self.get_resolution()</span>
+<a name="l994"><span class="ln">994  </span></a>            <span class="s1">usleep = self.usleep</span>
+<a name="l995"><span class="ln">995  </span></a>            <span class="s1">undershoot = </span><span class="s5">4 </span><span class="s1">/ </span><span class="s5">5. </span><span class="s1">* min_sleep</span>
+<a name="l996"><span class="ln">996  </span></a>            <span class="s1">min_t = self.get_min_free_timeout</span>
+<a name="l997"><span class="ln">997  </span></a>            <span class="s1">interupt_next_only = self.interupt_next_only</span>
+<a name="l998"><span class="ln">998  </span></a>
+<a name="l999"><span class="ln">999  </span></a>            <span class="s1">sleeptime = </span><span class="s5">1 </span><span class="s1">/ fps - (current - self._last_tick)</span>
+<a name="l1000"><span class="ln">1000 </span></a>            <span class="s3">while </span><span class="s1">sleeptime - undershoot &gt; min_sleep:</span>
+<a name="l1001"><span class="ln">1001 </span></a>                <span class="s3">if </span><span class="s1">event.is_set():</span>
+<a name="l1002"><span class="ln">1002 </span></a>                    <span class="s1">do_free = </span><span class="s3">True</span>
+<a name="l1003"><span class="ln">1003 </span></a>                <span class="s3">else</span><span class="s1">:</span>
+<a name="l1004"><span class="ln">1004 </span></a>                    <span class="s1">t = min_t()</span>
+<a name="l1005"><span class="ln">1005 </span></a>                    <span class="s3">if not </span><span class="s1">t:</span>
+<a name="l1006"><span class="ln">1006 </span></a>                        <span class="s1">do_free = </span><span class="s3">True</span>
+<a name="l1007"><span class="ln">1007 </span></a>                    <span class="s3">elif </span><span class="s1">interupt_next_only:</span>
+<a name="l1008"><span class="ln">1008 </span></a>                        <span class="s1">do_free = </span><span class="s3">False</span>
+<a name="l1009"><span class="ln">1009 </span></a>                    <span class="s3">else</span><span class="s1">:</span>
+<a name="l1010"><span class="ln">1010 </span></a>                        <span class="s1">sleeptime = min(sleeptime</span><span class="s3">, </span><span class="s1">t - current)</span>
+<a name="l1011"><span class="ln">1011 </span></a>                        <span class="s1">do_free = sleeptime - undershoot &lt;= min_sleep</span>
+<a name="l1012"><span class="ln">1012 </span></a>
+<a name="l1013"><span class="ln">1013 </span></a>                <span class="s3">if </span><span class="s1">do_free:</span>
+<a name="l1014"><span class="ln">1014 </span></a>                    <span class="s1">event.clear()</span>
+<a name="l1015"><span class="ln">1015 </span></a>                    <span class="s1">self._process_free_events(current)</span>
+<a name="l1016"><span class="ln">1016 </span></a>                <span class="s3">else</span><span class="s1">:</span>
+<a name="l1017"><span class="ln">1017 </span></a>                    <span class="s1">event.wait(sleeptime - undershoot)</span>
+<a name="l1018"><span class="ln">1018 </span></a>                <span class="s1">current = self.time()</span>
+<a name="l1019"><span class="ln">1019 </span></a>                <span class="s1">sleeptime = </span><span class="s5">1 </span><span class="s1">/ fps - (current - self._last_tick)</span>
+<a name="l1020"><span class="ln">1020 </span></a>
+<a name="l1021"><span class="ln">1021 </span></a>        <span class="s1">self._dt = current - self._last_tick</span>
+<a name="l1022"><span class="ln">1022 </span></a>        <span class="s1">self._last_tick = current</span>
+<a name="l1023"><span class="ln">1023 </span></a>        <span class="s1">event.clear()  </span><span class="s4"># this needs to stay after _last_tick</span>
+<a name="l1024"><span class="ln">1024 </span></a>        <span class="s3">return </span><span class="s1">current</span>
+<a name="l1025"><span class="ln">1025 </span></a>
+<a name="l1026"><span class="ln">1026 </span></a>    <span class="s3">async def </span><span class="s1">async_idle(self):</span>
+<a name="l1027"><span class="ln">1027 </span></a>        <span class="s1">fps = self._max_fps</span>
+<a name="l1028"><span class="ln">1028 </span></a>        <span class="s1">current = self.time()</span>
+<a name="l1029"><span class="ln">1029 </span></a>        <span class="s1">event = self._async_event</span>
+<a name="l1030"><span class="ln">1030 </span></a>        <span class="s3">if </span><span class="s1">fps &gt; </span><span class="s5">0</span><span class="s1">:</span>
+<a name="l1031"><span class="ln">1031 </span></a>            <span class="s1">min_sleep = self.get_resolution()</span>
+<a name="l1032"><span class="ln">1032 </span></a>            <span class="s1">usleep = self.usleep</span>
+<a name="l1033"><span class="ln">1033 </span></a>            <span class="s1">undershoot = </span><span class="s5">4 </span><span class="s1">/ </span><span class="s5">5. </span><span class="s1">* min_sleep</span>
+<a name="l1034"><span class="ln">1034 </span></a>            <span class="s1">min_t = self.get_min_free_timeout</span>
+<a name="l1035"><span class="ln">1035 </span></a>            <span class="s1">interupt_next_only = self.interupt_next_only</span>
+<a name="l1036"><span class="ln">1036 </span></a>
+<a name="l1037"><span class="ln">1037 </span></a>            <span class="s1">sleeptime = </span><span class="s5">1 </span><span class="s1">/ fps - (current - self._last_tick)</span>
+<a name="l1038"><span class="ln">1038 </span></a>            <span class="s1">slept = </span><span class="s3">False</span>
+<a name="l1039"><span class="ln">1039 </span></a>            <span class="s3">while </span><span class="s1">sleeptime - undershoot &gt; min_sleep:</span>
+<a name="l1040"><span class="ln">1040 </span></a>                <span class="s3">if </span><span class="s1">event.is_set():</span>
+<a name="l1041"><span class="ln">1041 </span></a>                    <span class="s1">do_free = </span><span class="s3">True</span>
+<a name="l1042"><span class="ln">1042 </span></a>                <span class="s3">else</span><span class="s1">:</span>
+<a name="l1043"><span class="ln">1043 </span></a>                    <span class="s1">t = min_t()</span>
+<a name="l1044"><span class="ln">1044 </span></a>                    <span class="s3">if not </span><span class="s1">t:</span>
+<a name="l1045"><span class="ln">1045 </span></a>                        <span class="s1">do_free = </span><span class="s3">True</span>
+<a name="l1046"><span class="ln">1046 </span></a>                    <span class="s3">elif </span><span class="s1">interupt_next_only:</span>
+<a name="l1047"><span class="ln">1047 </span></a>                        <span class="s1">do_free = </span><span class="s3">False</span>
+<a name="l1048"><span class="ln">1048 </span></a>                    <span class="s3">else</span><span class="s1">:</span>
+<a name="l1049"><span class="ln">1049 </span></a>                        <span class="s1">sleeptime = min(sleeptime</span><span class="s3">, </span><span class="s1">t - current)</span>
+<a name="l1050"><span class="ln">1050 </span></a>                        <span class="s1">do_free = sleeptime - undershoot &lt;= min_sleep</span>
+<a name="l1051"><span class="ln">1051 </span></a>
+<a name="l1052"><span class="ln">1052 </span></a>                <span class="s3">if </span><span class="s1">do_free:</span>
+<a name="l1053"><span class="ln">1053 </span></a>                    <span class="s1">event.clear()</span>
+<a name="l1054"><span class="ln">1054 </span></a>                    <span class="s1">self._process_free_events(current)</span>
+<a name="l1055"><span class="ln">1055 </span></a>                <span class="s3">else</span><span class="s1">:</span>
+<a name="l1056"><span class="ln">1056 </span></a>                    <span class="s1">slept = </span><span class="s3">True</span>
+<a name="l1057"><span class="ln">1057 </span></a>                    <span class="s3">await </span><span class="s1">self._async_wait_for(</span>
+<a name="l1058"><span class="ln">1058 </span></a>                        <span class="s1">event.wait()</span><span class="s3">, </span><span class="s1">sleeptime - undershoot)</span>
+<a name="l1059"><span class="ln">1059 </span></a>                <span class="s1">current = self.time()</span>
+<a name="l1060"><span class="ln">1060 </span></a>                <span class="s1">sleeptime = </span><span class="s5">1 </span><span class="s1">/ fps - (current - self._last_tick)</span>
+<a name="l1061"><span class="ln">1061 </span></a>
+<a name="l1062"><span class="ln">1062 </span></a>            <span class="s3">if not </span><span class="s1">slept:</span>
+<a name="l1063"><span class="ln">1063 </span></a>                <span class="s3">await </span><span class="s1">self._async_lib.sleep(</span><span class="s5">0</span><span class="s1">)</span>
+<a name="l1064"><span class="ln">1064 </span></a>        <span class="s3">else</span><span class="s1">:</span>
+<a name="l1065"><span class="ln">1065 </span></a>            <span class="s3">await </span><span class="s1">self._async_lib.sleep(</span><span class="s5">0</span><span class="s1">)</span>
+<a name="l1066"><span class="ln">1066 </span></a>
+<a name="l1067"><span class="ln">1067 </span></a>        <span class="s1">self._dt = current - self._last_tick</span>
+<a name="l1068"><span class="ln">1068 </span></a>        <span class="s1">self._last_tick = current</span>
+<a name="l1069"><span class="ln">1069 </span></a>        <span class="s1">event.clear()  </span><span class="s4"># this needs to stay after _last_tick</span>
+<a name="l1070"><span class="ln">1070 </span></a>        <span class="s3">return </span><span class="s1">current</span>
+<a name="l1071"><span class="ln">1071 </span></a>
+<a name="l1072"><span class="ln">1072 </span></a>
+<a name="l1073"><span class="ln">1073 </span></a><span class="s3">def </span><span class="s1">mainthread(func):</span>
+<a name="l1074"><span class="ln">1074 </span></a>    <span class="s0">'''Decorator that will schedule the call of the function for the next 
+<a name="l1075"><span class="ln">1075 </span></a>    available frame in the mainthread. It can be useful when you use 
+<a name="l1076"><span class="ln">1076 </span></a>    :class:`~kivy.network.urlrequest.UrlRequest` or when you do Thread 
+<a name="l1077"><span class="ln">1077 </span></a>    programming: you cannot do any OpenGL-related work in a thread. 
+<a name="l1078"><span class="ln">1078 </span></a> 
+<a name="l1079"><span class="ln">1079 </span></a>    Please note that this method will return directly and no result can be 
+<a name="l1080"><span class="ln">1080 </span></a>    returned:: 
+<a name="l1081"><span class="ln">1081 </span></a> 
+<a name="l1082"><span class="ln">1082 </span></a>        @mainthread 
+<a name="l1083"><span class="ln">1083 </span></a>        def callback(self, *args): 
+<a name="l1084"><span class="ln">1084 </span></a>            print('The request succeeded!', 
+<a name="l1085"><span class="ln">1085 </span></a>                  'This callback is called in the main thread.') 
+<a name="l1086"><span class="ln">1086 </span></a> 
+<a name="l1087"><span class="ln">1087 </span></a> 
+<a name="l1088"><span class="ln">1088 </span></a>        self.req = UrlRequest(url='http://...', on_success=callback) 
+<a name="l1089"><span class="ln">1089 </span></a> 
+<a name="l1090"><span class="ln">1090 </span></a>    .. versionadded:: 1.8.0 
+<a name="l1091"><span class="ln">1091 </span></a>    '''</span>
+<a name="l1092"><span class="ln">1092 </span></a>    <span class="s1">@wraps(func)</span>
+<a name="l1093"><span class="ln">1093 </span></a>    <span class="s3">def </span><span class="s1">delayed_func(*args</span><span class="s3">, </span><span class="s1">**kwargs):</span>
+<a name="l1094"><span class="ln">1094 </span></a>        <span class="s3">def </span><span class="s1">callback_func(dt):</span>
+<a name="l1095"><span class="ln">1095 </span></a>            <span class="s1">func(*args</span><span class="s3">, </span><span class="s1">**kwargs)</span>
+<a name="l1096"><span class="ln">1096 </span></a>        <span class="s1">Clock.schedule_once(callback_func</span><span class="s3">, </span><span class="s5">0</span><span class="s1">)</span>
+<a name="l1097"><span class="ln">1097 </span></a>    <span class="s3">return </span><span class="s1">delayed_func</span>
+<a name="l1098"><span class="ln">1098 </span></a>
+<a name="l1099"><span class="ln">1099 </span></a>
+<a name="l1100"><span class="ln">1100 </span></a><span class="s3">def </span><span class="s1">triggered(timeout=</span><span class="s5">0</span><span class="s3">, </span><span class="s1">interval=</span><span class="s3">False</span><span class="s1">):</span>
+<a name="l1101"><span class="ln">1101 </span></a>    <span class="s0">'''Decorator that will trigger the call of the function at the specified 
+<a name="l1102"><span class="ln">1102 </span></a>    timeout, through the method :meth:`CyClockBase.create_trigger`. Subsequent 
+<a name="l1103"><span class="ln">1103 </span></a>    calls to the decorated function (while the timeout is active) are ignored. 
+<a name="l1104"><span class="ln">1104 </span></a> 
+<a name="l1105"><span class="ln">1105 </span></a>    It can be helpful when an expensive funcion (i.e. call to a server) can be 
+<a name="l1106"><span class="ln">1106 </span></a>    triggered by different methods. Setting a proper timeout will delay the 
+<a name="l1107"><span class="ln">1107 </span></a>    calling and only one of them wil be triggered. 
+<a name="l1108"><span class="ln">1108 </span></a> 
+<a name="l1109"><span class="ln">1109 </span></a>        @triggered(timeout, interval=False) 
+<a name="l1110"><span class="ln">1110 </span></a>        def callback(id): 
+<a name="l1111"><span class="ln">1111 </span></a>            print('The callback has been called with id=%d' % id) 
+<a name="l1112"><span class="ln">1112 </span></a> 
+<a name="l1113"><span class="ln">1113 </span></a>        &gt;&gt; callback(id=1) 
+<a name="l1114"><span class="ln">1114 </span></a>        &gt;&gt; callback(id=2) 
+<a name="l1115"><span class="ln">1115 </span></a>        The callback has been called with id=2 
+<a name="l1116"><span class="ln">1116 </span></a> 
+<a name="l1117"><span class="ln">1117 </span></a>    The decorated callback can also be unscheduled using: 
+<a name="l1118"><span class="ln">1118 </span></a> 
+<a name="l1119"><span class="ln">1119 </span></a>        &gt;&gt; callback.cancel() 
+<a name="l1120"><span class="ln">1120 </span></a> 
+<a name="l1121"><span class="ln">1121 </span></a>    .. versionadded:: 1.10.1 
+<a name="l1122"><span class="ln">1122 </span></a>    '''</span>
+<a name="l1123"><span class="ln">1123 </span></a>
+<a name="l1124"><span class="ln">1124 </span></a>    <span class="s3">def </span><span class="s1">wrapper_triggered(func):</span>
+<a name="l1125"><span class="ln">1125 </span></a>
+<a name="l1126"><span class="ln">1126 </span></a>        <span class="s1">_args = []</span>
+<a name="l1127"><span class="ln">1127 </span></a>        <span class="s1">_kwargs = {}</span>
+<a name="l1128"><span class="ln">1128 </span></a>
+<a name="l1129"><span class="ln">1129 </span></a>        <span class="s3">def </span><span class="s1">cb_function(dt):</span>
+<a name="l1130"><span class="ln">1130 </span></a>            <span class="s1">func(*tuple(_args)</span><span class="s3">, </span><span class="s1">**_kwargs)</span>
+<a name="l1131"><span class="ln">1131 </span></a>
+<a name="l1132"><span class="ln">1132 </span></a>        <span class="s1">cb_trigger = Clock.create_trigger(</span>
+<a name="l1133"><span class="ln">1133 </span></a>            <span class="s1">cb_function</span><span class="s3">,</span>
+<a name="l1134"><span class="ln">1134 </span></a>            <span class="s1">timeout=timeout</span><span class="s3">,</span>
+<a name="l1135"><span class="ln">1135 </span></a>            <span class="s1">interval=interval)</span>
+<a name="l1136"><span class="ln">1136 </span></a>
+<a name="l1137"><span class="ln">1137 </span></a>        <span class="s1">@wraps(func)</span>
+<a name="l1138"><span class="ln">1138 </span></a>        <span class="s3">def </span><span class="s1">trigger_function(*args</span><span class="s3">, </span><span class="s1">**kwargs):</span>
+<a name="l1139"><span class="ln">1139 </span></a>            <span class="s1">_args[:] = []</span>
+<a name="l1140"><span class="ln">1140 </span></a>            <span class="s1">_args.extend(list(args))</span>
+<a name="l1141"><span class="ln">1141 </span></a>            <span class="s1">_kwargs.clear()</span>
+<a name="l1142"><span class="ln">1142 </span></a>            <span class="s1">_kwargs.update(kwargs)</span>
+<a name="l1143"><span class="ln">1143 </span></a>            <span class="s1">cb_trigger()</span>
+<a name="l1144"><span class="ln">1144 </span></a>
+<a name="l1145"><span class="ln">1145 </span></a>        <span class="s3">def </span><span class="s1">trigger_cancel():</span>
+<a name="l1146"><span class="ln">1146 </span></a>            <span class="s1">cb_trigger.cancel()</span>
+<a name="l1147"><span class="ln">1147 </span></a>
+<a name="l1148"><span class="ln">1148 </span></a>        <span class="s1">setattr(trigger_function</span><span class="s3">, </span><span class="s2">'cancel'</span><span class="s3">, </span><span class="s1">trigger_cancel)</span>
+<a name="l1149"><span class="ln">1149 </span></a>
+<a name="l1150"><span class="ln">1150 </span></a>        <span class="s3">return </span><span class="s1">trigger_function</span>
+<a name="l1151"><span class="ln">1151 </span></a>
+<a name="l1152"><span class="ln">1152 </span></a>    <span class="s3">return </span><span class="s1">wrapper_triggered</span>
+<a name="l1153"><span class="ln">1153 </span></a>
+<a name="l1154"><span class="ln">1154 </span></a>
+<a name="l1155"><span class="ln">1155 </span></a><span class="s3">if </span><span class="s2">'KIVY_DOC_INCLUDE' </span><span class="s3">in </span><span class="s1">environ:</span>
+<a name="l1156"><span class="ln">1156 </span></a>    <span class="s4">#: Instance of :class:`ClockBaseBehavior`.</span>
+<a name="l1157"><span class="ln">1157 </span></a>    <span class="s1">Clock: ClockBase = </span><span class="s3">None</span>
+<a name="l1158"><span class="ln">1158 </span></a><span class="s3">else</span><span class="s1">:</span>
+<a name="l1159"><span class="ln">1159 </span></a>    <span class="s1">_classes = {</span><span class="s2">'default'</span><span class="s1">: ClockBase</span><span class="s3">, </span><span class="s2">'interrupt'</span><span class="s1">: ClockBaseInterrupt</span><span class="s3">,</span>
+<a name="l1160"><span class="ln">1160 </span></a>                <span class="s2">'free_all'</span><span class="s1">: ClockBaseFreeInterruptAll</span><span class="s3">,</span>
+<a name="l1161"><span class="ln">1161 </span></a>                <span class="s2">'free_only'</span><span class="s1">: ClockBaseFreeInterruptOnly}</span>
+<a name="l1162"><span class="ln">1162 </span></a>    <span class="s1">_clk = environ.get(</span><span class="s2">'KIVY_CLOCK'</span><span class="s3">, </span><span class="s1">Config.get(</span><span class="s2">'kivy'</span><span class="s3">, </span><span class="s2">'kivy_clock'</span><span class="s1">))</span>
+<a name="l1163"><span class="ln">1163 </span></a>    <span class="s3">if </span><span class="s1">_clk </span><span class="s3">not in </span><span class="s1">_classes:</span>
+<a name="l1164"><span class="ln">1164 </span></a>        <span class="s3">raise </span><span class="s1">Exception(</span>
+<a name="l1165"><span class="ln">1165 </span></a>            <span class="s2">'{} is not a valid kivy clock. Valid clocks are {}'</span><span class="s1">.format(</span>
+<a name="l1166"><span class="ln">1166 </span></a>                <span class="s1">_clk</span><span class="s3">, </span><span class="s1">sorted(_classes.keys())))</span>
+<a name="l1167"><span class="ln">1167 </span></a>
+<a name="l1168"><span class="ln">1168 </span></a>    <span class="s1">Clock: ClockBase = register_context(</span>
+<a name="l1169"><span class="ln">1169 </span></a>        <span class="s2">'Clock'</span><span class="s3">, </span><span class="s1">_classes[_clk]</span><span class="s3">,</span>
+<a name="l1170"><span class="ln">1170 </span></a>        <span class="s1">async_lib=environ.get(</span><span class="s2">'KIVY_EVENTLOOP'</span><span class="s3">, </span><span class="s2">'asyncio'</span><span class="s1">))</span>
+<a name="l1171"><span class="ln">1171 </span></a>    <span class="s2">'''The kivy Clock instance. See module documentation for details. 
+<a name="l1172"><span class="ln">1172 </span></a>    '''</span>
+<a name="l1173"><span class="ln">1173 </span></a></pre>
+</body>
+</html>

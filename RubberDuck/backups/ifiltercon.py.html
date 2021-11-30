@@ -1,0 +1,132 @@
+<html>
+<head>
+<title>ifiltercon.py</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type="text/css">
+.s0 { color: #808080;}
+.s1 { color: #a9b7c6;}
+.s2 { color: #cc7832;}
+.s3 { color: #6a8759;}
+.s4 { color: #6897bb;}
+.ln { color: #606366; font-weight: normal; font-style: normal; }
+</style>
+</head>
+<body bgcolor="#2b2b2b">
+<table CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#606060" >
+<tr><td><center>
+<font face="Arial, Helvetica" color="#000000">
+ifiltercon.py</font>
+</center></td></tr></table>
+<pre><a name="l1"><span class="ln">1    </span></a><span class="s0"># manual stuff</span>
+<a name="l2"><span class="ln">2    </span></a><span class="s2">from </span><span class="s1">pywintypes </span><span class="s2">import </span><span class="s1">IID</span>
+<a name="l3"><span class="ln">3    </span></a>
+<a name="l4"><span class="ln">4    </span></a><span class="s1">PSGUID_STORAGE = IID(</span><span class="s3">&quot;{B725F130-47EF-101A-A5F1-02608C9EEBAC}&quot;</span><span class="s1">)</span>
+<a name="l5"><span class="ln">5    </span></a><span class="s1">PSGUID_SUMMARYINFORMATION = IID(</span><span class="s3">&quot;{F29F85E0-4FF9-1068-AB91-08002B27B3D9}&quot;</span><span class="s1">)</span>
+<a name="l6"><span class="ln">6    </span></a><span class="s1">PSGUID_HTMLINFORMATION = IID(</span><span class="s3">&quot;{D1B5D3F0-C0B3-11CF-9A92-00A0C908DBF1}&quot;</span><span class="s1">)</span>
+<a name="l7"><span class="ln">7    </span></a><span class="s1">PSGUID_HTML2_INFORMATION = IID(</span><span class="s3">&quot;{C82BF597-B831-11D0-B733-00AA00A1EBD2}&quot;</span><span class="s1">)</span>
+<a name="l8"><span class="ln">8    </span></a>
+<a name="l9"><span class="ln">9    </span></a><span class="s1">IFILTER_INIT_CANON_PARAGRAPHS = </span><span class="s4">1</span>
+<a name="l10"><span class="ln">10   </span></a><span class="s1">IFILTER_INIT_HARD_LINE_BREAKS = </span><span class="s4">2</span>
+<a name="l11"><span class="ln">11   </span></a><span class="s1">IFILTER_INIT_CANON_HYPHENS = </span><span class="s4">4</span>
+<a name="l12"><span class="ln">12   </span></a><span class="s1">IFILTER_INIT_CANON_SPACES = </span><span class="s4">8</span>
+<a name="l13"><span class="ln">13   </span></a><span class="s1">IFILTER_INIT_APPLY_INDEX_ATTRIBUTES = </span><span class="s4">16</span>
+<a name="l14"><span class="ln">14   </span></a><span class="s1">IFILTER_INIT_APPLY_CRAWL_ATTRIBUTES = </span><span class="s4">256</span>
+<a name="l15"><span class="ln">15   </span></a><span class="s1">IFILTER_INIT_APPLY_OTHER_ATTRIBUTES = </span><span class="s4">32</span>
+<a name="l16"><span class="ln">16   </span></a><span class="s1">IFILTER_INIT_INDEXING_ONLY = </span><span class="s4">64</span>
+<a name="l17"><span class="ln">17   </span></a><span class="s1">IFILTER_INIT_SEARCH_LINKS = </span><span class="s4">128</span>
+<a name="l18"><span class="ln">18   </span></a><span class="s1">IFILTER_INIT_FILTER_OWNED_VALUE_OK = </span><span class="s4">512</span>
+<a name="l19"><span class="ln">19   </span></a>
+<a name="l20"><span class="ln">20   </span></a><span class="s1">IFILTER_FLAGS_OLE_PROPERTIES = </span><span class="s4">1</span>
+<a name="l21"><span class="ln">21   </span></a>
+<a name="l22"><span class="ln">22   </span></a><span class="s1">CHUNK_TEXT = </span><span class="s4">0x1</span>
+<a name="l23"><span class="ln">23   </span></a><span class="s1">CHUNK_VALUE = </span><span class="s4">0x2</span>
+<a name="l24"><span class="ln">24   </span></a><span class="s1">CHUNK_NO_BREAK = </span><span class="s4">0</span>
+<a name="l25"><span class="ln">25   </span></a><span class="s1">CHUNK_EOW = </span><span class="s4">1</span>
+<a name="l26"><span class="ln">26   </span></a><span class="s1">CHUNK_EOS = </span><span class="s4">2</span>
+<a name="l27"><span class="ln">27   </span></a><span class="s1">CHUNK_EOP = </span><span class="s4">3</span>
+<a name="l28"><span class="ln">28   </span></a><span class="s1">CHUNK_EOC = </span><span class="s4">4</span>
+<a name="l29"><span class="ln">29   </span></a>
+<a name="l30"><span class="ln">30   </span></a><span class="s1">NOT_AN_ERROR = </span><span class="s4">0x00080000</span>
+<a name="l31"><span class="ln">31   </span></a><span class="s1">FILTER_E_END_OF_CHUNKS = -</span><span class="s4">2147215616</span>
+<a name="l32"><span class="ln">32   </span></a><span class="s1">FILTER_E_NO_MORE_TEXT = -</span><span class="s4">2147215615</span>
+<a name="l33"><span class="ln">33   </span></a><span class="s1">FILTER_E_NO_MORE_VALUES = -</span><span class="s4">2147215614</span>
+<a name="l34"><span class="ln">34   </span></a><span class="s1">FILTER_E_ACCESS = -</span><span class="s4">2147215613</span>
+<a name="l35"><span class="ln">35   </span></a><span class="s1">FILTER_W_MONIKER_CLIPPED = </span><span class="s4">0x00041704</span>
+<a name="l36"><span class="ln">36   </span></a><span class="s1">FILTER_E_NO_TEXT = -</span><span class="s4">2147215611</span>
+<a name="l37"><span class="ln">37   </span></a><span class="s1">FILTER_E_NO_VALUES = -</span><span class="s4">2147215610</span>
+<a name="l38"><span class="ln">38   </span></a><span class="s1">FILTER_E_EMBEDDING_UNAVAILABLE = -</span><span class="s4">2147215609</span>
+<a name="l39"><span class="ln">39   </span></a><span class="s1">FILTER_E_LINK_UNAVAILABLE = -</span><span class="s4">2147215608</span>
+<a name="l40"><span class="ln">40   </span></a><span class="s1">FILTER_S_LAST_TEXT = </span><span class="s4">0x00041709</span>
+<a name="l41"><span class="ln">41   </span></a><span class="s1">FILTER_S_LAST_VALUES = </span><span class="s4">0x0004170A</span>
+<a name="l42"><span class="ln">42   </span></a><span class="s1">FILTER_E_PASSWORD = -</span><span class="s4">2147215605</span>
+<a name="l43"><span class="ln">43   </span></a><span class="s1">FILTER_E_UNKNOWNFORMAT = -</span><span class="s4">2147215604</span>
+<a name="l44"><span class="ln">44   </span></a>
+<a name="l45"><span class="ln">45   </span></a><span class="s0"># Generated by h2py from PropIdl.h</span>
+<a name="l46"><span class="ln">46   </span></a><span class="s1">PROPSETFLAG_DEFAULT = </span><span class="s4">0</span>
+<a name="l47"><span class="ln">47   </span></a><span class="s1">PROPSETFLAG_NONSIMPLE = </span><span class="s4">1</span>
+<a name="l48"><span class="ln">48   </span></a><span class="s1">PROPSETFLAG_ANSI = </span><span class="s4">2</span>
+<a name="l49"><span class="ln">49   </span></a><span class="s1">PROPSETFLAG_UNBUFFERED = </span><span class="s4">4</span>
+<a name="l50"><span class="ln">50   </span></a><span class="s1">PROPSETFLAG_CASE_SENSITIVE = </span><span class="s4">8</span>
+<a name="l51"><span class="ln">51   </span></a><span class="s1">PROPSET_BEHAVIOR_CASE_SENSITIVE = </span><span class="s4">1</span>
+<a name="l52"><span class="ln">52   </span></a><span class="s1">PID_DICTIONARY = </span><span class="s4">0</span>
+<a name="l53"><span class="ln">53   </span></a><span class="s1">PID_CODEPAGE = </span><span class="s4">0x1</span>
+<a name="l54"><span class="ln">54   </span></a><span class="s1">PID_FIRST_USABLE = </span><span class="s4">0x2</span>
+<a name="l55"><span class="ln">55   </span></a><span class="s1">PID_FIRST_NAME_DEFAULT = </span><span class="s4">0xFFF</span>
+<a name="l56"><span class="ln">56   </span></a><span class="s1">PID_LOCALE = -</span><span class="s4">2147483648</span>
+<a name="l57"><span class="ln">57   </span></a><span class="s1">PID_MODIFY_TIME = -</span><span class="s4">2147483647</span>
+<a name="l58"><span class="ln">58   </span></a><span class="s1">PID_SECURITY = -</span><span class="s4">2147483646</span>
+<a name="l59"><span class="ln">59   </span></a><span class="s1">PID_BEHAVIOR = -</span><span class="s4">2147483645</span>
+<a name="l60"><span class="ln">60   </span></a><span class="s1">PID_ILLEGAL = -</span><span class="s4">1</span>
+<a name="l61"><span class="ln">61   </span></a><span class="s1">PID_MIN_READONLY = -</span><span class="s4">2147483648</span>
+<a name="l62"><span class="ln">62   </span></a><span class="s1">PID_MAX_READONLY = -</span><span class="s4">1073741825</span>
+<a name="l63"><span class="ln">63   </span></a><span class="s1">PIDDI_THUMBNAIL = </span><span class="s4">0x00000002</span>
+<a name="l64"><span class="ln">64   </span></a><span class="s1">PIDSI_TITLE = </span><span class="s4">0x00000002</span>
+<a name="l65"><span class="ln">65   </span></a><span class="s1">PIDSI_SUBJECT = </span><span class="s4">0x00000003</span>
+<a name="l66"><span class="ln">66   </span></a><span class="s1">PIDSI_AUTHOR = </span><span class="s4">0x00000004</span>
+<a name="l67"><span class="ln">67   </span></a><span class="s1">PIDSI_KEYWORDS = </span><span class="s4">0x00000005</span>
+<a name="l68"><span class="ln">68   </span></a><span class="s1">PIDSI_COMMENTS = </span><span class="s4">0x00000006</span>
+<a name="l69"><span class="ln">69   </span></a><span class="s1">PIDSI_TEMPLATE = </span><span class="s4">0x00000007</span>
+<a name="l70"><span class="ln">70   </span></a><span class="s1">PIDSI_LASTAUTHOR = </span><span class="s4">0x00000008</span>
+<a name="l71"><span class="ln">71   </span></a><span class="s1">PIDSI_REVNUMBER = </span><span class="s4">0x00000009</span>
+<a name="l72"><span class="ln">72   </span></a><span class="s1">PIDSI_EDITTIME = </span><span class="s4">0x0000000A</span>
+<a name="l73"><span class="ln">73   </span></a><span class="s1">PIDSI_LASTPRINTED = </span><span class="s4">0x0000000B</span>
+<a name="l74"><span class="ln">74   </span></a><span class="s1">PIDSI_CREATE_DTM = </span><span class="s4">0x0000000C</span>
+<a name="l75"><span class="ln">75   </span></a><span class="s1">PIDSI_LASTSAVE_DTM = </span><span class="s4">0x0000000D</span>
+<a name="l76"><span class="ln">76   </span></a><span class="s1">PIDSI_PAGECOUNT = </span><span class="s4">0x0000000E</span>
+<a name="l77"><span class="ln">77   </span></a><span class="s1">PIDSI_WORDCOUNT = </span><span class="s4">0x0000000F</span>
+<a name="l78"><span class="ln">78   </span></a><span class="s1">PIDSI_CHARCOUNT = </span><span class="s4">0x00000010</span>
+<a name="l79"><span class="ln">79   </span></a><span class="s1">PIDSI_THUMBNAIL = </span><span class="s4">0x00000011</span>
+<a name="l80"><span class="ln">80   </span></a><span class="s1">PIDSI_APPNAME = </span><span class="s4">0x00000012</span>
+<a name="l81"><span class="ln">81   </span></a><span class="s1">PIDSI_DOC_SECURITY = </span><span class="s4">0x00000013</span>
+<a name="l82"><span class="ln">82   </span></a><span class="s1">PIDDSI_CATEGORY = </span><span class="s4">0x00000002</span>
+<a name="l83"><span class="ln">83   </span></a><span class="s1">PIDDSI_PRESFORMAT = </span><span class="s4">0x00000003</span>
+<a name="l84"><span class="ln">84   </span></a><span class="s1">PIDDSI_BYTECOUNT = </span><span class="s4">0x00000004</span>
+<a name="l85"><span class="ln">85   </span></a><span class="s1">PIDDSI_LINECOUNT = </span><span class="s4">0x00000005</span>
+<a name="l86"><span class="ln">86   </span></a><span class="s1">PIDDSI_PARCOUNT = </span><span class="s4">0x00000006</span>
+<a name="l87"><span class="ln">87   </span></a><span class="s1">PIDDSI_SLIDECOUNT = </span><span class="s4">0x00000007</span>
+<a name="l88"><span class="ln">88   </span></a><span class="s1">PIDDSI_NOTECOUNT = </span><span class="s4">0x00000008</span>
+<a name="l89"><span class="ln">89   </span></a><span class="s1">PIDDSI_HIDDENCOUNT = </span><span class="s4">0x00000009</span>
+<a name="l90"><span class="ln">90   </span></a><span class="s1">PIDDSI_MMCLIPCOUNT = </span><span class="s4">0x0000000A</span>
+<a name="l91"><span class="ln">91   </span></a><span class="s1">PIDDSI_SCALE = </span><span class="s4">0x0000000B</span>
+<a name="l92"><span class="ln">92   </span></a><span class="s1">PIDDSI_HEADINGPAIR = </span><span class="s4">0x0000000C</span>
+<a name="l93"><span class="ln">93   </span></a><span class="s1">PIDDSI_DOCPARTS = </span><span class="s4">0x0000000D</span>
+<a name="l94"><span class="ln">94   </span></a><span class="s1">PIDDSI_MANAGER = </span><span class="s4">0x0000000E</span>
+<a name="l95"><span class="ln">95   </span></a><span class="s1">PIDDSI_COMPANY = </span><span class="s4">0x0000000F</span>
+<a name="l96"><span class="ln">96   </span></a><span class="s1">PIDDSI_LINKSDIRTY = </span><span class="s4">0x00000010</span>
+<a name="l97"><span class="ln">97   </span></a><span class="s1">PIDMSI_EDITOR = </span><span class="s4">0x00000002</span>
+<a name="l98"><span class="ln">98   </span></a><span class="s1">PIDMSI_SUPPLIER = </span><span class="s4">0x00000003</span>
+<a name="l99"><span class="ln">99   </span></a><span class="s1">PIDMSI_SOURCE = </span><span class="s4">0x00000004</span>
+<a name="l100"><span class="ln">100  </span></a><span class="s1">PIDMSI_SEQUENCE_NO = </span><span class="s4">0x00000005</span>
+<a name="l101"><span class="ln">101  </span></a><span class="s1">PIDMSI_PROJECT = </span><span class="s4">0x00000006</span>
+<a name="l102"><span class="ln">102  </span></a><span class="s1">PIDMSI_STATUS = </span><span class="s4">0x00000007</span>
+<a name="l103"><span class="ln">103  </span></a><span class="s1">PIDMSI_OWNER = </span><span class="s4">0x00000008</span>
+<a name="l104"><span class="ln">104  </span></a><span class="s1">PIDMSI_RATING = </span><span class="s4">0x00000009</span>
+<a name="l105"><span class="ln">105  </span></a><span class="s1">PIDMSI_PRODUCTION = </span><span class="s4">0x0000000A</span>
+<a name="l106"><span class="ln">106  </span></a><span class="s1">PIDMSI_COPYRIGHT = </span><span class="s4">0x0000000B</span>
+<a name="l107"><span class="ln">107  </span></a><span class="s1">PRSPEC_INVALID = -</span><span class="s4">1</span>
+<a name="l108"><span class="ln">108  </span></a><span class="s1">PRSPEC_LPWSTR = </span><span class="s4">0</span>
+<a name="l109"><span class="ln">109  </span></a><span class="s1">PRSPEC_PROPID = </span><span class="s4">1</span>
+<a name="l110"><span class="ln">110  </span></a><span class="s1">CCH_MAX_PROPSTG_NAME = </span><span class="s4">31</span>
+<a name="l111"><span class="ln">111  </span></a></pre>
+</body>
+</html>

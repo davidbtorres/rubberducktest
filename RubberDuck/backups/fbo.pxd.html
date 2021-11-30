@@ -1,0 +1,49 @@
+<html>
+<head>
+<title>fbo.pxd</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type="text/css">
+.s0 { color: #a9b7c6;}
+.ln { color: #606366; font-weight: normal; font-style: normal; }
+</style>
+</head>
+<body bgcolor="#2b2b2b">
+<table CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#606060" >
+<tr><td><center>
+<font face="Arial, Helvetica" color="#000000">
+fbo.pxd</font>
+</center></td></tr></table>
+<pre><a name="l1"><span class="ln">1    </span></a><span class="s0">from kivy.graphics.cgl cimport GLuint, GLint</span>
+<a name="l2"><span class="ln">2    </span></a><span class="s0">from kivy.graphics.instructions cimport RenderContext, Canvas</span>
+<a name="l3"><span class="ln">3    </span></a><span class="s0">from kivy.graphics.texture cimport Texture</span>
+<a name="l4"><span class="ln">4    </span></a>
+<a name="l5"><span class="ln">5    </span></a><span class="s0">cdef class Fbo(RenderContext):</span>
+<a name="l6"><span class="ln">6    </span></a>    <span class="s0">cdef int _width</span>
+<a name="l7"><span class="ln">7    </span></a>    <span class="s0">cdef int _height</span>
+<a name="l8"><span class="ln">8    </span></a>    <span class="s0">cdef int _depthbuffer_attached</span>
+<a name="l9"><span class="ln">9    </span></a>    <span class="s0">cdef int _stencilbuffer_attached</span>
+<a name="l10"><span class="ln">10   </span></a>    <span class="s0">cdef int _push_viewport</span>
+<a name="l11"><span class="ln">11   </span></a>    <span class="s0">cdef float _clear_color[4]</span>
+<a name="l12"><span class="ln">12   </span></a>    <span class="s0">cdef GLuint buffer_id</span>
+<a name="l13"><span class="ln">13   </span></a>    <span class="s0">cdef GLuint depthbuffer_id</span>
+<a name="l14"><span class="ln">14   </span></a>    <span class="s0">cdef GLuint stencilbuffer_id</span>
+<a name="l15"><span class="ln">15   </span></a>    <span class="s0">cdef GLint _viewport[4]</span>
+<a name="l16"><span class="ln">16   </span></a>    <span class="s0">cdef Texture _texture</span>
+<a name="l17"><span class="ln">17   </span></a>    <span class="s0">cdef int _is_bound</span>
+<a name="l18"><span class="ln">18   </span></a>    <span class="s0">cdef object _stencil_state</span>
+<a name="l19"><span class="ln">19   </span></a>    <span class="s0">cdef list observers</span>
+<a name="l20"><span class="ln">20   </span></a>
+<a name="l21"><span class="ln">21   </span></a>    <span class="s0">cpdef clear_buffer(self)</span>
+<a name="l22"><span class="ln">22   </span></a>    <span class="s0">cpdef bind(self)</span>
+<a name="l23"><span class="ln">23   </span></a>    <span class="s0">cpdef release(self)</span>
+<a name="l24"><span class="ln">24   </span></a>    <span class="s0">cpdef get_pixel_color(self, int wx, int wy)</span>
+<a name="l25"><span class="ln">25   </span></a>
+<a name="l26"><span class="ln">26   </span></a>    <span class="s0">cdef void create_fbo(self)</span>
+<a name="l27"><span class="ln">27   </span></a>    <span class="s0">cdef void delete_fbo(self)</span>
+<a name="l28"><span class="ln">28   </span></a>    <span class="s0">cdef int apply(self) except -1</span>
+<a name="l29"><span class="ln">29   </span></a>    <span class="s0">cdef void raise_exception(self, str message, int status=?)</span>
+<a name="l30"><span class="ln">30   </span></a>    <span class="s0">cdef str resolve_status(self, int status)</span>
+<a name="l31"><span class="ln">31   </span></a>    <span class="s0">cdef void reload(self) except *</span>
+<a name="l32"><span class="ln">32   </span></a></pre>
+</body>
+</html>
