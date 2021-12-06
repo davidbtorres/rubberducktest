@@ -9,25 +9,32 @@ from kivy.uix.image import Image
 from kivy.uix.textinput import TextInput
 from kivy.core.window import Window
 from kivy.uix.anchorlayout import AnchorLayout
-from kivy.properties import NumericProperty
+from kivy.properties import NumericProperty, StringProperty, BooleanProperty
 from kivy.core.audio import SoundLoader
 from kivy.clock import Clock
 from win32api import GetSystemMetrics
+import datetime
+import sys
 import time
 
-global alarmActive, quackActive
-alarmActive = True
-quackActive = True
+#global alarmActive, quackActive
+#alarmActive = True
+#quackActive = True
+
+class StartUpWindow(Screen):
+    pass
 
 class MainWindow(Screen):
     pass
 
 class SecondWindow(Screen):
     breakTimeValue = NumericProperty(10)
-
     pass
 
 class SettingsWindow(Screen):
+    pass
+
+class BreakWindow(Screen):
     pass
 
 class WindowManager(ScreenManager):
@@ -41,25 +48,38 @@ class MyApp(App):
         Window.top = (GetSystemMetrics(1)/2) - 225
         Window.left = (GetSystemMetrics(0)/2) - 250
 
+        self.alarmActive = True
+        self.quackActive = True
+        self.checkBackTime = 15
+
         self.playSound_quack()
 
         return Builder.load_file("../Kivy/my.kv")
 
+    #def startCountdown(self, time):
+    #    self.function_interval = Clock.schedule_interval(self.updateCountdown, 1)
+
+    #def stopCountdown(self, *args):
+    #    self.function_interval.cancel()
+
+    #def updateCountdown(self, *args):
+    #    label.text = str(int(label.text) - 1)
+
     def alarm_switch(self, switchObject, switchValue, labelId):
         if(switchValue):
             labelId.text = "Alarm Enabled"
-            alarmActive = True
+            self.alarmActive = True
         else:
             labelId.text = "Alarm Disabled"
-            alarmActive = False
+            self.alarmActive = False
 
     def quack_switch(self, switchObject, switchValue, labelId):
         if(switchValue):
             labelId.text = "Quacks Enabled"
-            quackActive = True
+            self.quackActive = True
         else:
             labelId.text = "Quacks Disabled"
-            quackActive = False
+            self.quackActive = False
 
     def closeApp_pressed(self, id):
         id.source = "../Assets/close_pressed.png"
@@ -76,14 +96,14 @@ class MyApp(App):
 
     # alarm sound effect
     def playSound_alarm(self):
-        if alarmActive is True:
+        if self.alarmActive:
             sound = SoundLoader.load("../Assets/alarmclock_sound.wav")
             if sound:
                 sound.play()
 
     # quack sound effect
     def playSound_quack(self):
-        if quackActive is True:
+        if self.quackActive:
             sound = SoundLoader.load("../Assets/duckquack_sound.wav")
             if sound:
                 sound.play()
@@ -91,14 +111,16 @@ class MyApp(App):
     # behavior for 'break' action
     def timedBreak(self, time):
         #self.greeting.text = "See you in 30 minutes!"
-        App.get_running_app().root_window.minimize()
+        #App.get_running_app().root_window.minimize()
         Clock.schedule_once(self.breakOver, time) # time reduced to seconds for testing
+        #self.startCountdown(time)
 
     # restoring app on break finish
     def breakOver(self, instance):
         self.playSound_quack()
         self.playSound_alarm()
         App.get_running_app().root_window.restore()
+        self.root.current = "main"
         #self.greeting.text = "Welcome back!"
 
     # 'dismiss' handling

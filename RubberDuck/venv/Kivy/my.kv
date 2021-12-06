@@ -1,7 +1,88 @@
 WindowManager:
+    StartUpWindow:
     MainWindow:
     SecondWindow:
     SettingsWindow:
+    BreakWindow:
+
+<StartUpWindow>
+    name: "startup"
+    GridLayout:
+        cols: 1
+
+        StackLayout:
+            orientation: 'rl-tb'
+            size_hint: 0.0002, 0.08
+
+            Button:
+                size_hint: (0.055, 1)
+                background_color: (5/255, 45/255, 60/255, 1)
+                background_normal: ''
+                on_press: app.closeApp_pressed(close_button)
+                on_release: app.closeApp_released(close_button)
+
+                Image:
+                    id: close_button
+                    source: "../Assets/close.png"
+                    size_hint: (None, None)
+                    width: 25
+                    height: 25
+                    center_x: self.parent.center_x
+                    center_y: self.parent.center_y
+
+            Button:
+                size_hint: (0.055, 1)
+                background_color: (5/255, 45/255, 60/255, 1)
+                background_normal: ''
+                on_press: app.options_pressed(options_button)
+                on_release:
+                    app.options_released(options_button)
+                    app.root.current = "settings"
+                    root.manager.transition.direction = "down"
+
+                Image:
+                    id: options_button
+                    source: "../Assets/gear.png"
+                    size_hint: (None, None)
+                    width: 22
+                    height: 22
+                    center_x: self.parent.center_x
+                    center_y: self.parent.center_y
+
+        GridLayout:
+            cols: 2
+            size: root.width, root.height
+
+            Label:
+                text:"Quack!\n\nTime to Work?"
+                font_size:20
+                halign: 'center'
+                bold: True
+                text_size: self.width, None
+                height: self.texture_size[1]
+
+            Image:
+                source:"../Assets/rubberduck_icon2.png"
+                background_color: (1, 1, 1, 1)
+
+            Button:
+                text:"Start Working"
+                size_hint: (1, 0.3)
+                bold: True
+                background_color: '#1d3557'
+                on_release:
+                    app.checkBackLater()
+                    app.root.current = "main"
+                    root.manager.transition.direction = "right"
+
+            Button:
+                text:"Change Settings"
+                size_hint: (1, 0.3)
+                bold: True
+                background_color: '#1d3557'
+                on_release:
+                    app.root.current = "settings"
+                    root.manager.transition.direction = "down"
 
 <MainWindow>
     name: "main"
@@ -52,7 +133,7 @@ WindowManager:
             size: root.width, root.height
 
             Label:
-                text:"Quack!\n\nChecking in!\nYou Have Been Working For a While Now"
+                text:"Quack!\n\nJust Checking in!\nIt has been a while since your last break"
                 font_size:20
                 halign: 'center'
                 bold: True
@@ -179,7 +260,8 @@ WindowManager:
                     background_color: '#1d3557'
                     on_release:
                         app.timedBreak(root.breakTimeValue)
-                        app.root.current = "main"
+                        #app.startCountdown(root.breakTimeValue)
+                        app.root.current = "break"
                         root.manager.transition.direction = "right"
 
                 Button:
@@ -253,10 +335,90 @@ WindowManager:
                 text_size: self.size
 
         Button:
-            text:"Back"
+            text:"Accept"
             bold: True
             background_color: '#1d3557'
-            size_hint: (0.2, 0.2)
+            size_hint: (0.2, 0.25)
             on_release:
                 app.root.current = "main"
                 root.manager.transition.direction = "up"
+
+<BreakWindow>
+    name: "break"
+    #on_enter: app.startCountdown(root.breakTimeValue)
+    GridLayout:
+        cols: 1
+
+        StackLayout:
+            orientation: 'rl-tb'
+            size_hint: 0.0002, 0.08
+
+            Button:
+                size_hint: (0.055, 1)
+                background_color: (5/255, 45/255, 60/255, 1)
+                background_normal: ''
+                on_press: app.closeApp_pressed(close_button)
+                on_release: app.closeApp_released(close_button)
+
+                Image:
+                    id: close_button
+                    source: "../Assets/close.png"
+                    size_hint: (None, None)
+                    width: 25
+                    height: 25
+                    center_x: self.parent.center_x
+                    center_y: self.parent.center_y
+
+            Button:
+                size_hint: (0.055, 1)
+                background_color: (5/255, 45/255, 60/255, 1)
+                background_normal: ''
+                on_press: app.options_pressed(options_button)
+                on_release:
+                    app.options_released(options_button)
+                    app.root.current = "settings"
+                    root.manager.transition.direction = "down"
+
+                Image:
+                    id: options_button
+                    source: "../Assets/gear.png"
+                    size_hint: (None, None)
+                    width: 22
+                    height: 22
+                    center_x: self.parent.center_x
+                    center_y: self.parent.center_y
+
+        GridLayout:
+            cols: 2
+            size: root.width, root.height
+
+            Label:
+                id: timeLeftLabel
+                text:"Break Time Remaining:\n--:--:--"
+                font_size:20
+                halign: 'center'
+                bold: True
+                text_size: self.width, None
+                height: self.texture_size[1]
+
+            Image:
+                source:"../Assets/rubberduck_icon2.png"
+                background_color: (1, 1, 1, 1)
+
+            Button:
+                text:"End Break"
+                size_hint: (1, 0.3)
+                bold: True
+                background_color: '#1d3557'
+                on_release:
+                    #TODO: break cancelled (no alarm or 'welcome back' screen)
+                    app.root.current = "main"
+                    root.manager.transition.direction = "down"
+
+            Button:
+                text:"Dismiss"
+                size_hint: (1, 0.3)
+                bold: True
+                background_color: '#1d3557'
+                on_release:
+                    root.stop()
