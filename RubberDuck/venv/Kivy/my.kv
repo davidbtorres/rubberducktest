@@ -12,7 +12,7 @@ WindowManager:
 
         StackLayout:
             orientation: 'rl-tb'
-            size_hint: 0.0002, 0.08
+            size_hint: 0.0002, 0.09
 
             Button:
                 size_hint: (0.055, 1)
@@ -54,7 +54,7 @@ WindowManager:
             size: root.width, root.height
 
             Label:
-                text:"Quack!\n\nTime to Work?"
+                text:"Hi!\nLets get to work!"
                 font_size:20
                 halign: 'center'
                 bold: True
@@ -65,6 +65,9 @@ WindowManager:
                 source:"../Assets/rubberduck_icon2.png"
                 background_color: (1, 1, 1, 1)
 
+        GridLayout:
+            cols: 3
+            size_hint_y: 0.3
             Button:
                 text:"Start Working"
                 size_hint: (1, 0.3)
@@ -74,6 +77,15 @@ WindowManager:
                     app.checkBackLater()
                     app.root.current = "main"
                     root.manager.transition.direction = "right"
+
+            Button:
+                text:"Start Break"
+                size_hint: (1, 0.3)
+                bold: True
+                background_color: '#1d3557'
+                on_release:
+                    app.root.current = "second"
+                    root.manager.transition.direction = "left"
 
             Button:
                 text:"Change Settings"
@@ -86,6 +98,7 @@ WindowManager:
 
 <MainWindow>
     name: "main"
+    on_enter: app.updateTimeWorked(checkInLabel)
     GridLayout:
         cols: 1
 
@@ -133,7 +146,8 @@ WindowManager:
             size: root.width, root.height
 
             Label:
-                text:"Quack!\n\nJust Checking in!\nIt has been a while since your last break"
+                id: checkInLabel
+                text:"Just Checking in!\nIt has been a while since your last break\n\nTotal Time Worked:\n"
                 font_size:20
                 halign: 'center'
                 bold: True
@@ -259,8 +273,8 @@ WindowManager:
                     bold: True
                     background_color: '#1d3557'
                     on_release:
-                        app.timedBreak(root.breakTimeValue)
                         #app.startCountdown(root.breakTimeValue)
+                        app.timedBreak(root.breakTimeValue)
                         app.root.current = "break"
                         root.manager.transition.direction = "right"
 
@@ -311,6 +325,17 @@ WindowManager:
                 font_size: 20
                 on_active: app.quack_switch(self, self.active, quack_label)
 
+            Label:
+                id: dev_label
+                font_size: 20
+                text: "Developer Mode Disabled"
+
+            Switch:
+                id: dev_switch
+                active: False
+                font_size: 20
+                on_active: app.dev_switch(self, self.active, dev_label)
+
         GridLayout:
             cols: 1
 
@@ -342,10 +367,12 @@ WindowManager:
             on_release:
                 app.root.current = "main"
                 root.manager.transition.direction = "up"
+                app.checkBackTime = checkBackTime_slider.value
 
 <BreakWindow>
     name: "break"
-    #on_enter: app.startCountdown(root.breakTimeValue)
+    on_enter: app.initTimeLeftLabel(timeLeftLabel)
+
     GridLayout:
         cols: 1
 
@@ -394,7 +421,7 @@ WindowManager:
 
             Label:
                 id: timeLeftLabel
-                text:"Break Time Remaining:\n--:--:--"
+                text:"Break Time Remaining:\n"
                 font_size:20
                 halign: 'center'
                 bold: True
@@ -411,7 +438,7 @@ WindowManager:
                 bold: True
                 background_color: '#1d3557'
                 on_release:
-                    #TODO: break cancelled (no alarm or 'welcome back' screen)
+                    app.forceBreakOver()
                     app.root.current = "main"
                     root.manager.transition.direction = "down"
 
@@ -421,4 +448,4 @@ WindowManager:
                 bold: True
                 background_color: '#1d3557'
                 on_release:
-                    root.stop()
+                    app.dismissForBreak()
